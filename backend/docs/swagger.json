@@ -1,0 +1,126 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "contact": {}
+    },
+    "paths": {
+        "/checkpoints": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Checkpoint"
+                ],
+                "summary": "Add checkpoint",
+                "parameters": [
+                    {
+                        "example": "Paris",
+                        "description": "Name of the city",
+                        "name": "name",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "example": "France",
+                        "description": "Name of the country",
+                        "name": "country",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "No content"
+                    },
+                    "500": {
+                        "description": "Error from gin"
+                    }
+                }
+            }
+        },
+        "/lots": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Lots"
+                ],
+                "summary": "Add Lot",
+                "parameters": [
+                    {
+                        "example": "Liquid",
+                        "description": "Type of the lot",
+                        "name": "type",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "example": 10,
+                        "description": "Standard volume of the lot",
+                        "name": "unit_volume",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "example": 100,
+                        "description": "weight in KG of the lot",
+                        "name": "weight",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "example": 1,
+                        "description": "Starting checkpoint ID of the Lot",
+                        "name": "start_checkpoint_id",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "example": 2,
+                        "description": "Ending checkpoint ID of the Lot",
+                        "name": "end_checkpoint_id",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "No content"
+                    },
+                    "500": {
+                        "description": "Error from gin"
+                    }
+                }
+            }
+        }
+    }
+}

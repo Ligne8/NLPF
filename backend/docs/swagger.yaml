@@ -1,0 +1,83 @@
+info:
+  contact: {}
+paths:
+  /checkpoints:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Name of the city
+        example: Paris
+        in: body
+        name: name
+        required: true
+        schema:
+          type: string
+      - description: Name of the country
+        example: France
+        in: body
+        name: country
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: No content
+        "500":
+          description: Error from gin
+      summary: Add checkpoint
+      tags:
+      - Checkpoint
+  /lots:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Type of the lot
+        example: Liquid
+        in: body
+        name: type
+        required: true
+        schema:
+          type: string
+      - description: Standard volume of the lot
+        example: 10
+        in: body
+        name: unit_volume
+        required: true
+        schema:
+          type: integer
+      - description: weight in KG of the lot
+        example: 100
+        in: body
+        name: weight
+        required: true
+        schema:
+          type: integer
+      - description: Starting checkpoint ID of the Lot
+        example: 1
+        in: body
+        name: start_checkpoint_id
+        required: true
+        schema:
+          type: integer
+      - description: Ending checkpoint ID of the Lot
+        example: 2
+        in: body
+        name: end_checkpoint_id
+        required: true
+        schema:
+          type: integer
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: No content
+        "500":
+          description: Error from gin
+      summary: Add Lot
+      tags:
+      - Lots
+swagger: "2.0"
