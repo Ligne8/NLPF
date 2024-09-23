@@ -8,22 +8,23 @@
 
     // Table data
     const tableData = [
-        { nom: 'Tracteur 1', status: 'ON_THE_WAY' },
-        { nom: 'Tracteur 2', status: 'ARRIVED' },
-        { nom: 'Tracteur 3', status: 'PENDING' },
+        { name: 'Camion 1', status: 'ON_THE_WAY', currentCapacity: 120, totalCapacity: 120, location: 'Paris', road: ['Paris - Lyon', 'Paris - Montpellier', 'Paris - Marseille'] },
+        { name: 'Camion 2', status: 'ON_THE_STOCK_EXCHANGE', currentCapacity: 38, totalCapacity: 154, location: 'Lyon', road: ['Lyon - Paris', 'Lyon - Montpellier'] },
+        { name: 'Camion 3', status: 'AVAILABLE', currentCapacity: 52, totalCapacity: 86, location: 'Marseille', road: ['Marseille - Montpellier', 'Marseille - Lyon', 'Marseille - Marseille'] },
+        { name: 'Camion 4', status: 'AVAILABLE', currentCapacity: 0, totalCapacity: 94, location: 'Montpellier', road: ['Montpellier - Marseille', 'Montpellier - Paris', 'Montpellier - Lyon', 'Montpellier - Perpignan'] },
     ];
 
     // Function to get tag color and text based on status
     function getStatusInfo(status: string): { color: string; text: string } {
         switch (status) {
-            case 'PENDING':
-                return { color: 'bg-green-200 text-green-800', text: 'En attente' };
+            case 'AVAILABLE':
+                return { color: 'bg-green-200 text-green-800', text: '◉ Disponible' };
             case 'ON_THE_WAY':
-                return { color: 'bg-yellow-200 text-yellow-800', text: 'En route' };
-            case 'ARRIVED':
-                return { color: 'bg-red-200 text-red-800', text: 'Arrivé' };
+                return { color: 'bg-orange-200 text-orange-800', text: '◉ En route' };
+            case 'ON_THE_STOCK_EXCHANGE':
+                return { color: 'bg-yellow-200 text-yellow-800', text: '◉ En bourse' };
             default:
-                return { color: 'bg-gray-200 text-gray-800', text: 'Inconnu' };
+                return { color: 'bg-gray-200 text-gray-800', text: '🛇 Inconnu' };
         }
     }
 
@@ -49,6 +50,7 @@
 </nav>
 
 <main class="p-10">
+
     <!-- Title and subtitle -->
     <section>
         <h1 class="text-4xl font-bold mb-4">{title}</h1>
@@ -62,9 +64,10 @@
                 <tr class="bg-gray-100">
                     <th class="border p-2 text-center">Nom</th>
                     <th class="border p-2 text-center">Status</th>
-                    <th class="border p-2 text-center">Bourse</th>
-                    <th class="border p-2 text-center">Action</th>
-                    <th class="border p-2 text-center">Assigner une route</th>
+                    <th class="border p-2 text-center">Chargement</th>
+                    <th class="border p-2 text-center">Localisation</th>
+                    <th class="border p-2 text-center">Route</th>
+                    <th class="border p-2 text-center">Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -72,7 +75,7 @@
                     <tr class={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
 
                         <!-- Column 1 -->
-                        <td class="border p-2 text-center">{row.nom}</td>
+                        <td class="border p-2 text-center">{row.name}</td>
 
                         <!-- Column 2 -->
                         <td class="border p-2 text-center">
@@ -82,27 +85,47 @@
                         </td>
 
                         <!-- Column 3 -->
-                        <td class="border p-2 text-center">
-                            <button class="bg-blue-500 text-white rounded-full w-10 h-10 flex items-center justify-center mx-auto hover:bg-blue-600 transition-colors">
-                                <i class="fas fa-plus"></i>
-                            </button>
-                        </td>
+                        <td class="border p-2 text-center">{row.currentCapacity}/{row.totalCapacity}</td>
 
                         <!-- Column 4 -->
-                        <td class="border p-2 text-center">
-                            <button class="bg-gray-200 text-gray-800 px-4 py-2 flex items-center font-bold mx-auto hover:bg-gray-300 transition-colors rounded-md">
-                                <i class="fas fa-truck mr-2"></i>
-                                Démarrer
-                            </button>
-                        </td>
+                        <td class="border p-2 text-center">{row.location}</td>
 
                         <!-- Column 5 -->
                         <td class="border p-2 text-center">
                             <select class="border border-gray-300 rounded px-2 py-1 mx-auto w-4/5">
-                                <option>Lyon - Marseille</option>
-                                <option>Paris - Marseille</option>
-                                <option>Toulouse - Paris</option>
+                                {#each row.road as roadOption}
+                                    <option>{roadOption}</option>
+                                {/each}
                             </select>
+                        </td>
+
+                        <!-- Column 6 -->
+                        <td class="border p-2 text-center">
+                            {#if row.status === 'ON_THE_WAY'}
+                                <div class="flex flex-wrap justify-center space-x-2">
+                                    <button class="bg-red-200 text-red-600 px-4 py-2 flex items-center font-bold hover:bg-red-300 transition-colors rounded-md">
+                                        <i class="fas fa-hand mr-2"></i>
+                                        Arrêter
+                                    </button>
+                                </div>
+                            {:else if row.status === 'AVAILABLE'}
+                                <div class="flex flex-wrap justify-center space-x-2">
+                                    <button class="bg-green-200 text-green-800 px-4 py-2 flex items-center font-bold hover:bg-green-300 transition-colors rounded-md">
+                                        <i class="fas fa-truck mr-2"></i>
+                                        Démarrer
+                                    </button>
+                                    <button class="bg-blue-200 text-blue-800 px-4 py-2 flex items-center font-bold hover:bg-blue-300 transition-colors rounded-md">
+                                        <i class="fas fa-plus mr-2"></i>
+                                        Bourse
+                                    </button>
+                                    <button class="bg-gray-800 text-white px-4 py-2 flex items-center font-bold hover:bg-black transition-colors rounded-md">
+                                        <i class="fas fa-right-from-bracket mr-2"></i>
+                                        Retirer
+                                    </button>
+                                </div>
+                            {:else if row.status === 'ON_THE_STOCK_EXCHANGE'}
+                                <span class="text-gray-500">Aucune action à effectuer</span>
+                            {/if}
                         </td>
                     </tr>
                 {/each}
