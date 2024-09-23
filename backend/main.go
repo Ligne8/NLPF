@@ -18,7 +18,7 @@ func main() {
 
 	db := database.InitDb()
 
-	router = routes.CheckpointsRoute(router, db)
+	/*router = routes.CheckpointsRoute(router, db)*/
 	router = routes.LotRoutes(router, db)
 
 	docs.SwaggerInfo.BasePath = "/api/v1"

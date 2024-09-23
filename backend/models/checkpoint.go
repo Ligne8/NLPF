@@ -1,13 +1,11 @@
 package models
 
-import "gorm.io/gorm"
+import (
+	"github.com/google/uuid"
+)
 
 type Checkpoint struct {
-	Id       uint   `json:"id" gorm:"primaryKey;autoIncrement"`
-	Name string `json:"name" gorm:"not null" binding:"required"`
-	Country string `json:"country" gorm:"not null" binding:"required"`
-}
-
-func (u *Checkpoint) Save(db *gorm.DB) error {
-	return db.Save(u).Error
+	Id      uuid.UUID `json:"id" gorm:"type:uuid;default:uuid_generate_v4()"`
+	Name    string    `json:"name" gorm:"not null" binding:"required"`
+	Country string    `json:"country" gorm:"not null" binding:"required"`
 }

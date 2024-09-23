@@ -1,15 +1,16 @@
 package models
 
+import (
+	"github.com/google/uuid"
+	"time"
+)
+
 type Transaction struct {
-	Id       uint   `json:"id" gorm:"primaryKey;autoIncrement"`
-	TransactionType string `json:"transactionType" gorm:"not null" binding:"required"`
-	Date string `json:"date" gorm:"not null" binding:"required"`
-	Lot Lot `json:"lot"`
-	LotId uint `json:"lotId" gorm:"not null" binding:"required"`
-	Tractor Tractor `json:"tractor"`
-	TractorId uint `json:"tractorId" gorm:"not null" binding:"required"`
-	Trip Trip `json:"trip"`
-	TripId uint `json:"tripId" gorm:"not null" binding:"required"`
-	Checkpoint Checkpoint `json:"checkpoint"`
-	CheckpointId uint `json:"checkpointId" gorm:"not null" binding:"required"`
+	Id              uuid.UUID  `json:"id" gorm:"type:uuid;default:uuid_generate_v4()"`
+	TransactionType string     `json:"transactionType" gorm:"not null" binding:"required"`
+	Date            time.Time  `json:"date" gorm:"autoCreateTime"`
+	LotId           Lot        `json:"lot_id" gorm:"not null" binding:"required"`
+	TractorId       uint       `json:"tractorId" gorm:"not null" binding:"required"`
+	RouteId         Route      `json:"route_id" gorm:"not null" binding:"required"`
+	CheckpointId    Checkpoint `json:"checkpointId" gorm:"not null" binding:"required"`
 }
