@@ -8,8 +8,8 @@ import (
 
 type Lot struct {
 	Id                  uuid.UUID  `json:"id" gorm:"type:uuid;primaryKey"`
-	Type                string     `json:"type" gorm:"not null" binding:"required"`
-	Units               uint       `json:"units" gorm:"not null" binding:"required"`
+	ResourceType        string     `json:"resource_type" gorm:"not null" binding:"required"`
+	Volume              float64    `json:"volume" gorm:"not null" binding:"required"`
 	StartCheckpointId   uuid.UUID  `json:"startCheckpointId" gorm:"not null"` // Added explicit foreign key field
 	StartCheckpoint     Checkpoint `json:"startCheckpoint" gorm:"foreignKey:StartCheckpointId"`
 	EndCheckpointId     uuid.UUID  `json:"endCheckpointId" gorm:"not null"` // Added explicit foreign key field

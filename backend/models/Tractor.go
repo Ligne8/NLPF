@@ -8,8 +8,9 @@ import (
 
 type Tractor struct {
 	Id                  uuid.UUID  `json:"id" gorm:"type:uuid;primaryKey"`
-	MaxUnits            uint       `json:"max_units" gorm:"not null"`
-	CurrentUnits        uint       `json:"current_units" gorm:"not null"`
+	ResourceType        string     `json:"resource_type" gorm:"not null" binding:"required"`
+	MaxVolume           float64    `json:"max_units" gorm:"not null"`
+	CurrentVolume       float64    `json:"current_units" gorm:"not null"`
 	CurrentCheckpointId uuid.UUID  `json:"current_checkpoint_id" gorm:"type:uuid"` // Foreign key for Checkpoint
 	CurrentCheckpoint   Checkpoint `json:"current_checkpoint" gorm:"foreignKey:CurrentCheckpointId"`
 	State               string     `json:"state" gorm:"not null"`
