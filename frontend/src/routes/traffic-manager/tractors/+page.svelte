@@ -4,8 +4,8 @@
     import { tableData } from '../../../stores/store.js';
 
     // Variables
-    let title: string = 'Titre';
-    let subtitle: string = 'Sous-titre';
+    let title: string = 'Gestion des Tracteurs';
+    let subtitle: string = 'Suivez l’état de votre flotte en temps réel.';
 
     // Function to get tag color and text based on status
     function getStatusInfo(status: string): { color: string; text: string } {
@@ -32,7 +32,7 @@
     <!-- Title and subtitle -->
     <section>
         <h1 class="text-4xl font-bold mb-4">{title}</h1>
-        <h2 class="text-2xl mb-4 text-gray-600">{subtitle}</h2>
+        <h2 class="text-2xl mb-8 text-gray-600">{subtitle}</h2>
     </section>
 
     <!-- Table -->
