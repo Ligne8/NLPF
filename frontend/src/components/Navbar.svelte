@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { onMount } from 'svelte';
     import { userRole, currentTab } from '../stores/store.js';
     import type { UserRole } from '../stores/store.js';
   
@@ -20,6 +21,23 @@
     function switchTab(tab: string) {
         currentTab.set(tab);
     }
+
+    // Set tab based on URL
+    onMount(() => {
+        const path = window.location.pathname;
+        if (path.startsWith('/traffic-manager'))
+            currentTab.set('TrafficManager');
+        else if (path.startsWith('/lots'))
+            currentTab.set('Lots');
+        else if (path.startsWith('/tractors'))
+            currentTab.set('Tractors');
+        else if (path.startsWith('/trader'))
+            currentTab.set('Trader');
+        else if (path.startsWith('/stock-exchange'))
+            currentTab.set('StockExchange');
+        else
+            currentTab.set(''); // Reset if on root or unknown path
+    });
 </script>
 
 

@@ -1,5 +1,24 @@
 <script lang="ts">
+    import { onMount } from 'svelte';
     import { currentTrafficManagerTab } from '../stores/store.js';
+
+    // Function to switch tab
+    function switchTab(tab: string) {
+        currentTrafficManagerTab.set(tab);
+    }
+
+    // Set tab based on URL on mount
+    onMount(() => {
+        const path = window.location.pathname;
+        if (path.includes('traffic-manager/roads'))
+            currentTrafficManagerTab.set('Roads');
+        else if (path.includes('traffic-manager/lots'))
+            currentTrafficManagerTab.set('Lots');
+        else if (path.includes('traffic-manager/tractors'))
+            currentTrafficManagerTab.set('Tractors');
+        else
+            currentTrafficManagerTab.set(''); // Reset if on an unknown path
+    });
 </script>
 
 
@@ -9,21 +28,21 @@
         <li>
             <a 
                 href="/traffic-manager/roads" 
-                on:click={() => $currentTrafficManagerTab = 'Roads'} 
+                on:click={() => switchTab('Roads')} 
                 class="{$currentTrafficManagerTab === 'Roads' ? 'font-bold bg-gray-800 text-gray-200 rounded-md px-4 py-2' : ''}">Routes
             </a>
         </li>
         <li>
             <a 
                 href="/traffic-manager/lots" 
-                on:click={() => $currentTrafficManagerTab = 'Lots'} 
+                on:click={() => switchTab('Lots')} 
                 class="{$currentTrafficManagerTab === 'Lots' ? 'font-bold bg-gray-800 text-gray-200 rounded-md px-4 py-2' : ''}">Lots
             </a>
         </li>
         <li>
             <a 
                 href="/traffic-manager/tractors" 
-                on:click={() => $currentTrafficManagerTab = 'Tractors'} 
+                on:click={() => switchTab('Tractors')} 
                 class="{$currentTrafficManagerTab === 'Tractors' ? 'font-bold bg-gray-800 text-gray-200 rounded-md px-4 py-2' : ''}">Tracteurs
             </a>
         </li>
