@@ -2,9 +2,9 @@ package main
 
 import (
 	"tms-backend/database"
-	"tms-backend/routes"
-
 	docs "tms-backend/docs"
+	"tms-backend/models"
+	"tms-backend/routes"
 
 	"github.com/gin-gonic/gin"
 	swaggerfiles "github.com/swaggo/files"
@@ -18,7 +18,8 @@ func main() {
 
 	db := database.InitDb()
 
-	/*router = routes.CheckpointsRoute(router, db)*/
+	models.CreateCheckpoints(db)
+	router = routes.CheckpointsRoute(router, db)
 	router = routes.LotRoutes(router, db)
 
 	docs.SwaggerInfo.BasePath = "/api/v1"

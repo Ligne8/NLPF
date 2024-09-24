@@ -1,9 +1,9 @@
 package models
 
 import (
-	"errors"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
+	"log"
 )
 
 type Country string
@@ -63,37 +63,53 @@ type Checkpoint struct {
 
 func (checkpoint *Checkpoint) BeforeCreate(tx *gorm.DB) (err error) {
 	checkpoint.Id = uuid.New()
-	if !isCountryValid(checkpoint.Country) {
-		return errors.New("invalid country")
-	}
-	if !isCityInCountry(checkpoint.Name, checkpoint.Country) {
-		return errors.New("city does not belong to the specified country or is invalid")
-	}
 	return nil
 }
 
-func isCountryValid(country Country) bool {
-	switch country {
-	case CountryFrance, CountryItaly, CountrySwitzerland, CountrySpain, CountryPortugal:
-		return true
-	default:
-		return false
-	}
-}
+func CreateCheckpoints(db *gorm.DB) {
+	// Liste des checkpoints à créer par pays
+	checkpoints := []Checkpoint{
+		// France
+		{Id: uuid.New(), Name: CityParis, Country: CountryFrance},
+		{Id: uuid.New(), Name: CityMarseille, Country: CountryFrance},
+		{Id: uuid.New(), Name: CityPerpignan, Country: CountryFrance},
+		{Id: uuid.New(), Name: CityStrasbourg, Country: CountryFrance},
+		{Id: uuid.New(), Name: CityLyon, Country: CountryFrance},
 
-func isCityInCountry(city City, country Country) bool {
-	switch country {
-	case CountryFrance:
-		return city == CityParis || city == CityMarseille || city == CityPerpignan || city == CityStrasbourg || city == CityLyon
-	case CountryItaly:
-		return city == CityRome || city == CityFlorence || city == CityMilan || city == CityComo || city == CityNaples
-	case CountrySwitzerland:
-		return city == CityGeneva || city == CityZurich || city == CityBern || city == CityLausanne || city == CityChatelSaintDenis
-	case CountrySpain:
-		return city == CityMadrid || city == CityBarcelona || city == CitySeville || city == CityLloretDelMar || city == CityMalaga
-	case CountryPortugal:
-		return city == CityLisbon || city == CityPorto || city == CityBraga || city == CityLeiria || city == CityEvora
-	default:
-		return false
+		// Italie
+		{Id: uuid.New(), Name: CityRome, Country: CountryItaly},
+		{Id: uuid.New(), Name: CityFlorence, Country: CountryItaly},
+		{Id: uuid.New(), Name: CityMilan, Country: CountryItaly},
+		{Id: uuid.New(), Name: CityComo, Country: CountryItaly},
+		{Id: uuid.New(), Name: CityNaples, Country: CountryItaly},
+
+		// Suisse
+		{Id: uuid.New(), Name: CityGeneva, Country: CountrySwitzerland},
+		{Id: uuid.New(), Name: CityZurich, Country: CountrySwitzerland},
+		{Id: uuid.New(), Name: CityBern, Country: CountrySwitzerland},
+		{Id: uuid.New(), Name: CityLausanne, Country: CountrySwitzerland},
+		{Id: uuid.New(), Name: CityChatelSaintDenis, Country: CountrySwitzerland},
+
+		// Espagne
+		{Id: uuid.New(), Name: CityMadrid, Country: CountrySpain},
+		{Id: uuid.New(), Name: CityBarcelona, Country: CountrySpain},
+		{Id: uuid.New(), Name: CitySeville, Country: CountrySpain},
+		{Id: uuid.New(), Name: CityLloretDelMar, Country: CountrySpain},
+		{Id: uuid.New(), Name: CityMalaga, Country: CountrySpain},
+
+		// Portugal
+		{Id: uuid.New(), Name: CityLisbon, Country: CountryPortugal},
+		{Id: uuid.New(), Name: CityPorto, Country: CountryPortugal},
+		{Id: uuid.New(), Name: CityBraga, Country: CountryPortugal},
+		{Id: uuid.New(), Name: CityLeiria, Country: CountryPortugal},
+		{Id: uuid.New(), Name: CityEvora, Country: CountryPortugal},
+	}
+
+	for _, checkpoint := range checkpoints {
+		if err := db.FirstOrCreate(&checkpoint, Checkpoint{Name: checkpoint.Name, Country: checkpoint.Country}).Error; err != nil {
+			log.Printf("Failed to create checkpoint %s: %v", checkpoint.Name, err)
+		} else {
+			log.Printf("Checkpoint created: %s, %s", checkpoint.Name, checkpoint.Country)
+		}
 	}
 }

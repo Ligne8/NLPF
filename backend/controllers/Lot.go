@@ -14,15 +14,15 @@ type LotController struct {
 
 func (LotController *LotController) AddLot(c *gin.Context) {
 	var requestBody struct {
-		ResourceType      string    `json:"resource_type" binding:"required"`
-		Volume            float64   `json:"volume" binding:"required"`
-		StartCheckpointId uuid.UUID `json:"start_checkpoint_id" binding:"required"`
-		EndCheckpointId   uuid.UUID `json:"end_checkpoint_id" binding:"required"`
-		OwnerId           uuid.UUID `json:"owner_id" binding:"required"`
-		State             string    `json:"state" binding:"required"`
-		MaxPriceByKm      float64   `json:"max_price_by_km" binding:"required"`
-		TrafficManagerId  uuid.UUID `json:"traffic_manager_id" binding:"required"`
-		TraderId          uuid.UUID `json:"trader_id" binding:"required"`
+		ResourceType      models.ResourceType `json:"resource_type" binding:"required"`
+		Volume            float64             `json:"volume" binding:"required"`
+		StartCheckpointId uuid.UUID           `json:"start_checkpoint_id" binding:"required"`
+		EndCheckpointId   uuid.UUID           `json:"end_checkpoint_id" binding:"required"`
+		OwnerId           uuid.UUID           `json:"owner_id" binding:"required"`
+		State             models.State        `json:"state" binding:"required"`
+		MaxPriceByKm      float64             `json:"max_price_by_km" binding:"required"`
+		TrafficManagerId  uuid.UUID           `json:"traffic_manager_id" binding:"required"`
+		TraderId          uuid.UUID           `json:"trader_id" binding:"required"`
 	}
 
 	if err := c.ShouldBindJSON(&requestBody); err != nil {
