@@ -1,7 +1,6 @@
 <script lang="ts">
     import Navbar from '../../../components/Navbar.svelte';
 	import TrafficManagerNavbar from '../../../components/TrafficManagerNavbar.svelte';
-    import { tableData } from '../../../stores/store.js';
 
     // Variables
     let title: string = 'Gestion des Tracteurs';
@@ -20,6 +19,14 @@
                 return { color: 'bg-gray-200 text-gray-800', text: '🛇 Inconnu' };
         }
     }
+
+    // Example data
+    const tableData = [
+        { name: 'Tracteur 1', status: 'ON_THE_WAY', currentCapacity: 120, totalCapacity: 120, location: 'Paris', road: ['Paris - Lyon', 'Paris - Montpellier', 'Paris - Marseille'] },
+        { name: 'Tracteur 2', status: 'ON_THE_STOCK_EXCHANGE', currentCapacity: 38, totalCapacity: 154, location: 'Lyon', road: ['Lyon - Paris', 'Lyon - Montpellier'] },
+        { name: 'Tracteur 3', status: 'AVAILABLE', currentCapacity: 52, totalCapacity: 86, location: 'Marseille', road: ['Marseille - Montpellier', 'Marseille - Lyon', 'Marseille - Marseille'] },
+        { name: 'Tracteur 4', status: 'AVAILABLE', currentCapacity: 0, totalCapacity: 94, location: 'Montpellier', road: ['Montpellier - Marseille', 'Montpellier - Paris', 'Montpellier - Lyon', 'Montpellier - Perpignan'] },
+    ];
 </script>
 
 
@@ -42,14 +49,14 @@
                 <tr class="bg-gray-100">
                     <th class="border p-2 text-center">Nom</th>
                     <th class="border p-2 text-center">Status</th>
-                    <th class="border p-2 text-center">Chargement</th>
+                    <th class="border p-2 text-center">Chargement <span class="font-normal">(en m³)</span></th>
                     <th class="border p-2 text-center">Localisation</th>
                     <th class="border p-2 text-center">Route</th>
                     <th class="border p-2 text-center">Actions</th>
                 </tr>
             </thead>
             <tbody>
-                {#each $tableData as row, index}
+                {#each tableData as row, index}
                     <tr class={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
 
                         <!-- Column 1 -->
@@ -101,8 +108,8 @@
                                         Retirer
                                     </button>
                                 </div>
-                            {:else if row.status === 'ON_THE_STOCK_EXCHANGE'}
-                                <span class="text-gray-500">Aucune action à effectuer</span>
+                            {:else}
+                                <span class="text-gray-500">-</span>
                             {/if}
                         </td>
                     </tr>
