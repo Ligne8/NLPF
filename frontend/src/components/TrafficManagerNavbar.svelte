@@ -10,8 +10,8 @@
     // Set tab based on URL on mount
     onMount(() => {
         const path = window.location.pathname;
-        if (path.includes('traffic-manager/roads'))
-            currentTrafficManagerTab.set('Roads');
+        if (path.includes('traffic-manager/routes'))
+            currentTrafficManagerTab.set('Routes');
         else if (path.includes('traffic-manager/lots'))
             currentTrafficManagerTab.set('Lots');
         else if (path.includes('traffic-manager/tractors'))
@@ -27,9 +27,9 @@
     <ul class="flex space-x-16">
         <li>
             <a 
-                href="/traffic-manager/roads" 
-                on:click={() => switchTab('Roads')} 
-                class="{$currentTrafficManagerTab === 'Roads' ? 'font-bold bg-gray-800 text-gray-200 rounded-md px-4 py-2' : ''}">Routes
+                href="/traffic-manager/routes" 
+                on:click={() => switchTab('Routes')} 
+                class="{$currentTrafficManagerTab === 'Routes' ? 'font-bold bg-gray-800 text-gray-200 rounded-md px-4 py-2' : ''}">Routes
             </a>
         </li>
         <li>

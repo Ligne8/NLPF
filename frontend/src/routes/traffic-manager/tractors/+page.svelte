@@ -22,10 +22,10 @@
 
     // Example data
     const tableData = [
-        { name: 'Tracteur 1', status: 'ON_THE_WAY', currentCapacity: 120, totalCapacity: 120, location: 'Paris', road: ['Paris - Lyon', 'Paris - Montpellier', 'Paris - Marseille'] },
-        { name: 'Tracteur 2', status: 'ON_THE_STOCK_EXCHANGE', currentCapacity: 38, totalCapacity: 154, location: 'Lyon', road: ['Lyon - Paris', 'Lyon - Montpellier'] },
-        { name: 'Tracteur 3', status: 'AVAILABLE', currentCapacity: 52, totalCapacity: 86, location: 'Marseille', road: ['Marseille - Montpellier', 'Marseille - Lyon', 'Marseille - Marseille'] },
-        { name: 'Tracteur 4', status: 'AVAILABLE', currentCapacity: 0, totalCapacity: 94, location: 'Montpellier', road: ['Montpellier - Marseille', 'Montpellier - Paris', 'Montpellier - Lyon', 'Montpellier - Perpignan'] },
+        { name: 'Tracteur 1', status: 'ON_THE_WAY', currentCapacity: 120, totalCapacity: 120, location: 'Paris', route: ['Paris - Lyon', 'Paris - Montpellier', 'Paris - Marseille'] },
+        { name: 'Tracteur 2', status: 'ON_THE_STOCK_EXCHANGE', currentCapacity: 38, totalCapacity: 154, location: 'Lyon', route: ['Lyon - Paris', 'Lyon - Montpellier'] },
+        { name: 'Tracteur 3', status: 'AVAILABLE', currentCapacity: 52, totalCapacity: 86, location: 'Marseille', route: ['Marseille - Montpellier', 'Marseille - Lyon', 'Marseille - Marseille'] },
+        { name: 'Tracteur 4', status: 'AVAILABLE', currentCapacity: 0, totalCapacity: 94, location: 'Montpellier', route: ['Montpellier - Marseille', 'Montpellier - Paris', 'Montpellier - Lyon', 'Montpellier - Perpignan'] },
     ];
 </script>
 
@@ -78,8 +78,8 @@
                         <!-- Column 5 -->
                         <td class="border p-2 text-center">
                             <select class="border border-gray-300 rounded px-2 py-1 mx-auto w-4/5">
-                                {#each row.road as roadOption}
-                                    <option>{roadOption}</option>
+                                {#each row.route as routeOption}
+                                    <option>{routeOption}</option>
                                 {/each}
                             </select>
                         </td>

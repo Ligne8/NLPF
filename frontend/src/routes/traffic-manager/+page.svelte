@@ -3,6 +3,6 @@
     import { goto } from '$app/navigation';
 
     onMount(() => {
-        goto('/traffic-manager/roads', { replaceState: true });
+        goto('/traffic-manager/routes', { replaceState: true });
     });
 </script>
