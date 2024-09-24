@@ -16,7 +16,7 @@
     ];
 
     // Store selected checkpoints
-    let selectedCheckpoints: string[] = [checkpoints[0]]; // Default to the first checkpoint
+    let selectedCheckpoints: string[] = [checkpoints[0]];
 
     // Function to simulate fetching checkpoints from the backend
     function fetchCheckpoints() {
@@ -25,7 +25,6 @@
 
     // Function to add a new checkpoint select
     function addCheckpoint() {
-        // Set the default value to the first checkpoint
         selectedCheckpoints = [...selectedCheckpoints, checkpoints[0]];
         checkpoints = fetchCheckpoints();
     }
@@ -33,11 +32,11 @@
     // Function to add a new route to the table
     function addRouteToTable() {
         const newRoute = {
-            name: `Route ${tableData.length + 1}`, // Dynamically generate route name
-            route: selectedCheckpoints.filter(cp => cp !== '') // Get selected checkpoints
+            name: `Route ${tableData.length + 1}`,
+            route: selectedCheckpoints.filter(cp => cp !== '')
         };
 
-        tableData = [...tableData, newRoute]; // Update the table data
+        tableData = [...tableData, newRoute];
     }
 
     // Function to validate the route
@@ -50,15 +49,19 @@
         addRouteToTable();
 
         // Reset the inputs after validation
-        selectedCheckpoints = [checkpoints[0]]; // Reset to default after validation
+        selectedCheckpoints = [checkpoints[0]];
+    }
+
+    // Function to remove a checkpoint
+    function removeCheckpoint(index: number) {
+        if (index > 0)
+            selectedCheckpoints = selectedCheckpoints.filter((_, i) => i !== index);
     }
 </script>
-
 
 <!-- Navbar -->
 <Navbar />
 <TrafficManagerNavbar />
-
 
 <main class="p-10">
 
@@ -68,7 +71,6 @@
         <h2 class="text-2xl text-gray-600">{subtitle}</h2>
     </section>
 
-    
     <div class="flex">
 
         <!-- Left part -->
@@ -104,7 +106,6 @@
 
         <!-- Right part -->
         <div class="w-1/3 pl-8">
-
             <h2 class="text-2xl text-gray-800 font-bold mb-4">
                 <i class="fas fa-plus mr-2"></i>
                 Ajouter une route
@@ -113,7 +114,19 @@
             <!-- Checkpoints select inputs -->
             <div class="mb-4">
                 {#each selectedCheckpoints as selected, index}
-                    <div class="mb-1">
+                    <div class="mb-1 flex items-center">
+
+                        <!-- Delete button -->
+                        {#if index !== 0}
+                            <button 
+                                on:click={() => removeCheckpoint(index)} 
+                                class="bg-red-500 text-white rounded-md w-8 h-8 hover:bg-red-600 flex items-center justify-center mr-2"
+                                title="Supprimer ce checkpoint"
+                            >
+                                <i class="fas fa-minus"></i>
+                            </button>
+                        {/if}
+
                         <select id="checkpoint-{index}" class="border border-gray-300 rounded px-3 py-2 w-full"
                                 bind:value={selectedCheckpoints[index]}
                                 disabled={index !== selectedCheckpoints.length - 1}
