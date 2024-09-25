@@ -51,7 +51,7 @@
                 <tr class="bg-gray-100">
                     <th class="border p-2 text-center">Nom</th>
                     <th class="border p-2 text-center">Status</th>
-                    <th class="border p-2 text-center">Volume <span class="font-normal">(en m³)</th>
+                    <th class="border p-2 text-center">Volume <span class="font-normal">(en m³)</span></th>
                     <th class="border p-2 text-center">Localisation</th>
                     <th class="border p-2 text-center">Départ / Arrivée</th>
                     <th class="border p-2 text-center">Tracteur</th>
