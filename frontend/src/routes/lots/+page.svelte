@@ -18,15 +18,15 @@
     let tableData = [
         { name: 'Lot 1', status: 'ON_THE_WAY', volume: 16, location: 'Paris', startCheckpoint: 'Lyon', endCheckpoint: 'Montpellier', trafficManager: ['Traffic manager 1'] },
         { name: 'Lot 2', status: 'ON_THE_STOCK_EXCHANGE', volume: 3, location: 'Lyon', startCheckpoint: 'Lyon', endCheckpoint: 'Paris', trafficManager: ['Traffic manager 4'] },
-        { name: 'Lot 3', status: 'AVAILABLE', volume: 4, location: 'Marseille', startCheckpoint: 'Marseille', endCheckpoint: 'Montpellier', trafficManager: ['Traffic manager 2', 'Traffic manager 3', 'Traffic manager 4'] },
+        { name: 'Lot 3', status: 'PENDING', volume: 4, location: 'Marseille', startCheckpoint: 'Marseille', endCheckpoint: 'Montpellier', trafficManager: ['Traffic manager 2', 'Traffic manager 3', 'Traffic manager 4'] },
         { name: 'Lot 4', status: 'ARCHIVED', volume: 8, location: 'Montpellier', startCheckpoint: 'Paris', endCheckpoint: 'Montpellier', trafficManager: ['Traffic manager 3'] },
     ];
 
     // Function to get tag color and text based on status
     function getStatusInfo(status: string): { color: string; text: string } {
         switch (status) {
-            case 'AVAILABLE':
-                return { color: 'bg-green-200 text-green-800', text: '◉ Disponible' };
+            case 'PENDING':
+                return { color: 'bg-green-200 text-green-800', text: '◉ En attente' };
             case 'ON_THE_WAY':
                 return { color: 'bg-orange-200 text-orange-800', text: '◉ En route' };
             case 'ON_THE_STOCK_EXCHANGE':
@@ -62,7 +62,7 @@
         // Add lot to the table
         const newLot = {
             name: lotName,
-            status: 'AVAILABLE',
+            status: 'PENDING',
             type: selectedType,
             volume: parseFloat(volume),
             maxPrice: parseFloat(maxPrice),
@@ -161,7 +161,7 @@
 
                         <!-- Column 6 -->
                         <td class="border p-2 text-center">
-                            {#if row.status === 'AVAILABLE'}
+                            {#if row.status === 'PENDING'}
                                 <select class="border border-gray-300 rounded px-2 py-1 mx-auto w-4/5">
                                     {#each row.trafficManager as trafficManagerOption}
                                         <option>{trafficManagerOption}</option>
