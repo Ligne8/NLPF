@@ -12,7 +12,19 @@ type LotController struct {
 	Db *gorm.DB
 }
 
-func (LotController *LotController) AddLot(c *gin.Context) {
+// CreateLot Create a new Lot
+//
+//  @Summary      List accounts
+//  @Description  get accounts
+//  @Tags         accounts
+//  @Accept       json
+//  @Produce      json
+//  @Param        q    query     string  false  "name search by q"  Format(email)
+//  @Success      200  {array}   model.Account
+//  @Failure      500  {object}  httputil.HTTPError
+//  @Router       /accounts [get]
+
+func (LotController *LotController) CreateLot(c *gin.Context) {
 	var requestBody struct {
 		ResourceType      models.ResourceType `json:"resource_type" binding:"required"`
 		Volume            float64             `json:"volume" binding:"required"`
@@ -43,6 +55,11 @@ func (LotController *LotController) AddLot(c *gin.Context) {
 	}
 
 	if err := LotController.Db.Create(&LotModel).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := LotController.Db.Preload("StartCheckpoint").Preload("EndCheckpoint").Preload("Tractor").Preload("Owner").Preload("TrafficManager").Preload("Trader").First(&LotModel, "id = ?", LotModel.Id).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

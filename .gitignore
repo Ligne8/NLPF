@@ -1,4 +1,4 @@
 backend/tms-backend
 .idea
 .DS_Store
-api.sql
+backend/api.sql
