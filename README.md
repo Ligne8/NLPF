@@ -1,50 +1,47 @@
 ## Best practices
 Everything should be written in english (even comments).
 ### Naming convention
-We use camel case in the code and snake case in the databse.  
-For example:
-```
-const (
-	StateAvailable State = "available"
-	StateInTransit State = "in_transit"
-	StateArchive   State = "archive"
-	StateOnMarket  State = "on_market"
-	StateAtTrader  State = "at_trader"
-)
-```
+We use `camelCase` in the code and `snake_case` in the databse.  
+
 ### Starting a new ticket
 You need to create a branch from `dev`:  
 ```
 git switch -c <your_branch_name>
+git checkout -B <you_branch_name>
 ```
-Your branch name needs to look like the following.  
-Fix: `[ticket_number] fix`  
-Feature: `[ticket_number] feat`
-### Commiting your ticket
-Add your modifications:  
+
+On each Linear issue, you can associate a Git branch corresponding to `feature/identifier-title`. To make this easier, you can copy the branch name via `cmd + shift + .` or use the branch icon directly on the issue.
+
+### Commit convention
 ```
-git add <path_to_file>
+git commit -m "[<ticket_number>] <fix/feat>: small description of what you have done"
 ```
-Commit your files:  
-```
-git commit -m "[<ticket_number>] <fix/feat>: small description of the ticket"
-```
+
 ### Pushing your code
-In order to push your modifications there are `5 steps` to follow:  
-`Step 1` Clone the repository or update your local repository with the latest changes  
-```
-git pull origin dev
-```
-`Step 2` Switch to the head branch of the pull request.  
-```
-git checkout <your_branch_name>
-```
-`Step 3` Merge branch into the head branch.  
-```
-git merge dev
-```
-`Step 4` Fix the conflicts and commit the result.  
-`Step 5` Push the changes.
-```
-git push -u origin <your_branch_name>
-```
+
+1. **Update your local repository with the latest changes**:
+   ```bash
+   git pull origin dev
+   ```
+
+2. **Switch to your feature branch**:
+   ```bash
+   git checkout <your_branch_name>
+   ```
+
+3. **Rebase onto `dev`** (or the target branch):
+   ```bash
+   git rebase dev
+   ```
+
+4. **Resolve conflicts** if any, then continue the rebase:
+   ```bash
+   git add <conflicted_file>
+   git rebase --continue
+   ```
+
+5. **Push your changes**:
+    - If this is your first push after the rebase, use the `--force-with-lease` option to avoid data loss:
+   ```bash
+   git push --force-with-lease origin <your_branch_name>
+   ``` 
