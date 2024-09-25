@@ -12,7 +12,7 @@ type CheckpointController struct {
 	Db *gorm.DB
 }
 
-// getAllCheckpoints: Récupère tous les checkpoints de la base de données
+// getAllCheckpoints: Get all checkpoints from the database
 func (controller *CheckpointController) GetAllCheckpoints(c *gin.Context) {
 	var checkpoints []models.Checkpoint
 	if err := controller.Db.Find(&checkpoints).Error; err != nil {
@@ -22,7 +22,7 @@ func (controller *CheckpointController) GetAllCheckpoints(c *gin.Context) {
 	c.JSON(http.StatusOK, checkpoints)
 }
 
-// getCitiesByCountry: Récupère toutes les villes par pays
+// getCitiesByCountry: Get cities by country
 func (controller *CheckpointController) GetCitiesByCountry(c *gin.Context) {
 	country := c.Param("country")
 	switch models.Country(country) {
@@ -51,7 +51,7 @@ func (controller *CheckpointController) GetCitiesByCountry(c *gin.Context) {
 	}
 }
 
-// getCountryByCity: Récupère le pays en fonction de la ville choisie
+// getCountryByCity: Get country by city
 func (controller *CheckpointController) GetCountryByCity(c *gin.Context) {
 	city := c.Param("city")
 	switch models.City(city) {

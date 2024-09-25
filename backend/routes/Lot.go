@@ -1,9 +1,10 @@
 package routes
 
 import (
+	"tms-backend/controllers"
+
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
-	"tms-backend/controllers"
 )
 
 func LotRoutes(r *gin.Engine, db *gorm.DB) *gin.Engine {
@@ -15,6 +16,7 @@ func LotRoutes(r *gin.Engine, db *gorm.DB) *gin.Engine {
 	v1 := r.Group("/api/v1/lots")
 	{
 		v1.POST("", LotController.AddLot)
+		//v1.PATCH("/updateState", LotController.UpdateLotState)
 		//v1.PATCH(":id", LotController.PatchLot)
 		//v1.GET("", LotController.ListLots)
 	}

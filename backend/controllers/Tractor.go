@@ -1,17 +1,19 @@
 package controllers
 
 import (
+	"net/http"
+	"tms-backend/models"
+
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
-	"net/http"
-	"tms-backend/models"
 )
 
 type TractorController struct {
 	Db *gorm.DB
 }
 
+// AddTrafficManager: Add a traffic manager to a tractor
 func (TractorController *TractorController) AddTrafficManager(c *gin.Context) {
 	var requestBody struct {
 		TractorId        uuid.UUID `json:"tractor_id" binding:"required"`
@@ -47,6 +49,32 @@ func (TractorController *TractorController) AddTrafficManager(c *gin.Context) {
 
 	//Il faut ajouter le traffic manager au tracteur direct comme ca ? pq pas juste utiliser la cle etrangere ?
 	//tractor.TrafficManager = &trafficManager
+
+	if err := TractorController.Db.Save(&tractor).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+}
+
+// UpdateTractorState: Update the state of a tractor
+func (TractorController *TractorController) UpdateTractorState(c *gin.Context) {
+	var requestBody struct {
+		TractorId uuid.UUID    `json:"tractor_id" binding:"required"`
+		State     models.State `json:"state" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&requestBody); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var tractor models.Tractor
+	if err := TractorController.Db.First(&tractor, "id = ?", requestBody.TractorId).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Tractor not found when trying to update its state"})
+		return
+	}
+
+	tractor.State = requestBody.State
 
 	if err := TractorController.Db.Save(&tractor).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
