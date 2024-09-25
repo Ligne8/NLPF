@@ -14,6 +14,41 @@ type TractorController struct {
 }
 var tractorModel = models.Tractor{}
 
+
+func (TractorController *TractorController) AddTractor(c *gin.Context) {
+	var requestBody struct {
+		ResourceType        models.ResourceType `json:"resource_type" binding:"required"`
+		MaxVolume           float64             `json:"max_units"`
+		CurrentVolume       float64             `json:"current_units"`
+		CurrentCheckpointId uuid.UUID           `json:"current_checkpoint_id" gorm:"type:uuid"` // Foreign key for Checkpoint
+		State               models.State        `json:"state"`
+		OwnerId             uuid.UUID           `json:"owner_id"` // Foreign key for User
+		MinPriceByKm        uint                `json:"min_price_by_km"`
+		TrafficManagerId    uuid.UUID           `json:"traffic_manager_id"` // Foreign key for User
+	}
+	if err := c.ShouldBindJSON(&requestBody); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	TractorModel := models.Tractor{
+		ResourceType:        requestBody.ResourceType,
+		MaxVolume:           requestBody.MaxVolume,
+		CurrentVolume:       requestBody.CurrentVolume,
+		CurrentCheckpointId: requestBody.CurrentCheckpointId,
+		State:               requestBody.State,
+		OwnerId:             requestBody.OwnerId,
+		MinPriceByKm:        requestBody.MinPriceByKm,
+		TrafficManagerId:    requestBody.TrafficManagerId,
+	}
+
+	if err := TractorController.Db.Create(&TractorModel).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, tractorModel);
+}
+
 func (TractorController *TractorController) GoToNextCheckpoint(c *gin.Context) {
 	var tractors []models.Tractor
 	if err := TractorController.Db.Find(&tractors).Error; err != nil {
@@ -34,7 +69,6 @@ func (TractorController *TractorController) GoToNextCheckpoint(c *gin.Context) {
 
 	c.JSON(http.StatusOK, tractors)
 }
-
 
 
 func (TractorController *TractorController) GetTractorsByOwnerId(c *gin.Context) {
@@ -157,5 +191,31 @@ func (TractorController *TractorController) AddTrafficManager(c *gin.Context) {
 	if err := TractorController.Db.Save(&tractor).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
+	}
+}
+
+// UpdateTractorState: Update the state of a tractor
+func (TractorController *TractorController) UpdateTractorState(c *gin.Context) {
+	var requestBody struct {
+			TractorId uuid.UUID    `json:"tractor_id" binding:"required"`
+			State     models.State `json:"state" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&requestBody); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+	}
+
+	var tractor models.Tractor
+	if err := TractorController.Db.First(&tractor, "id = ?", requestBody.TractorId).Error; err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Tractor not found when trying to update its state"})
+			return
+	}
+
+	tractor.State = requestBody.State
+
+	if err := TractorController.Db.Save(&tractor).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
 	}
 }

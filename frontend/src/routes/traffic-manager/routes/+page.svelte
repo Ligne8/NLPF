@@ -6,6 +6,8 @@
     let title: string = 'Gestion des routes';
     let subtitle: string = 'Gérez les routes et les itinéraires disponibles.';
     let checkpoints = ['Paris', 'Lyon', 'Marseille', 'Toulouse', 'Nice', 'Nantes'];
+    let selectedCheckpoints: string[] = [checkpoints[0]];
+    let newRouteName: string = '';
 
     // Example data
     let tableData = [
@@ -15,34 +17,51 @@
         { name: 'Route 4', route: ['Montpellier', 'Paris', 'Lyon', 'Perpignan'] },
     ];
 
-    // Store selected checkpoints
-    let selectedCheckpoints: string[] = [checkpoints[0]];
-
-    // Function to simulate fetching checkpoints from the backend
-    function fetchCheckpoints() {
-        return checkpoints;
-    }
-
     // Function to add a new checkpoint select
     function addCheckpoint() {
-        selectedCheckpoints = [...selectedCheckpoints, checkpoints[0]];
-        checkpoints = fetchCheckpoints();
+        const availableCheckpoints = getAvailableCheckpoints(selectedCheckpoints.length);
+        const defaultCheckpoint = availableCheckpoints.length > 0 ? availableCheckpoints[0] : '';
+        selectedCheckpoints = [...selectedCheckpoints, defaultCheckpoint];
+    }
+
+    // Function to remove a checkpoint
+    function removeCheckpoint(index: number) {
+        if (index < 1)
+            return;
+        selectedCheckpoints = selectedCheckpoints.slice(0, index).concat(selectedCheckpoints.slice(index + 1));
+        selectedCheckpoints = selectedCheckpoints.filter((value, i, arr) => i === 0 || value !== arr[i - 1]);
+    }
+
+    // Function to filter checkpoints
+    function getAvailableCheckpoints(currentIndex: number): string[] {
+        if (currentIndex === 0)
+            return checkpoints;
+
+        const previousCheckpoint = selectedCheckpoints[currentIndex - 1];
+        if (currentIndex === checkpoints.length - 1)
+        {
+            return checkpoints.filter(cp => cp !== previousCheckpoint);
+        }
+        else
+        {
+            const nextCheckpoint = selectedCheckpoints[currentIndex + 1];
+            return checkpoints.filter(cp => cp !== previousCheckpoint && cp !== nextCheckpoint);
+        }
     }
 
     // Function to add a new route to the table
     function addRouteToTable() {
         const newRoute = {
-            name: `Route ${tableData.length + 1}`,
+            name: newRouteName,
             route: selectedCheckpoints.filter(cp => cp !== '')
         };
-
         tableData = [...tableData, newRoute];
     }
 
     // Function to validate the route
     function validateRoute() {
         const validCheckpoints = selectedCheckpoints.filter(cp => cp !== '');
-        if (validCheckpoints.length < 2)
+        if (validCheckpoints.length < 2 || newRouteName.trim() === '')
             return;
 
         // Add the new route to the table
@@ -50,13 +69,9 @@
 
         // Reset the inputs after validation
         selectedCheckpoints = [checkpoints[0]];
+        newRouteName = '';
     }
 
-    // Function to remove a checkpoint
-    function removeCheckpoint(index: number) {
-        if (index > 0)
-            selectedCheckpoints = selectedCheckpoints.filter((_, i) => i !== index);
-    }
 </script>
 
 <!-- Navbar -->
@@ -111,12 +126,21 @@
                 Ajouter une route
             </h2>
 
+            <!-- Route name input field -->
+            <div class="mb-4">
+                <input 
+                    type="text" 
+                    id="route-name" 
+                    class="border border-gray-300 rounded px-3 py-2 w-full" 
+                    bind:value={newRouteName} 
+                    placeholder="Entrez le nom de la route"
+                />
+            </div>
+
             <!-- Checkpoints select inputs -->
             <div class="mb-4">
                 {#each selectedCheckpoints as selected, index}
                     <div class="mb-1 flex items-center">
-
-                        <!-- Delete button -->
                         {#if index !== 0}
                             <button 
                                 on:click={() => removeCheckpoint(index)} 
@@ -129,9 +153,8 @@
 
                         <select id="checkpoint-{index}" class="border border-gray-300 rounded px-3 py-2 w-full"
                                 bind:value={selectedCheckpoints[index]}
-                                disabled={index !== selectedCheckpoints.length - 1}
                         >
-                            {#each checkpoints as checkpoint}
+                            {#each getAvailableCheckpoints(index) as checkpoint}
                                 <option value={checkpoint}>
                                     {checkpoint}
                                 </option>
@@ -152,7 +175,7 @@
             </div>
 
             <!-- Validate button -->
-            {#if selectedCheckpoints.filter(cp => cp !== '').length >= 2}
+            {#if selectedCheckpoints.filter(cp => cp !== '').length >= 2 && newRouteName.trim() !== ''}
                 <div class="flex justify-center mt-4">
                     <button 
                         on:click={validateRoute}

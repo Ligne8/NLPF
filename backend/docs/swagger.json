@@ -5,7 +5,8 @@
     },
     "paths": {
         "/checkpoints": {
-            "post": {
+            "get": {
+                "description": "get all checkpoints",
                 "consumes": [
                     "application/json"
                 ],
@@ -13,43 +14,28 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Checkpoint"
+                    "checkpoints"
                 ],
-                "summary": "Add checkpoint",
-                "parameters": [
-                    {
-                        "example": "Paris",
-                        "description": "Name of the city",
-                        "name": "name",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "example": "France",
-                        "description": "Name of the country",
-                        "name": "country",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
+                "summary": "List checkpoints",
                 "responses": {
-                    "201": {
-                        "description": "No content"
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Checkpoint"
+                            }
+                        }
                     },
                     "500": {
-                        "description": "Error from gin"
+                        "description": "Unable to retrieve checkpoints"
                     }
                 }
             }
         },
-        "/lots": {
-            "post": {
+        "/checkpoints/cities/{country}": {
+            "get": {
+                "description": "get all cities for a given country",
                 "consumes": [
                     "application/json"
                 ],
@@ -57,70 +43,173 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Lots"
+                    "checkpoints"
                 ],
-                "summary": "Add Lot",
+                "summary": "List cities by country",
                 "parameters": [
                     {
-                        "example": "Liquid",
-                        "description": "Type of the lot",
-                        "name": "type",
-                        "in": "body",
-                        "required": true,
+                        "type": "string",
+                        "description": "Country",
+                        "name": "country",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.City"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Country not found"
+                    }
+                }
+            }
+        },
+        "/checkpoints/country/{city}": {
+            "get": {
+                "description": "get the country for a given city",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "checkpoints"
+                ],
+                "summary": "Get country by city",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "City",
+                        "name": "city",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Country",
                         "schema": {
                             "type": "string"
                         }
                     },
-                    {
-                        "example": 10,
-                        "description": "Standard volume of the lot",
-                        "name": "unit_volume",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "example": 100,
-                        "description": "weight in KG of the lot",
-                        "name": "weight",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "example": 1,
-                        "description": "Starting checkpoint ID of the Lot",
-                        "name": "start_checkpoint_id",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "example": 2,
-                        "description": "Ending checkpoint ID of the Lot",
-                        "name": "end_checkpoint_id",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "No content"
-                    },
-                    "500": {
-                        "description": "Error from gin"
+                    "404": {
+                        "description": "City not found"
                     }
                 }
             }
+        }
+    },
+    "definitions": {
+        "models.Checkpoint": {
+            "description": "Represents a checkpoint with a city and a country",
+            "type": "object",
+            "required": [
+                "country",
+                "latitude",
+                "longitude",
+                "name"
+            ],
+            "properties": {
+                "country": {
+                    "$ref": "#/definitions/models.Country"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "latitude": {
+                    "type": "number"
+                },
+                "longitude": {
+                    "type": "number"
+                },
+                "name": {
+                    "$ref": "#/definitions/models.City"
+                }
+            }
+        },
+        "models.City": {
+            "description": "Represents a city name within a country",
+            "type": "string",
+            "enum": [
+                "Paris",
+                "Marseille",
+                "Perpignan",
+                "Strasbourg",
+                "Lyon",
+                "Rome",
+                "Florence",
+                "Milan",
+                "Como",
+                "Naples",
+                "Geneva",
+                "Zurich",
+                "Bern",
+                "Lausanne",
+                "Chatel-Saint-Denis",
+                "Madrid",
+                "Barcelona",
+                "Seville",
+                "Lloret del Mar",
+                "Malaga",
+                "Lisbon",
+                "Porto",
+                "Braga",
+                "Leiria",
+                "Evora"
+            ],
+            "x-enum-varnames": [
+                "CityParis",
+                "CityMarseille",
+                "CityPerpignan",
+                "CityStrasbourg",
+                "CityLyon",
+                "CityRome",
+                "CityFlorence",
+                "CityMilan",
+                "CityComo",
+                "CityNaples",
+                "CityGeneva",
+                "CityZurich",
+                "CityBern",
+                "CityLausanne",
+                "CityChatelSaintDenis",
+                "CityMadrid",
+                "CityBarcelona",
+                "CitySeville",
+                "CityLloretDelMar",
+                "CityMalaga",
+                "CityLisbon",
+                "CityPorto",
+                "CityBraga",
+                "CityLeiria",
+                "CityEvora"
+            ]
+        },
+        "models.Country": {
+            "description": "Represents a country",
+            "type": "string",
+            "enum": [
+                "France",
+                "Italy",
+                "Switzerland",
+                "Spain",
+                "Portugal"
+            ],
+            "x-enum-varnames": [
+                "CountryFrance",
+                "CountryItaly",
+                "CountrySwitzerland",
+                "CountrySpain",
+                "CountryPortugal"
+            ]
         }
     }
 }
