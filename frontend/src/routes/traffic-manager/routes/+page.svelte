@@ -6,6 +6,8 @@
     let title: string = 'Gestion des routes';
     let subtitle: string = 'Gérez les routes et les itinéraires disponibles.';
     let checkpoints = ['Paris', 'Lyon', 'Marseille', 'Toulouse', 'Nice', 'Nantes'];
+    let selectedCheckpoints: string[] = [checkpoints[0]];
+    let newRouteName: string = '';
 
     // Example data
     let tableData = [
@@ -14,9 +16,6 @@
         { name: 'Route 3', route: ['Marseille', 'Lyon', 'Marseille'] },
         { name: 'Route 4', route: ['Montpellier', 'Paris', 'Lyon', 'Perpignan'] },
     ];
-
-    // Store selected checkpoints
-    let selectedCheckpoints: string[] = [checkpoints[0]];
 
     // Function to simulate fetching checkpoints from the backend
     function fetchCheckpoints() {
@@ -32,7 +31,7 @@
     // Function to add a new route to the table
     function addRouteToTable() {
         const newRoute = {
-            name: `Route ${tableData.length + 1}`,
+            name: newRouteName,
             route: selectedCheckpoints.filter(cp => cp !== '')
         };
 
@@ -42,7 +41,7 @@
     // Function to validate the route
     function validateRoute() {
         const validCheckpoints = selectedCheckpoints.filter(cp => cp !== '');
-        if (validCheckpoints.length < 2)
+        if (validCheckpoints.length < 2 || newRouteName.trim() === '')
             return;
 
         // Add the new route to the table
@@ -50,6 +49,7 @@
 
         // Reset the inputs after validation
         selectedCheckpoints = [checkpoints[0]];
+        newRouteName = '';
     }
 
     // Function to remove a checkpoint
@@ -111,6 +111,17 @@
                 Ajouter une route
             </h2>
 
+            <!-- Route name input field -->
+            <div class="mb-4">
+                <input 
+                    type="text" 
+                    id="route-name" 
+                    class="border border-gray-300 rounded px-3 py-2 w-full" 
+                    bind:value={newRouteName} 
+                    placeholder="Entrez le nom de la route"
+                />
+            </div>
+
             <!-- Checkpoints select inputs -->
             <div class="mb-4">
                 {#each selectedCheckpoints as selected, index}
@@ -129,7 +140,6 @@
 
                         <select id="checkpoint-{index}" class="border border-gray-300 rounded px-3 py-2 w-full"
                                 bind:value={selectedCheckpoints[index]}
-                                disabled={index !== selectedCheckpoints.length - 1}
                         >
                             {#each checkpoints as checkpoint}
                                 <option value={checkpoint}>
@@ -152,7 +162,7 @@
             </div>
 
             <!-- Validate button -->
-            {#if selectedCheckpoints.filter(cp => cp !== '').length >= 2}
+            {#if selectedCheckpoints.filter(cp => cp !== '').length >= 2 && newRouteName.trim() !== ''}
                 <div class="flex justify-center mt-4">
                     <button 
                         on:click={validateRoute}
