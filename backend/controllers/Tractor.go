@@ -46,7 +46,7 @@ func (TractorController *TractorController) AddTractor(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, tractors)
+	c.JSON(http.StatusOK, tractorModel);
 }
 
 func (TractorController *TractorController) GoToNextCheckpoint(c *gin.Context) {
