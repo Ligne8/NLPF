@@ -1,18 +1,21 @@
 <script lang="ts">
+    import { onMount } from 'svelte';
     import Navbar from '../../components/Navbar.svelte';
+
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
     // Variables
     let title: string = 'Gestion des Lots';
     let subtitle: string = 'Suivez l’état de vos lots en temps réel.';
     let isModalOpen = false;
-    let checkpoints = ['Paris', 'Lyon', 'Marseille', 'Toulouse', 'Nice', 'Nantes'];
+    let checkpoints: string[] = [];
     let types = ['Bulk', 'Solid', 'Liquid'];
     let lotName: string = '';
     let selectedType: string = types[0];
     let volume: string = '';
     let maxPrice: string = '';
-    let selectedDeparture: string = checkpoints[0];
-    let selectedArrival: string = checkpoints[1];
+    let selectedDeparture: string = '';
+    let selectedArrival: string = '';
 
     // Example data
     let tableData = [
@@ -21,6 +24,32 @@
         { name: 'Lot 3', status: 'PENDING', volume: 4, location: 'Marseille', startCheckpoint: 'Marseille', endCheckpoint: 'Montpellier', trafficManager: ['Traffic manager 2', 'Traffic manager 3', 'Traffic manager 4'] },
         { name: 'Lot 4', status: 'ARCHIVED', volume: 8, location: 'Montpellier', startCheckpoint: 'Paris', endCheckpoint: 'Montpellier', trafficManager: ['Traffic manager 3'] },
     ];
+
+    // Fetch all data
+    onMount(async () => {
+
+        // GET checkpoints
+        try {
+            const response = await fetch(`${API_BASE_URL}/checkpoints`);
+            if (response.ok)
+            {
+                const data = await response.json();
+            
+                // Extract checkpoint names
+                checkpoints = data.map((checkpoint: { name: string }) => checkpoint.name);
+
+                // Define default selected checkpoints
+                selectedDeparture = checkpoints[0];
+                selectedArrival = checkpoints.length > 1 ? checkpoints[1] : checkpoints[0];
+            }
+            else
+            {
+                console.error('Failed to fetch checkpoints:', response.status);
+            }
+        } catch (error) {
+            console.error('Error fetching checkpoints:', error);
+        }
+    });
 
     // Function to get tag color and text based on status
     function getStatusInfo(status: string): { color: string; text: string } {
