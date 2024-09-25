@@ -193,3 +193,29 @@ func (TractorController *TractorController) AddTrafficManager(c *gin.Context) {
 		return
 	}
 }
+
+// UpdateTractorState: Update the state of a tractor
+func (TractorController *TractorController) UpdateTractorState(c *gin.Context) {
+	var requestBody struct {
+			TractorId uuid.UUID    `json:"tractor_id" binding:"required"`
+			State     models.State `json:"state" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&requestBody); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+	}
+
+	var tractor models.Tractor
+	if err := TractorController.Db.First(&tractor, "id = ?", requestBody.TractorId).Error; err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Tractor not found when trying to update its state"})
+			return
+	}
+
+	tractor.State = requestBody.State
+
+	if err := TractorController.Db.Save(&tractor).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+	}
+}

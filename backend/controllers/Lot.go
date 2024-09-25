@@ -1,11 +1,12 @@
 package controllers
 
 import (
+	"net/http"
+	"tms-backend/models"
+
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
-	"net/http"
-	"tms-backend/models"
 )
 
 type LotController struct {
@@ -103,4 +104,33 @@ func (LotController *LotController) isCompatible(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Lot is compatible with the tractor"})
+}
+
+// UpdateLotState: Update the state of a lot
+func (LotController *LotController) UpdateLotState(c *gin.Context) {
+	var requestBody struct {
+			LotId uuid.UUID    `json:"lot_id" binding:"required"`
+			State models.State `json:"state" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&requestBody); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+	}
+
+	// Get the Lot
+	var lot models.Lot
+	if err := LotController.Db.First(&lot, "id = ?", requestBody.LotId).Error; err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Lot not found"})
+			return
+	}
+
+	lot.State = requestBody.State
+	// Change the state of the Lot
+	if err := LotController.Db.Save(&lot).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+	}
+
+	c.JSON(http.StatusOK, lot)
 }
