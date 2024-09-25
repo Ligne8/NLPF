@@ -60,3 +60,35 @@ func (tractor *Tractor) BeforeCreate(tx *gorm.DB) (err error) {
 	tractor.Id = uuid.New()
 	return
 }
+
+func (tractor *Tractor) GetByOwnerId(db *gorm.DB, ownerId uuid.UUID) ([]Tractor, error) {
+	var tractors []Tractor
+	if err := db.Where("owner_id = ?", ownerId).Find(&tractors).Error; err != nil {
+		return nil, err
+	}
+	return tractors, nil
+}
+
+func (tractor *Tractor) GetByTrafficManagerId(db *gorm.DB, trafficManagerId uuid.UUID) ([]Tractor, error) {
+	var tractors []Tractor
+	if err := db.Where("traffic_manager_id = ?", trafficManagerId).Find(&tractors).Error; err != nil {
+		return nil, err
+	}
+	return tractors, nil
+}
+
+func (tractor *Tractor) GetByState(db *gorm.DB, state string) ([]Tractor, error) {
+	var tractors []Tractor
+	if err := db.Where("state = ?", state).Find(&tractors).Error; err != nil {
+		return nil, err
+	}
+	return tractors, nil
+}
+
+func (tractor *Tractor) GetByRouteId(db *gorm.DB, routeId uuid.UUID) ([]Tractor, error) {
+	var tractors []Tractor
+	if err := db.Where("route_id = ?", routeId).Find(&tractors).Error; err != nil {
+		return nil, err
+	}
+	return tractors, nil
+}
