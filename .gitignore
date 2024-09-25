@@ -1,5 +1,6 @@
 backend/tms-backend
 .idea
 .DS_Store
+backend/api.sql
 api.sql
 node_modules/
