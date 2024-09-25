@@ -12,6 +12,16 @@ type UserController struct {
 	Db *gorm.DB
 }
 
+func (UserController *UserController) GetUsers(c *gin.Context) {
+	var user models.User
+	users, err := user.GetAllUsers(UserController.Db)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, users)
+}
+
 func (UserController *UserController) GetUser(c *gin.Context) {
 	var user models.User
 	id := c.Param("id")

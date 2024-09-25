@@ -13,6 +13,7 @@ func UserRoutes(r *gin.Engine, db *gorm.DB) *gin.Engine {
 	}
 	v1 := r.Group("/api/v1/users")
 	{
+		v1.GET("/", UserController.GetUsers)
 		v1.GET("/:id", UserController.GetUser)
 		v1.POST("/", UserController.CreateUser)
 		v1.PATCH("/:id", UserController.UpdateUser)
