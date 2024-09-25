@@ -24,7 +24,7 @@
     const tableData = [
         { name: 'Tracteur 1', status: 'ON_THE_WAY', currentCapacity: 120, totalCapacity: 120, location: 'Paris', route: ['Paris / Nantes'] },
         { name: 'Tracteur 2', status: 'ON_THE_STOCK_EXCHANGE', currentCapacity: 38, totalCapacity: 154, location: 'Lyon', route: ['Paris / Perpignan'] },
-        { name: 'Tracteur 3', status: 'AVAILABLE', currentCapacity: 52, totalCapacity: 86, location: 'Marseille', route: ['Marseille / Lyon', 'Marseille / Montpellier', 'Marseille / Nantes'] },
+        { name: 'Tracteur 3', status: 'AVAILABLE', currentCapacity: 52, totalCapacity: 86, location: 'Marseille', route: ['Marseille / Lyon'] },
         { name: 'Tracteur 4', status: 'AVAILABLE', currentCapacity: 0, totalCapacity: 94, location: 'Montpellier', route: ['Montpellier / Marseille', 'Montpellier / Paris', 'Montpellier / Lyon', 'Montpellier / Perpignan'] },
     ];
 </script>
@@ -77,7 +77,7 @@
 
                         <!-- Column 5 -->
                         <td class="border p-2 text-center">
-                            {#if row.status === 'AVAILABLE'}
+                            {#if row.status === 'AVAILABLE' && row.currentCapacity === 0}
                                 <select class="border border-gray-300 rounded px-2 py-1 mx-auto w-4/5">
                                     {#each row.route as routeOption}
                                         <option>{routeOption}</option>

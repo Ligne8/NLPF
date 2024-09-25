@@ -6,8 +6,11 @@
     let subtitle: string = 'Suivez l’état de vos lots en temps réel.';
     let isModalOpen = false;
     let checkpoints = ['Paris', 'Lyon', 'Marseille', 'Toulouse', 'Nice', 'Nantes'];
+    let types = ['Bulk', 'Solid', 'Liquid'];
     let lotName: string = '';
+    let selectedType: string = types[0];
     let volume: string = '';
+    let maxPrice: string = '';
     let selectedDeparture: string = checkpoints[0];
     let selectedArrival: string = checkpoints[1];
 
@@ -44,6 +47,15 @@
         volume = input.value;
     }
 
+    // Function to validate input
+    function validateMaxPrice(event: Event) {
+        const input = event.target as HTMLInputElement;
+        input.value = input.value.replace(/[^0-9.]/g, '');
+        if ((input.value.match(/\./g) || []).length > 1)
+            input.value = input.value.replace(/\.+$/, '');
+        maxPrice = input.value;
+    }
+
     // Function to add lot
     function addLot() {
 
@@ -51,7 +63,9 @@
         const newLot = {
             name: lotName,
             status: 'AVAILABLE',
+            type: selectedType,
             volume: parseFloat(volume),
+            maxPrice: parseFloat(maxPrice),
             location: selectedDeparture,
             startCheckpoint: selectedDeparture,
             endCheckpoint: selectedArrival,
@@ -63,7 +77,9 @@
 
         // Reset form values
         lotName = '';
+        selectedType = '';
         volume = '';
+        maxPrice = '';
         selectedDeparture = checkpoints[0]; // Valeur par défaut
         selectedArrival = checkpoints[1]; // Valeur par défaut
 
@@ -192,6 +208,16 @@
                     <input type="text" class="w-full border border-gray-300 p-2 rounded" placeholder="Entrez le nom du lot" bind:value={lotName} required>
                 </div>
 
+                <!-- Type -->
+                <div class="mb-2">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Type :</label>
+                    <select class="w-full border border-gray-300 p-2 rounded" bind:value={selectedType}>
+                        {#each types as type}
+                            <option value={type}>{type}</option>
+                        {/each}
+                    </select>
+                </div>
+
                 <!-- Volume -->
                 <div class="mb-2">
                     <label class="block text-gray-700 text-sm font-bold mb-2">Volume :</label>
@@ -199,6 +225,18 @@
                            class="w-full border border-gray-300 p-2 rounded" 
                            placeholder="Entrez le volume (en m³)" 
                            on:input={validateVolume} 
+                           value={volume}
+                           required
+                    >
+                </div>
+
+                <!-- Max price -->
+                <div class="mb-2">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Prix maximum :</label>
+                    <input type="text" 
+                           class="w-full border border-gray-300 p-2 rounded" 
+                           placeholder="Entrez le prix maximum (par km)" 
+                           on:input={validateMaxPrice} 
                            value={volume}
                            required
                     >

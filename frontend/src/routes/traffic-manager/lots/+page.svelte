@@ -9,8 +9,8 @@
     // Function to get tag color and text based on status
     function getStatusInfo(status: string): { color: string; text: string } {
         switch (status) {
-            case 'AVAILABLE':
-                return { color: 'bg-green-200 text-green-800', text: '◉ Disponible' };
+            case 'PENDING':
+                return { color: 'bg-green-200 text-green-800', text: '◉ En attente' };
             case 'ON_THE_WAY':
                 return { color: 'bg-orange-200 text-orange-800', text: '◉ En route' };
             case 'ON_THE_STOCK_EXCHANGE':
@@ -26,7 +26,7 @@
     const tableData = [
         { name: 'Lot 1', status: 'ON_THE_WAY', volume: 16, location: 'Paris', startCheckpoint: 'Lyon', endCheckpoint: 'Montpellier', tractor: ['Tracteur 1'] },
         { name: 'Lot 2', status: 'ON_THE_STOCK_EXCHANGE', volume: 3, location: 'Lyon', startCheckpoint: 'Lyon', endCheckpoint: 'Paris', tractor: ['Tracteur 4'] },
-        { name: 'Lot 3', status: 'AVAILABLE', volume: 4, location: 'Marseille', startCheckpoint: 'Marseille', endCheckpoint: 'Montpellier', tractor: ['Tracteur 2', 'Tracteur 3', 'Tracteur 4'] },
+        { name: 'Lot 3', status: 'PENDING', volume: 4, location: 'Marseille', startCheckpoint: 'Marseille', endCheckpoint: 'Montpellier', tractor: ['Tracteur 2', 'Tracteur 3', 'Tracteur 4'] },
         { name: 'Lot 4', status: 'ARCHIVED', volume: 8, location: 'Montpellier', startCheckpoint: 'Paris', endCheckpoint: 'Montpellier', tractor: ['Tracteur 3'] },
     ];
 </script>
@@ -85,7 +85,7 @@
 
                         <!-- Column 6 -->
                         <td class="border p-2 text-center">
-                            {#if row.status === 'AVAILABLE'}
+                            {#if row.status === 'PENDING'}
                                 <select class="border border-gray-300 rounded px-2 py-1 mx-auto w-4/5">
                                     {#each row.tractor as tractorOption}
                                         <option>{tractorOption}</option>
@@ -100,7 +100,7 @@
 
                         <!-- Column 7 -->
                         <td class="border p-2 text-center">
-                            {#if row.status === 'AVAILABLE'}
+                            {#if row.status === 'PENDING'}
                                 <div class="flex flex-wrap justify-center space-x-2">
                                     <button class="bg-blue-200 text-blue-800 px-4 py-2 flex items-center font-bold hover:bg-blue-300 transition-colors rounded-md">
                                         <i class="fas fa-plus mr-2"></i>
