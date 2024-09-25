@@ -17,15 +17,19 @@
         { name: 'Route 4', route: ['Montpellier', 'Paris', 'Lyon', 'Perpignan'] },
     ];
 
-    // Function to simulate fetching checkpoints from the backend
-    function fetchCheckpoints() {
-        return checkpoints;
-    }
-
     // Function to add a new checkpoint select
     function addCheckpoint() {
-        selectedCheckpoints = [...selectedCheckpoints, checkpoints[0]];
-        checkpoints = fetchCheckpoints();
+        const availableCheckpoints = getAvailableCheckpoints(selectedCheckpoints.length);
+        const defaultCheckpoint = availableCheckpoints.length > 0 ? availableCheckpoints[0] : '';
+        selectedCheckpoints = [...selectedCheckpoints, defaultCheckpoint];
+    }
+
+    // Function to filter checkpoints
+    function getAvailableCheckpoints(currentIndex: number): string[] {
+        if (currentIndex === 0)
+            return checkpoints;
+        const previousCheckpoint = selectedCheckpoints[currentIndex - 1];
+        return checkpoints.filter(cp => cp !== previousCheckpoint);
     }
 
     // Function to add a new route to the table
@@ -34,7 +38,6 @@
             name: newRouteName,
             route: selectedCheckpoints.filter(cp => cp !== '')
         };
-
         tableData = [...tableData, newRoute];
     }
 
@@ -141,7 +144,7 @@
                         <select id="checkpoint-{index}" class="border border-gray-300 rounded px-3 py-2 w-full"
                                 bind:value={selectedCheckpoints[index]}
                         >
-                            {#each checkpoints as checkpoint}
+                            {#each getAvailableCheckpoints(index) as checkpoint}
                                 <option value={checkpoint}>
                                     {checkpoint}
                                 </option>
