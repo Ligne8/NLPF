@@ -24,6 +24,14 @@
         selectedCheckpoints = [...selectedCheckpoints, defaultCheckpoint];
     }
 
+    // Function to remove a checkpoint
+    function removeCheckpoint(index: number) {
+        if (index < 1)
+            return;
+        selectedCheckpoints = selectedCheckpoints.slice(0, index).concat(selectedCheckpoints.slice(index + 1));
+        selectedCheckpoints = selectedCheckpoints.filter((value, i, arr) => i === 0 || value !== arr[i - 1]);
+    }
+
     // Function to filter checkpoints
     function getAvailableCheckpoints(currentIndex: number): string[] {
         if (currentIndex === 0)
@@ -62,12 +70,6 @@
         // Reset the inputs after validation
         selectedCheckpoints = [checkpoints[0]];
         newRouteName = '';
-    }
-
-    // Function to remove a checkpoint
-    function removeCheckpoint(index: number) {
-        if (index > 0)
-            selectedCheckpoints = selectedCheckpoints.filter((_, i) => i !== index);
     }
 
 </script>
@@ -139,8 +141,6 @@
             <div class="mb-4">
                 {#each selectedCheckpoints as selected, index}
                     <div class="mb-1 flex items-center">
-
-                        <!-- Delete button -->
                         {#if index !== 0}
                             <button 
                                 on:click={() => removeCheckpoint(index)} 
