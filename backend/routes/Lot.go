@@ -14,7 +14,7 @@ func LotRoutes(r *gin.Engine, db *gorm.DB) *gin.Engine {
 
 	v1 := r.Group("/api/v1/lots")
 	{
-		v1.POST("", LotController.AddLot)
+		v1.POST("/createLot", LotController.CreateLot)
 		//v1.PATCH(":id", LotController.PatchLot)
 		//v1.GET("", LotController.ListLots)
 	}

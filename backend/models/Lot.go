@@ -21,11 +21,11 @@ type Lot struct {
 	Id                  uuid.UUID    `json:"id" gorm:"type:uuid;primaryKey"`
 	ResourceType        ResourceType `json:"resource_type" gorm:"not null" binding:"required"`
 	Volume              float64      `json:"volume" gorm:"not null" binding:"required"`
-	StartCheckpointId   uuid.UUID    `json:"startCheckpointId" gorm:"not null"` // Added explicit foreign key field
-	StartCheckpoint     Checkpoint   `json:"startCheckpoint" gorm:"foreignKey:StartCheckpointId"`
-	EndCheckpointId     uuid.UUID    `json:"endCheckpointId" gorm:"not null"` // Added explicit foreign key field
-	EndCheckpoint       Checkpoint   `json:"endCheckpoint" gorm:"foreignKey:EndCheckpointId"`
-	TractorId           uuid.UUID    `json:"tractorId" gorm:""` // Changed from struct to UUID, added optional foreign key
+	StartCheckpointId   uuid.UUID    `json:"start_checkpoint_id" gorm:"not null"` // Added explicit foreign key field
+	StartCheckpoint     Checkpoint   `json:"start_checkpoint" gorm:"foreignKey:StartCheckpointId"`
+	EndCheckpointId     uuid.UUID    `json:"end_checkpointId" gorm:"not null"` // Added explicit foreign key field
+	EndCheckpoint       Checkpoint   `json:"end_checkpoint" gorm:"foreignKey:EndCheckpointId"`
+	TractorId           uuid.UUID    `json:"tractor_id" gorm:""` // Changed from struct to UUID, added optional foreign key
 	Tractor             Tractor      `json:"tractor" gorm:"foreignKey:TractorId"`
 	CreatedAt           time.Time    `json:"created_at" gorm:"autoCreateTime"`
 	CurrentCheckpointId uuid.UUID    `json:"current_checkpoint_id"` // Added current checkpoint foreign key
