@@ -10,9 +10,9 @@ import (
 type ResourceType string
 
 const (
-	ResourceTypeBulk   ResourceType = "Bulk"
-	ResourceTypeSolid  ResourceType = "Solid"
-	ResourceTypeLiquid ResourceType = "Liquid"
+	ResourceTypeBulk   ResourceType = "bulk"
+	ResourceTypeSolid  ResourceType = "solid"
+	ResourceTypeLiquid ResourceType = "liquid"
 )
 
 type Tractor struct {

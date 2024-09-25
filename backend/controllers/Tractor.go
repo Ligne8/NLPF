@@ -16,21 +16,14 @@ var tractorModel = models.Tractor{}
 
 func (TractorController *TractorController) AddTractor(c *gin.Context) {
 	var requestBody struct {
-		ResourceType  models.ResourceType `json:"resource_type" binding:"required"`
-		MaxVolume     float64             `json:"max_units"`
-		CurrentVolume float64             `json:"current_units"`
-		//CurrentCheckpointId uuid.UUID    `json:"current_checkpoint_id" gorm:"type:uuid"` // Foreign key for Checkpoint
-		//CurrentCheckpoint   Checkpoint   `json:"current_checkpoint" gorm:"foreignKey:CurrentCheckpointId"`
-		State   models.State `json:"state"`
-		OwnerId uuid.UUID    `json:"owner_id"` // Foreign key for User
-		//Owner            models.User  `json:"owner"`
-		MinPriceByKm     uint      `json:"min_price_by_km"`
-		TrafficManagerId uuid.UUID `json:"traffic_manager_id"` // Foreign key for User
-		//TrafficManager   models.User  `json:"traffic_manager"`
-		//TraderId         uuid.UUID    `json:"trader_id"` // Foreign key for User
-		//Trader           models.User  `json:"trader" gorm:"foreignKey:TraderId"`
-		//RouteId          uuid.UUID    `json:"route_id" gorm:"type:uuid"` // Foreign key for Route
-		//Route            models.Route `json:"route" gorm:"foreignKey:RouteId"`
+		ResourceType        models.ResourceType `json:"resource_type" binding:"required"`
+		MaxVolume           float64             `json:"max_units"`
+		CurrentVolume       float64             `json:"current_units"`
+		CurrentCheckpointId uuid.UUID           `json:"current_checkpoint_id" gorm:"type:uuid"` // Foreign key for Checkpoint
+		State               models.State        `json:"state"`
+		OwnerId             uuid.UUID           `json:"owner_id"` // Foreign key for User
+		MinPriceByKm        uint                `json:"min_price_by_km"`
+		TrafficManagerId    uuid.UUID           `json:"traffic_manager_id"` // Foreign key for User
 	}
 	if err := c.ShouldBindJSON(&requestBody); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -38,21 +31,14 @@ func (TractorController *TractorController) AddTractor(c *gin.Context) {
 	}
 
 	TractorModel := models.Tractor{
-		ResourceType:  requestBody.ResourceType,
-		MaxVolume:     requestBody.MaxVolume,
-		CurrentVolume: requestBody.CurrentVolume,
-		//CurrentCheckpointId: uuid.UUID{},
-		//CurrentCheckpoint:   models.Checkpoint{},
-		State:   requestBody.State,
-		OwnerId: requestBody.OwnerId,
-		//Owner:               models.User{},
-		MinPriceByKm:     requestBody.MinPriceByKm,
-		TrafficManagerId: requestBody.TrafficManagerId,
-		//TrafficManager:      models.User{},
-		//TraderId:            uuid.UUID{},
-		//Trader:              models.User{},
-		//RouteId:             uuid.UUID{},
-		//Route:               models.Route{},
+		ResourceType:        requestBody.ResourceType,
+		MaxVolume:           requestBody.MaxVolume,
+		CurrentVolume:       requestBody.CurrentVolume,
+		CurrentCheckpointId: requestBody.CurrentCheckpointId,
+		State:               requestBody.State,
+		OwnerId:             requestBody.OwnerId,
+		MinPriceByKm:        requestBody.MinPriceByKm,
+		TrafficManagerId:    requestBody.TrafficManagerId,
 	}
 
 	if err := TractorController.Db.Create(&TractorModel).Error; err != nil {
