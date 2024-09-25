@@ -108,5 +108,5 @@ func (tractor *Tractor) ExecTransaction(db *gorm.DB) error{
 
 
 	}
-
+	return nil;
 }
