@@ -12,7 +12,16 @@ type CheckpointController struct {
 	Db *gorm.DB
 }
 
-// getAllCheckpoints: Récupère tous les checkpoints de la base de données
+// GetAllCheckpoints Retrieve all checkpoints
+//
+//		@Summary      List checkpoints
+//		@Description  get all checkpoints
+//		@Tags         checkpoints
+//		@Accept       json
+//		@Produce      json
+//		@Success      200  {array}   models.Checkpoint
+//	 	@Failure   	  500 "Unable to retrieve checkpoints"
+//		@Router       /checkpoints [get]
 func (controller *CheckpointController) GetAllCheckpoints(c *gin.Context) {
 	var checkpoints []models.Checkpoint
 	if err := controller.Db.Find(&checkpoints).Error; err != nil {
@@ -22,7 +31,17 @@ func (controller *CheckpointController) GetAllCheckpoints(c *gin.Context) {
 	c.JSON(http.StatusOK, checkpoints)
 }
 
-// getCitiesByCountry: Récupère toutes les villes par pays
+// GetCitiesByCountry Retrieve cities by country
+//
+//	@Summary      List cities by country
+//	@Description  get all cities for a given country
+//	@Tags         checkpoints
+//	@Accept       json
+//	@Produce      json
+//	@Param        country  path      string  true  "Country"
+//	@Success      200  {array}   models.City
+//	@Failure	  404	"Country not found"
+//	@Router       /checkpoints/cities/{country} [get]
 func (controller *CheckpointController) GetCitiesByCountry(c *gin.Context) {
 	country := c.Param("country")
 	switch models.Country(country) {
@@ -51,7 +70,17 @@ func (controller *CheckpointController) GetCitiesByCountry(c *gin.Context) {
 	}
 }
 
-// getCountryByCity: Récupère le pays en fonction de la ville choisie
+// GetCountryByCity Retrieve the country by city
+//
+//	@Summary      Get country by city
+//	@Description  get the country for a given city
+//	@Tags         checkpoints
+//	@Accept       json
+//	@Produce      json
+//	@Param        city  path      string  true  "City"
+//	@Success      200  {string}  string  "Country"
+//	@Failure	  404	"City not found"
+//	@Router       /checkpoints/country/{city} [get]
 func (controller *CheckpointController) GetCountryByCity(c *gin.Context) {
 	city := c.Param("city")
 	switch models.City(city) {

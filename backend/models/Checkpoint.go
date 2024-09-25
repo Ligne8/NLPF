@@ -6,6 +6,8 @@ import (
 	"log"
 )
 
+// Country represents a country
+// @Description Represents a country
 type Country string
 
 const (
@@ -16,6 +18,8 @@ const (
 	CountryPortugal    Country = "Portugal"
 )
 
+// City represents a city name
+// @Description Represents a city name within a country
 type City string
 
 const (
@@ -55,6 +59,8 @@ const (
 	CityEvora  City = "Evora"
 )
 
+// Checkpoint represents a geographic checkpoint
+// @Description Represents a checkpoint with a city and a country
 type Checkpoint struct {
 	Id        uuid.UUID `json:"id" gorm:"type:uuid;primaryKey"`
 	Name      City      `json:"name" gorm:"not null" binding:"required"`

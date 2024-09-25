@@ -1,83 +1,161 @@
+definitions:
+  models.Checkpoint:
+    description: Represents a checkpoint with a city and a country
+    properties:
+      country:
+        $ref: '#/definitions/models.Country'
+      id:
+        type: string
+      latitude:
+        type: number
+      longitude:
+        type: number
+      name:
+        $ref: '#/definitions/models.City'
+    required:
+    - country
+    - latitude
+    - longitude
+    - name
+    type: object
+  models.City:
+    description: Represents a city name within a country
+    enum:
+    - Paris
+    - Marseille
+    - Perpignan
+    - Strasbourg
+    - Lyon
+    - Rome
+    - Florence
+    - Milan
+    - Como
+    - Naples
+    - Geneva
+    - Zurich
+    - Bern
+    - Lausanne
+    - Chatel-Saint-Denis
+    - Madrid
+    - Barcelona
+    - Seville
+    - Lloret del Mar
+    - Malaga
+    - Lisbon
+    - Porto
+    - Braga
+    - Leiria
+    - Evora
+    type: string
+    x-enum-varnames:
+    - CityParis
+    - CityMarseille
+    - CityPerpignan
+    - CityStrasbourg
+    - CityLyon
+    - CityRome
+    - CityFlorence
+    - CityMilan
+    - CityComo
+    - CityNaples
+    - CityGeneva
+    - CityZurich
+    - CityBern
+    - CityLausanne
+    - CityChatelSaintDenis
+    - CityMadrid
+    - CityBarcelona
+    - CitySeville
+    - CityLloretDelMar
+    - CityMalaga
+    - CityLisbon
+    - CityPorto
+    - CityBraga
+    - CityLeiria
+    - CityEvora
+  models.Country:
+    description: Represents a country
+    enum:
+    - France
+    - Italy
+    - Switzerland
+    - Spain
+    - Portugal
+    type: string
+    x-enum-varnames:
+    - CountryFrance
+    - CountryItaly
+    - CountrySwitzerland
+    - CountrySpain
+    - CountryPortugal
 info:
   contact: {}
 paths:
   /checkpoints:
-    post:
+    get:
       consumes:
       - application/json
+      description: get all checkpoints
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Checkpoint'
+            type: array
+        "500":
+          description: Unable to retrieve checkpoints
+      summary: List checkpoints
+      tags:
+      - checkpoints
+  /checkpoints/cities/{country}:
+    get:
+      consumes:
+      - application/json
+      description: get all cities for a given country
       parameters:
-      - description: Name of the city
-        example: Paris
-        in: body
-        name: name
-        required: true
-        schema:
-          type: string
-      - description: Name of the country
-        example: France
-        in: body
+      - description: Country
+        in: path
         name: country
         required: true
-        schema:
-          type: string
+        type: string
       produces:
       - application/json
       responses:
-        "201":
-          description: No content
-        "500":
-          description: Error from gin
-      summary: Add checkpoint
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.City'
+            type: array
+        "404":
+          description: Country not found
+      summary: List cities by country
       tags:
-      - Checkpoint
-  /lots:
-    post:
+      - checkpoints
+  /checkpoints/country/{city}:
+    get:
       consumes:
       - application/json
+      description: get the country for a given city
       parameters:
-      - description: Type of the lot
-        example: Liquid
-        in: body
-        name: type
+      - description: City
+        in: path
+        name: city
         required: true
-        schema:
-          type: string
-      - description: Standard volume of the lot
-        example: 10
-        in: body
-        name: unit_volume
-        required: true
-        schema:
-          type: integer
-      - description: weight in KG of the lot
-        example: 100
-        in: body
-        name: weight
-        required: true
-        schema:
-          type: integer
-      - description: Starting checkpoint ID of the Lot
-        example: 1
-        in: body
-        name: start_checkpoint_id
-        required: true
-        schema:
-          type: integer
-      - description: Ending checkpoint ID of the Lot
-        example: 2
-        in: body
-        name: end_checkpoint_id
-        required: true
-        schema:
-          type: integer
+        type: string
       produces:
       - application/json
       responses:
-        "201":
-          description: No content
-        "500":
-          description: Error from gin
-      summary: Add Lot
+        "200":
+          description: Country
+          schema:
+            type: string
+        "404":
+          description: City not found
+      summary: Get country by city
       tags:
-      - Lots
+      - checkpoints
 swagger: "2.0"
