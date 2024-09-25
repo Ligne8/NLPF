@@ -2,9 +2,10 @@ package models
 
 import (
 	"errors"
+	"time"
+
 	"github.com/google/uuid"
 	"gorm.io/gorm"
-	"time"
 )
 
 type ResourceType string
@@ -69,6 +70,14 @@ func (tractor *Tractor) GetByOwnerId(db *gorm.DB, ownerId uuid.UUID) ([]Tractor,
 	return tractors, nil
 }
 
+func (tractor *Tractor) GetAllTractors(db *gorm.DB) ([]Tractor, error) {
+	var tractors []Tractor
+	if err := db.Find(&tractors).Error; err != nil {
+		return nil, err
+	}
+	return tractors, nil
+}
+
 func (tractor *Tractor) GetByTrafficManagerId(db *gorm.DB, trafficManagerId uuid.UUID) ([]Tractor, error) {
 	var tractors []Tractor
 	if err := db.Where("traffic_manager_id = ?", trafficManagerId).Find(&tractors).Error; err != nil {
@@ -91,4 +100,44 @@ func (tractor *Tractor) GetByRouteId(db *gorm.DB, routeId uuid.UUID) ([]Tractor,
 		return nil, err
 	}
 	return tractors, nil
+}
+
+func (tractor *Tractor) UpdateNextCheckpoint(db *gorm.DB) error {
+	var routeCheckpoint RouteCheckpoint
+	if err := routeCheckpoint.GetRouteCheckpoint(db, tractor.RouteId, tractor.CurrentCheckpointId); err != nil {
+		return err
+	}
+	var position uint = routeCheckpoint.Position
+	var nextCheckpoint RouteCheckpoint
+	if err := nextCheckpoint.GetNextCheckpoint(db, tractor.RouteId, position); err != nil {
+		tractor.State = StateArchive
+		return nil;
+	}
+	tractor.CurrentCheckpointId = nextCheckpoint.CheckpointId
+	if nextCheckpoint.IsNextCheckpoint(db, tractor.Route) {
+		tractor.State = StateInTransit
+	} else {
+		tractor.State = StateArchive
+	}
+	return nil
+}
+
+func (tractor *Tractor) ExecTransaction(db *gorm.DB) error{
+	var transactionModel Transaction;
+	var transactions []Transaction;
+	transactions, err := transactionModel.FindByRouteId(db, tractor.RouteId);
+	if err != nil {
+		return err;
+	}
+	var routeCheckpoint RouteCheckpoint;
+	routeCheckpoint.GetRouteCheckpoint(db, tractor.RouteId, tractor.CurrentCheckpointId);
+	// for each transaction
+	for _, transaction := range transactions {
+		if transaction.CheckpointId != tractor.CurrentCheckpointId {
+			continue;
+		}
+
+
+	}
+	return nil;
 }
