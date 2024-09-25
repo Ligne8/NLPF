@@ -12,6 +12,8 @@ type TractorController struct {
 	Db *gorm.DB
 }
 
+var tractorModel = models.Tractor{}
+
 func (TractorController *TractorController) AddTractor(c *gin.Context) {
 	var requestBody struct {
 		ResourceType  models.ResourceType `json:"resource_type" binding:"required"`
@@ -106,32 +108,43 @@ func (TractorController *TractorController) AddTrafficManager(c *gin.Context) {
 func (TractorController *TractorController) GetTractorsByOwnerId(c *gin.Context) {
 	ownerId := c.Param("ownerId")
 	var tractors []models.Tractor
+	var ownerUUID uuid.UUID
 
-	if _, err := uuid.Parse(ownerId); err != nil {
+	if parsedUUID, err := uuid.Parse(ownerId); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ownerId"})
 		return
+	} else {
+		ownerUUID = parsedUUID
 	}
 
-	if err := TractorController.Db.Where("owner_id = ?", ownerId).Find(&tractors).Error; err != nil {
+	tractors, err := tractorModel.GetByOwnerId(TractorController.Db, ownerUUID)
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+
 	c.JSON(http.StatusOK, tractors)
 }
 
 func (TractorController *TractorController) GetTractorsByTrafficManagerId(c *gin.Context) {
 	trafficManagerId := c.Param("trafficManagerId")
 	var tractors []models.Tractor
+	var trafficManagerUUID uuid.UUID
 
-	if _, err := uuid.Parse(trafficManagerId); err != nil {
+	if parsedUUID, err := uuid.Parse(trafficManagerId); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid trafficManagerId"})
 		return
+	} else {
+		trafficManagerUUID = parsedUUID
 	}
 
-	if err := TractorController.Db.Where("traffic_manager_id = ?", trafficManagerId).Find(&tractors).Error; err != nil {
+	tractors, err := tractorModel.GetByTrafficManagerId(TractorController.Db, trafficManagerUUID)
+
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+
 	c.JSON(http.StatusOK, tractors)
 }
 
@@ -139,25 +152,34 @@ func (TractorController *TractorController) GetTractorsByState(c *gin.Context) {
 	state := c.Param("state")
 	var tractors []models.Tractor
 
-	if err := TractorController.Db.Where("state = ?", state).Find(&tractors).Error; err != nil {
+	tractors, err := tractorModel.GetByState(TractorController.Db, state)
+
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+
 	c.JSON(http.StatusOK, tractors)
 }
 
 func (TractorController *TractorController) GetTractorsByRouteId(c *gin.Context) {
 	routeId := c.Param("routeId")
 	var tractors []models.Tractor
+	var routeUUID uuid.UUID
 
-	if _, err := uuid.Parse(routeId); err != nil {
+	if parsedUUID, err := uuid.Parse(routeId); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid routeId"})
 		return
+	} else {
+		routeUUID = parsedUUID
 	}
 
-	if err := TractorController.Db.Where("route_id = ?", routeId).Find(&tractors).Error; err != nil {
+	tractors, err := tractorModel.GetByRouteId(TractorController.Db, routeUUID)
+
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+
 	c.JSON(http.StatusOK, tractors)
 }
