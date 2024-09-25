@@ -28,8 +28,17 @@
     function getAvailableCheckpoints(currentIndex: number): string[] {
         if (currentIndex === 0)
             return checkpoints;
+
         const previousCheckpoint = selectedCheckpoints[currentIndex - 1];
-        return checkpoints.filter(cp => cp !== previousCheckpoint);
+        if (currentIndex === checkpoints.length - 1)
+        {
+            return checkpoints.filter(cp => cp !== previousCheckpoint);
+        }
+        else
+        {
+            const nextCheckpoint = selectedCheckpoints[currentIndex + 1];
+            return checkpoints.filter(cp => cp !== previousCheckpoint && cp !== nextCheckpoint);
+        }
     }
 
     // Function to add a new route to the table
@@ -60,6 +69,7 @@
         if (index > 0)
             selectedCheckpoints = selectedCheckpoints.filter((_, i) => i !== index);
     }
+
 </script>
 
 <!-- Navbar -->
