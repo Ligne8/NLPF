@@ -13,8 +13,14 @@ func TractorRoutes(r *gin.Engine, db *gorm.DB) *gin.Engine {
 	v1 := r.Group("/api/v1/tractors")
 	{
 		v1.POST("/tractorId/trafficManagerId", TractorController.AddTrafficManager)
-		//v1.PATCH(":id", LotController.PatchLot)
-		//v1.GET("", LotController.ListLots)
+		// Get tractors by OwnerID
+		v1.GET("/owner/:ownerId", TractorController.GetTractorsByOwnerId)
+		// Get tractors by TrafficManagerId
+		v1.GET("/trafficManager/:trafficManagerId", TractorController.GetTractorsByTrafficManagerId)
+		// Get tractors by State
+		v1.GET("/state/:state", TractorController.GetTractorsByState)
+		// Get tractors by RouteId
+		v1.GET("/route/:routeId", TractorController.GetTractorsByRouteId)
 	}
 	return r
 }
