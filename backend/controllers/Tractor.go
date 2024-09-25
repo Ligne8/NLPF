@@ -1,15 +1,37 @@
 package controllers
 
 import (
+	"net/http"
+	"tms-backend/models"
+
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
-	"net/http"
-	"tms-backend/models"
 )
 
 type TractorController struct {
 	Db *gorm.DB
+}
+
+func (TractorController *TractorController) GoToNextCheckpoint(c *gin.Context) {
+	var tractors []models.Tractor
+	if err := TractorController.Db.Preload("Route").Find(&tractors).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// for each tractor
+	for _, tractor := range tractors {
+
+
+		tractor.UpdateNextCheckpoint(TractorController.Db);
+		
+
+
+		TractorController.Db.Save(&tractor);
+	}
+
+	c.JSON(http.StatusOK, tractors)
 }
 
 func (TractorController *TractorController) AddTrafficManager(c *gin.Context) {

@@ -2,9 +2,10 @@ package models
 
 import (
 	"errors"
+	"time"
+
 	"github.com/google/uuid"
 	"gorm.io/gorm"
-	"time"
 )
 
 type ResourceType string
@@ -59,4 +60,33 @@ func (tractor *Tractor) BeforeCreate(tx *gorm.DB) (err error) {
 
 	tractor.Id = uuid.New()
 	return
+}
+
+
+func (tractor *Tractor) GetAllTractors(db *gorm.DB) ([]Tractor, error) {
+	var tractors []Tractor
+	if err := db.Find(&tractors).Error; err != nil {
+		return nil, err
+	}
+	return tractors, nil
+}
+
+func (tractor *Tractor) UpdateNextCheckpoint(db *gorm.DB) error {
+	var routeCheckpoint RouteCheckpoint
+	if err := routeCheckpoint.GetRouteCheckpoint(db, tractor.RouteId, tractor.CurrentCheckpointId); err != nil {
+		return err
+	}
+	var position uint = routeCheckpoint.Position
+	var nextCheckpoint RouteCheckpoint
+	if err := nextCheckpoint.GetNextCheckpoint(db, tractor.RouteId, position); err != nil {
+		tractor.State = StateArchive
+		return nil;
+	}
+	tractor.CurrentCheckpointId = nextCheckpoint.CheckpointId
+	if nextCheckpoint.IsNextCheckpoint(db, tractor.Route) {
+		tractor.State = StateInTransit
+	} else {
+		tractor.State = StateArchive
+	}
+	return nil
 }

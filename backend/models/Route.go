@@ -30,3 +30,27 @@ func (routeCheckpoint *RouteCheckpoint) BeforeCreate(tx *gorm.DB) (err error) {
 	routeCheckpoint.Id = uuid.New()
 	return
 }
+
+func (route *Route) GetById(db *gorm.DB, id uuid.UUID) error {
+	return db.First(route, "id = ?", id).Error
+}	
+
+func (routeCheckpoint *RouteCheckpoint) GetById(db *gorm.DB, id uuid.UUID) error {
+	return db.First(routeCheckpoint, "id = ?", id).Error
+}
+
+func (routeCheckpoint *RouteCheckpoint) GetNextCheckpoint(db *gorm.DB, routeId uuid.UUID, position uint) error {
+	return db.First(routeCheckpoint, "route_id = ? AND position = ?", routeId, position+1).Error
+}	
+
+func (routeCheckpoint *RouteCheckpoint) GetRouteCheckpoint(db *gorm.DB, routeId uuid.UUID, checkpointId uuid.UUID) error {
+	return db.First(routeCheckpoint, "route_id = ? AND checkpoint_id = ?", routeId, checkpointId).Error
+}
+
+func (routeCheckpoint *RouteCheckpoint) IsNextCheckpoint(db *gorm.DB, route Route) bool {
+	var nextCheckpoint RouteCheckpoint
+	if err := db.First(&nextCheckpoint, "route_id = ? AND position = ?", route.Id, routeCheckpoint.Position).Error; err != nil {
+		return false
+	}
+	return true
+}
