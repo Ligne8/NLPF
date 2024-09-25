@@ -90,3 +90,23 @@ func (tractor *Tractor) UpdateNextCheckpoint(db *gorm.DB) error {
 	}
 	return nil
 }
+
+func (tractor *Tractor) ExecTransaction(db *gorm.DB) error{
+	var transactionModel Transaction;
+	var transactions []Transaction;
+	transactions, err := transactionModel.FindByRouteId(db, tractor.RouteId);
+	if err != nil {
+		return err;
+	}
+	var routeCheckpoint RouteCheckpoint;
+	routeCheckpoint.GetRouteCheckpoint(db, tractor.RouteId, tractor.CurrentCheckpointId);
+	// for each transaction
+	for _, transaction := range transactions {
+		if transaction.CheckpointId != tractor.CurrentCheckpointId {
+			continue;
+		}
+
+
+	}
+
+}
