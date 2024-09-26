@@ -11,10 +11,11 @@
     import StockExchange from '@pages/stock_exchange/stock_exchange.svelte';
     import NotFound from '@pages/404.svelte'
     import './app.css';
-
+    import '@fortawesome/fontawesome-free/css/all.css';
+    export let url = "";
 </script>
 
-<Router>
+<Router {url} >
     <div>
         <Route path="/" component={Home} />
         <Route path="/lots" component={Lots} />

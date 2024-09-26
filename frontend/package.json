@@ -23,6 +23,11 @@
     "vite": "^5.4.1"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-free": "^6.6.0",
+    "@fortawesome/fontawesome-svg-core": "^6.6.0",
+    "@fortawesome/free-solid-svg-icons": "^6.6.0",
+    "@fortawesome/svelte-fontawesome": "^0.2.2",
+    "svelte-fa": "^4.0.3",
     "svelte-routing": "^2.13.0",
     "svelte-spa-router": "^4.0.1"
   }

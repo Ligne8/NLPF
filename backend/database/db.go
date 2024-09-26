@@ -1,33 +1,28 @@
 package database
 
 import (
-	"tms-backend/models"
-
-	"gorm.io/driver/sqlite"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"log"
+	"tms-backend/models"
 )
 
+var DB *gorm.DB
+
 func InitDb() *gorm.DB {
-	db, err := gorm.Open(sqlite.Open("api.sql"), &gorm.Config{})
-
+	dsn := "host=postgres user=ligne8 password=secret dbname=tms_db port=5432 sslmode=disable TimeZone=Europe/Paris"
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		panic("Failed to connect to the database")
+		log.Fatal("Failed to connect to the database:", err)
 	}
 
-	// Migration des modèles
-	err = db.AutoMigrate(
-		&models.Checkpoint{},
-		&models.Lot{},
-		&models.Tractor{},
-		&models.Transaction{},
-		&models.Route{},
-		&models.RouteCheckpoint{},
-		&models.User{},
-	)
-
+	// AutoMigrate example for creating tables automatically
+	err = db.AutoMigrate(&models.Checkpoint{}, &models.Lot{}, &models.Tractor{})
 	if err != nil {
-		panic("Failed to auto-migrate models")
+		log.Fatal("Failed to migrate the database:", err)
 	}
 
+	DB = db
+	log.Println("Database connection established successfully.")
 	return db
 }

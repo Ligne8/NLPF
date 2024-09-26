@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: ligne8
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: tms_db
+    ports:
+      - "5432:5432"
+    networks:
+      - tms-network
+
+  app:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=ligne8
+      - DB_PASSWORD=secret
+      - DB_NAME=tms_db
+    depends_on:
+      - postgres
+    ports:
+      - "8080:8080"
+    networks:
+      - tms-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    networks:
+      - tms-network
+
+networks:
+  tms-network:
+    driver: bridge
