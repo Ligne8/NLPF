@@ -1,8 +1,8 @@
 <script lang="ts">
     import { onMount } from 'svelte';
-    import { userRole, currentTab } from '../stores/store.js';
-    import type { UserRole } from '../stores/store.js';
-  
+    import { userRole, currentTab } from '@stores/store.js';
+    import type { UserRole } from '@stores/store.js';
+
     // Role permissions
     const rolePermissions: Record<UserRole, string[]> = {
         admin: ['Lots', 'Tractors', 'TrafficManager', 'Trader', 'StockExchange'],
@@ -10,13 +10,13 @@
         trader: ['Trader', 'StockExchange'],
         client: ['Lots', 'Tractors', 'StockExchange']
     };
-  
+
     // Function to check user access
     function hasAccess(tab: string): boolean {
         const role = $userRole;
         return rolePermissions[role].includes(tab);
     }
-  
+
     // Function to switch tab
     function switchTab(tab: string) {
         currentTab.set(tab);
@@ -74,4 +74,4 @@
             {/if}
         </ul>
     </div>
-</nav>  
+</nav>
