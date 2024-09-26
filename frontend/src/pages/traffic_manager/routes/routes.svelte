@@ -1,6 +1,6 @@
 <script lang="ts">
-    import Navbar from '../../../components/Navbar.svelte';
-    import TrafficManagerNavbar from '../../../components/TrafficManagerNavbar.svelte';
+    import Navbar from '@components/Navbar.svelte';
+    import TrafficManagerNavbar from '@components/TrafficManagerNavbar.svelte';
 
     // Variables
     let title: string = 'Gestion des routes';
@@ -96,25 +96,25 @@
             </h2>
             <table class="w-full border-collapse border border-gray-300">
                 <thead>
-                    <tr class="bg-gray-100">
-                        <th class="border p-2 text-center">Nom</th>
-                        <th class="border p-2 text-center">Étapes</th>
-                    </tr>
+                <tr class="bg-gray-100">
+                    <th class="border p-2 text-center">Nom</th>
+                    <th class="border p-2 text-center">Étapes</th>
+                </tr>
                 </thead>
                 <tbody>
-                    {#each tableData as row, index}
-                        <tr class={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
+                {#each tableData as row, index}
+                    <tr class={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
 
-                            <!-- Column 1 -->
-                            <td class="border p-2 text-center">{row.name}</td>
+                        <!-- Column 1 -->
+                        <td class="border p-2 text-center">{row.name}</td>
 
-                            <!-- Column 2 -->
-                            <td class="border p-2 text-center">
-                                {row.route.join(' - ')}
-                            </td>
+                        <!-- Column 2 -->
+                        <td class="border p-2 text-center">
+                            {row.route.join(' - ')}
+                        </td>
 
-                        </tr>
-                    {/each}
+                    </tr>
+                {/each}
                 </tbody>
             </table>
         </div>
@@ -128,12 +128,12 @@
 
             <!-- Route name input field -->
             <div class="mb-4">
-                <input 
-                    type="text" 
-                    id="route-name" 
-                    class="border border-gray-300 rounded px-3 py-2 w-full" 
-                    bind:value={newRouteName} 
-                    placeholder="Entrez le nom de la route"
+                <input
+                        type="text"
+                        id="route-name"
+                        class="border border-gray-300 rounded px-3 py-2 w-full"
+                        bind:value={newRouteName}
+                        placeholder="Entrez le nom de la route"
                 />
             </div>
 
@@ -142,10 +142,10 @@
                 {#each selectedCheckpoints as selected, index}
                     <div class="mb-1 flex items-center">
                         {#if index !== 0}
-                            <button 
-                                on:click={() => removeCheckpoint(index)} 
-                                class="bg-red-500 text-white rounded-md w-8 h-8 hover:bg-red-600 flex items-center justify-center mr-2"
-                                title="Supprimer ce checkpoint"
+                            <button
+                                    on:click={() => removeCheckpoint(index)}
+                                    class="bg-red-500 text-white rounded-md w-8 h-8 hover:bg-red-600 flex items-center justify-center mr-2"
+                                    title="Supprimer ce checkpoint"
                             >
                                 <i class="fas fa-minus"></i>
                             </button>
@@ -164,11 +164,11 @@
                 {/each}
 
                 <!-- Add checkpoint button -->
-                <button 
-                    on:click={addCheckpoint} 
-                    class="bg-gray-800 text-white rounded px-4 py-2 w-full hover:bg-gray-900 transition-colors flex items-center justify-center"
-                    disabled={selectedCheckpoints[selectedCheckpoints.length - 1] === ''}
-                    class:bg-gray-300={selectedCheckpoints[selectedCheckpoints.length - 1] === ''}
+                <button
+                        on:click={addCheckpoint}
+                        class="bg-gray-800 text-white rounded px-4 py-2 w-full hover:bg-gray-900 transition-colors flex items-center justify-center"
+                        disabled={selectedCheckpoints[selectedCheckpoints.length - 1] === ''}
+                        class:bg-gray-300={selectedCheckpoints[selectedCheckpoints.length - 1] === ''}
                 >
                     <i class="fas fa-plus"></i>
                 </button>
@@ -177,9 +177,9 @@
             <!-- Validate button -->
             {#if selectedCheckpoints.filter(cp => cp !== '').length >= 2 && newRouteName.trim() !== ''}
                 <div class="flex justify-center mt-4">
-                    <button 
-                        on:click={validateRoute}
-                        class="bg-blue-500 text-white font-bold rounded px-6 py-3 hover:bg-blue-600 transition-colors"
+                    <button
+                            on:click={validateRoute}
+                            class="bg-blue-500 text-white font-bold rounded px-6 py-3 hover:bg-blue-600 transition-colors"
                     >
                         <i class="fas fa-check mr-2"></i>
                         Valider la route
