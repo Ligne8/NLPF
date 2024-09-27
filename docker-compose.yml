@@ -12,7 +12,7 @@ services:
     networks:
       - tms-network
 
-  app:
+  backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
