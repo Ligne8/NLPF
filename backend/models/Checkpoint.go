@@ -114,12 +114,13 @@ func CreateCheckpoints(db *gorm.DB) {
 	}
 
 	for _, checkpoint := range checkpoints {
-		if err := db.FirstOrCreate(&checkpoint, Checkpoint{
-			Name:      checkpoint.Name,
-			Country:   checkpoint.Country,
-			Longitude: checkpoint.Longitude,
-			Latitude:  checkpoint.Latitude,
-		}).Error; err != nil {
+		var existing Checkpoint
+		if err := db.Where("name = ? AND country = ?", checkpoint.Name, checkpoint.Country).First(&existing).Error; err == nil {
+			log.Printf("Checkpoint already exists: %s, %s", checkpoint.Name, checkpoint.Country)
+			continue
+		}
+
+		if err := db.Create(&checkpoint).Error; err != nil {
 			log.Printf("Failed to create checkpoint %s: %v", checkpoint.Name, err)
 		} else {
 			log.Printf("Checkpoint created: %s, %s", checkpoint.Name, checkpoint.Country)
