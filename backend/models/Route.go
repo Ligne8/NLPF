@@ -19,11 +19,31 @@ func (route *Route) BeforeCreate(tx *gorm.DB) (err error) {
 
 type RouteCheckpoint struct {
 	Id           uuid.UUID   `json:"id" gorm:"type:uuid;primaryKey"`
-	RouteId      *uuid.UUID  `json:"route_id" gorm:"not null"` // Foreign key for Route
-	Route        *Route      `json:"route" gorm:"foreignKey:RouteId"`
-	CheckpointId *uuid.UUID  `json:"checkpoint_id" gorm:"not null"` // Foreign key for Checkpoint
-	Checkpoint   *Checkpoint `json:"checkpoint" gorm:"foreignKey:CheckpointId"`
+	RouteId      uuid.UUID  `json:"route_id" gorm:"not null"` // Foreign key for Route
+	Route        Route      `json:"route" gorm:"foreignKey:RouteId"`
+	CheckpointId uuid.UUID  `json:"checkpoint_id" gorm:"not null"` // Foreign key for Checkpoint
+	Checkpoint   Checkpoint `json:"checkpoint" gorm:"foreignKey:CheckpointId"`
 	Position     uint        `json:"position" gorm:"not null"`
+}
+
+func (route *Route) GetAllRoutes(db *gorm.DB) ([]Route, error) {
+	var routes []Route
+	if err := db.Find(&routes).Error; err != nil {
+		return nil, err
+	}
+	return routes, nil
+}
+
+func (routeCheckpoint *RouteCheckpoint) SaveRouteCheckpoint(db *gorm.DB) error {
+	return db.Save(routeCheckpoint).Error
+} 
+
+func (Route *Route) CreateRoute(db *gorm.DB) error {
+	return db.Create(Route).Error
+}
+
+func (Route *Route) SaveRoute(db *gorm.DB) error {
+	return db.Save(Route).Error
 }
 
 func (routeCheckpoint *RouteCheckpoint) BeforeCreate(tx *gorm.DB) (err error) {

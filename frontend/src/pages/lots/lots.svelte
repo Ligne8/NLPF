@@ -1,9 +1,9 @@
 <script lang="ts">
     import { onMount } from 'svelte';
     import Navbar from '@components/Navbar.svelte';
-  import TrafficManager from '@pages/traffic_manager/traffic_manager.svelte';
 
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+    const USER_ID = localStorage.getItem('user_id') || '942ee444-bd7f-4af0-aa5d-60655db81204';
 
     interface Checkpoint {
       id: string;
@@ -102,7 +102,11 @@
 
     async function fetchLots() {
       try {
+<<<<<<< HEAD
         const response = await fetch(`${API_BASE_URL}/lots/owner/21bb7647-cb19-4d19-a7f1-9cb4de647da8`);
+=======
+        const response = await fetch(`${API_BASE_URL}/lots/owner/${USER_ID}`);
+>>>>>>> f07e4cf (gamberge)
         if (response.ok) {
           const data = await response.json();
           tableData = data.map((lot: any) => ({
@@ -112,8 +116,9 @@
             currentCheckpoint: lot.current_checkpoint.name,
             startCheckpoint: lot.start_checkpoint.name,
             endCheckpoint: lot.end_checkpoint.name,
-            trafficManager: lot.traffic_manager == null ? null : lot.traffic_manager.firstname + ' ' + lot.traffic_manager.lastname
-          }));
+            trafficManager: lot.traffic_manager == null ? null : lot.traffic_manager.firstname + ' ' + lot.traffic_manager.lastname,
+            createdAt: new Date(lot.created_at)
+          })).sort((a:any, b:any) => b.createdAt - a.createdAt);
         } else {
           console.error('Failed to fetch lots:', response.status);
         }
@@ -153,7 +158,11 @@
             start_checkpoint_id: selectedDeparture.id,
             end_checkpoint_id: selectedArrival.id,
             state: 'available',
+<<<<<<< HEAD
             owner_id: '21bb7647-cb19-4d19-a7f1-9cb4de647da8'
+=======
+            owner_id: USER_ID
+>>>>>>> f07e4cf (gamberge)
         };
 
         selectedType = '';
