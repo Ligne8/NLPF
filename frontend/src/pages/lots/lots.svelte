@@ -5,13 +5,11 @@
 
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-
     interface Checkpoint {
       id: string;
       name: string;
     }
 
-    // Variables
     let title: string = 'Gestion des Lots';
     let subtitle: string = 'Suivez l’état de vos lots en temps réel.';
     let isModalOpen = false;
@@ -23,63 +21,32 @@
     let selectedDeparture: Checkpoint;
     let selectedArrival: Checkpoint;
     let tableData: LotTable[] = [];
+    let trafficManagers: TrafficManager[] = [];
+    
+    interface TrafficManager {
+      id: string;
+      name: string;
+    }
 
     interface LotTable {
+      id: string
       state: string;
       volume: number;
       currentCheckpoint: string;
       startCheckpoint: string;
       endCheckpoint: string;
-      trafficManager: string;
-    }
-    // Example data
-
-    async function fetchLots() {
-      try {
-        const response = await fetch(`${API_BASE_URL}/lots/owner/942ee444-bd7f-4af0-aa5d-60655db81204`);
-        if (response.ok) {
-          const data = await response.json();
-          tableData = data.map((lot: any) => ({
-            state: lot.state,
-            volume: lot.volume,
-            currentCheckpoint: lot.current_checkpoint.name,
-            startCheckpoint: lot.start_checkpoint.name,
-            endCheckpoint: lot.end_checkpoint.name,
-            //trafficManager: lot.traffic_manager == null ? null : lot.trafficManager.name
-          }));
-          console.log( tableData);
-        } else {
-          console.error('Failed to fetch lots:', response.status);
-        }
-      } catch (error) {
-        console.error('Error fetching lots:', error);
-      }
+      trafficManager: TrafficManager;
     }
 
-    onMount(() => {
-      fetchLots();
-    });
+    const fetchAllData = async () => {
+        await fetchLots();
+        await fetchTrafficManagers();
+        await fetchCheckpoints();
+    };
 
     // Fetch all data
     onMount(async () => {
-        await fetchLots();
-        // GET checkpoints
-        try {
-            const response = await fetch(`${API_BASE_URL}/checkpoints`);
-            if (response.ok)
-            {
-                const data = await response.json();
-                checkpoints = data.map((checkpoint: any) => ({name: checkpoint.name, id: checkpoint.id}));
-                selectedDeparture = checkpoints[0];
-                selectedArrival = checkpoints.length > 1 ? checkpoints[1] : checkpoints[0];
-            }
-            else
-            {
-                console.error('Failed to fetch checkpoints:', response.status);
-            }
-        } catch (error) {
-            console.error('Error fetching checkpoints:', error);
-        }
+      await fetchAllData();
     });
 
     // Function to get tag color and text based on status
@@ -88,7 +55,7 @@
             case 'available':
                 return { color: 'bg-green-200 text-green-800', text: '◉ Available' };
             case 'pending':
-                return { color: 'bg-green-200 text-green-800', text: '◉ En attente' };
+                return { color: 'bg-amber-200 text-green-800', text: '◉ En attente' };
             case 'on_the_way':
                 return { color: 'bg-orange-200 text-orange-800', text: '◉ En route' };
             case 'on_the_stock_exchange':
@@ -119,6 +86,61 @@
     }
 
 
+    async function fetchTrafficManagers(){
+      try {
+        const response = await fetch(`${API_BASE_URL}/users/traffic_managers`);
+        if (response.ok) {
+          const data = await response.json();
+          trafficManagers = data.map((trafficManager: any) => ({id: trafficManager.id, name: `${trafficManager.firstname}.${trafficManager.lastname}`}));
+        } else {
+          console.error('Failed to fetch traffic managers:', response.status);
+        }
+      } catch (error) {
+        console.error('Error fetching traffic managers:', error);
+      }
+    }
+
+    async function fetchLots() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/lots/owner/942ee444-bd7f-4af0-aa5d-60655db81204`);
+        if (response.ok) {
+          const data = await response.json();
+          tableData = data.map((lot: any) => ({
+            id: lot.id,
+            state: lot.state,
+            volume: lot.volume,
+            currentCheckpoint: lot.current_checkpoint.name,
+            startCheckpoint: lot.start_checkpoint.name,
+            endCheckpoint: lot.end_checkpoint.name,
+            trafficManager: lot.traffic_manager == null ? null : lot.traffic_manager.firstname + ' ' + lot.traffic_manager.lastname
+          }));
+        } else {
+          console.error('Failed to fetch lots:', response.status);
+        }
+      } catch (error) {
+        console.error('Error fetching lots:', error);
+      }
+    }
+
+    async function fetchCheckpoints(){
+        try {
+            const response = await fetch(`${API_BASE_URL}/checkpoints`);
+            if (response.ok)
+            {
+                const data = await response.json();
+                checkpoints = data.map((checkpoint: any) => ({name: checkpoint.name, id: checkpoint.id}));
+                selectedDeparture = checkpoints[0];
+                selectedArrival = checkpoints.length > 1 ? checkpoints[1] : checkpoints[0];
+            }
+            else
+            {
+                console.error('Failed to fetch checkpoints:', response.status);
+            }
+        } catch (error) {
+            console.error('Error fetching checkpoints:', error);
+        }
+    }
+
     // Function to add lot
     function addLot() {
 
@@ -140,7 +162,6 @@
         selectedDeparture = checkpoints[0]; // Valeur par défaut
         selectedArrival = checkpoints[1]; // Valeur par défaut
 
-        console.log(JSON.stringify(newLot));
 
         fetch(`${API_BASE_URL}/lots`, {
             method: 'POST',
@@ -167,6 +188,27 @@
     function closeModal() {
         isModalOpen = false;
     }
+
+    const assignToTrafficManager = (lotId: string, trafficManager: TrafficManager) => {
+      if (trafficManager == null) {
+        console.error('Traffic manager is null');
+        alert('Veuillez sélectionner un traffic manager');
+        return;
+      }
+      fetch(`${API_BASE_URL}/lots/traffic_manager`, {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ traffic_manager_id: trafficManager.id, lot_id: lotId })
+      }).then(response => {
+          fetchLots();
+          alert('Lot attribué avec succès');
+      }).catch(error => {
+          console.error('Error assigning lot to traffic manager:', error);
+          alert('Erreur lors de l\'attribution du lot');
+      });
+    }
 </script>
 
 
@@ -186,10 +228,10 @@
         <div class="flex">
 
         <button class="bg-blue-500 mr-5 text-white font-bold px-4 py-2 rounded flex items-center hover:bg-blue-600 transition-colors self-end"
-                on:click={fetchLots}
+                on:click={fetchAllData}
         >
             <i class="fas fa-rotate-right mr-2"></i>
-            Reaload
+            Reload
         </button>
 
         <!-- Create button -->
@@ -213,6 +255,7 @@
                 <th class="border p-2 text-center">Localisation</th>
                 <th class="border p-2 text-center">Départ / Arrivée</th>
                 <th class="border p-2 text-center">Traffic manager</th>
+                <th class="border p-2 text-center">Actions</th>
             </tr>
             </thead>
             <tbody>
@@ -240,16 +283,44 @@
 
                     <!-- Column 6 -->
                     <td class="border p-2 text-center">
-                        {#if row.state === 'pending'}
-                            <select class="border border-gray-300 rounded px-2 py-1 mx-auto w-4/5">
-                                {#each row.trafficManager as trafficManagerOption}
-                                    <option>{trafficManagerOption}</option>
+                        {#if row.state === 'available'}
+                            <select bind:value={row.trafficManager}  class="border border-gray-300 rounded px-2 py-1 mx-auto w-4/5">
+                                {#each trafficManagers as trafficManagerOption}
+                                    <option value={trafficManagerOption}>{trafficManagerOption.name}</option>
                                 {/each}
                             </select>
                         {:else}
                                 <span class="px-2 py-1 mx-auto w-4/5 block">
                                     {row.trafficManager}
                                 </span>
+                        {/if}
+                    </td>
+
+                    <td class="border p-2 text-center">
+                        {#if row.state === 'in_transit'}
+                            <div class="flex flex-wrap justify-center space-x-2">
+                                <button class="bg-red-200 text-red-600 px-4 py-2 flex items-center font-bold hover:bg-red-300 transition-colors rounded-md">
+                                    <i class="fas fa-hand mr-2"></i>
+                                    Arrêter
+                                </button>
+                            </div>
+                        {:else if row.state === 'available'}
+                            <div class="flex flex-wrap justify-center space-x-2">
+                                <button on:click={()=>{assignToTrafficManager(row.id, row.trafficManager)}} class="bg-green-200 text-green-800 px-4 py-2 flex items-center font-bold hover:bg-green-300 transition-colors rounded-md">
+                                    <i class="fas fa-truck mr-2"></i>
+                                    Attribuer au TM 
+                                </button>
+                                <button class="bg-blue-200 text-blue-800 px-4 py-2 flex items-center font-bold hover:bg-blue-300 transition-colors rounded-md">
+                                    <i class="fas fa-plus mr-2"></i>
+                                    Bourse
+                                </button>
+                                <button class="bg-gray-800 text-white px-4 py-2 flex items-center font-bold hover:bg-black transition-colors rounded-md">
+                                    <i class="fas fa-right-from-bracket mr-2"></i>
+                                    Retirer
+                                </button>
+                            </div>
+                        {:else}
+                            <span class="text-gray-500">-</span>
                         {/if}
                     </td>
                 </tr>

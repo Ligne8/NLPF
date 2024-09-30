@@ -18,6 +18,7 @@ func UserRoutes(r *gin.Engine, db *gorm.DB) *gin.Engine {
 		v1.POST("/", UserController.CreateUser)
 		v1.PATCH("/:id", UserController.UpdateUser)
 		v1.DELETE("/:id", UserController.DeleteUser)
+		v1.GET("/traffic_managers", UserController.GetTrafficManager)
 	}
 	return r
 }

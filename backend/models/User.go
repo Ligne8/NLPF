@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -54,7 +55,15 @@ func (user *User) FindById(db *gorm.DB, userId uuid.UUID) (User, error) {
 	return foundUser, nil
 }
 
-func (user *User) getRole(db *gorm.DB, userId uuid.UUID) (Role, error) {
+func (user *User) GetRole(db *gorm.DB, userId uuid.UUID) (Role, error) {
 	db.First(&user, "id = ?", userId)
 	return user.Role, nil
+}
+
+func (user *User) FindByRole(db *gorm.DB, role Role) ([]User, error) {
+	var users []User
+	if err := db.Find(&users, "role = ?", role).Error; err != nil {
+		return nil, err
+	}
+	return users, nil
 }
