@@ -1,44 +1,75 @@
 <script lang="ts">
     import { onMount } from 'svelte';
     import Navbar from '@components/Navbar.svelte';
+  import TrafficManager from '@pages/traffic_manager/traffic_manager.svelte';
 
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
+
+    interface Checkpoint {
+      id: string;
+      name: string;
+    }
 
     // Variables
     let title: string = 'Gestion des Lots';
     let subtitle: string = 'Suivez l’état de vos lots en temps réel.';
     let isModalOpen = false;
-    let checkpoints: string[] = [];
+    let checkpoints: Checkpoint[] = [];
     let types = ['Bulk', 'Solid', 'Liquid'];
-    let lotName: string = '';
     let selectedType: string = types[0];
     let volume: string = '';
     let maxPrice: string = '';
-    let selectedDeparture: string = '';
-    let selectedArrival: string = '';
+    let selectedDeparture: Checkpoint;
+    let selectedArrival: Checkpoint;
+    let tableData: LotTable[] = [];
 
+    interface LotTable {
+      state: string;
+      volume: number;
+      currentCheckpoint: string;
+      startCheckpoint: string;
+      endCheckpoint: string;
+      trafficManager: string;
+    }
     // Example data
-    let tableData = [
-        { name: 'Lot 1', status: 'ON_THE_WAY', volume: 16, location: 'Paris', startCheckpoint: 'Lyon', endCheckpoint: 'Montpellier', trafficManager: ['Traffic manager 1'] },
-        { name: 'Lot 2', status: 'ON_THE_STOCK_EXCHANGE', volume: 3, location: 'Lyon', startCheckpoint: 'Lyon', endCheckpoint: 'Paris', trafficManager: ['Traffic manager 4'] },
-        { name: 'Lot 3', status: 'PENDING', volume: 4, location: 'Marseille', startCheckpoint: 'Marseille', endCheckpoint: 'Montpellier', trafficManager: ['Traffic manager 2', 'Traffic manager 3', 'Traffic manager 4'] },
-        { name: 'Lot 4', status: 'ARCHIVED', volume: 8, location: 'Montpellier', startCheckpoint: 'Paris', endCheckpoint: 'Montpellier', trafficManager: ['Traffic manager 3'] },
-    ];
+
+    async function fetchLots() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/lots/owner/942ee444-bd7f-4af0-aa5d-60655db81204`);
+        if (response.ok) {
+          const data = await response.json();
+          tableData = data.map((lot: any) => ({
+            state: lot.state,
+            volume: lot.volume,
+            currentCheckpoint: lot.current_checkpoint.name,
+            startCheckpoint: lot.start_checkpoint.name,
+            endCheckpoint: lot.end_checkpoint.name,
+            //trafficManager: lot.traffic_manager == null ? null : lot.trafficManager.name
+          }));
+          console.log( tableData);
+        } else {
+          console.error('Failed to fetch lots:', response.status);
+        }
+      } catch (error) {
+        console.error('Error fetching lots:', error);
+      }
+    }
+
+    onMount(() => {
+      fetchLots();
+    });
 
     // Fetch all data
     onMount(async () => {
-
+        await fetchLots();
         // GET checkpoints
         try {
             const response = await fetch(`${API_BASE_URL}/checkpoints`);
             if (response.ok)
             {
                 const data = await response.json();
-
-                // Extract checkpoint names
-                checkpoints = data.map((checkpoint: { name: string }) => checkpoint.name);
-
-                // Define default selected checkpoints
+                checkpoints = data.map((checkpoint: any) => ({name: checkpoint.name, id: checkpoint.id}));
                 selectedDeparture = checkpoints[0];
                 selectedArrival = checkpoints.length > 1 ? checkpoints[1] : checkpoints[0];
             }
@@ -52,15 +83,17 @@
     });
 
     // Function to get tag color and text based on status
-    function getStatusInfo(status: string): { color: string; text: string } {
-        switch (status) {
-            case 'PENDING':
+    function getStatusInfo(state: string): { color: string; text: string } {
+        switch (state) {
+            case 'available':
+                return { color: 'bg-green-200 text-green-800', text: '◉ Available' };
+            case 'pending':
                 return { color: 'bg-green-200 text-green-800', text: '◉ En attente' };
-            case 'ON_THE_WAY':
+            case 'on_the_way':
                 return { color: 'bg-orange-200 text-orange-800', text: '◉ En route' };
-            case 'ON_THE_STOCK_EXCHANGE':
+            case 'on_the_stock_exchange':
                 return { color: 'bg-yellow-200 text-yellow-800', text: '◉ En bourse' };
-            case 'ARCHIVED':
+            case 'archived':
                 return { color: 'bg-gray-200 text-gray-800', text: '◉ Archivé' };
             default:
                 return { color: 'bg-gray-200 text-gray-800', text: '🛇 Inconnu' };
@@ -85,32 +118,42 @@
         maxPrice = input.value;
     }
 
+
     // Function to add lot
     function addLot() {
 
         // Add lot to the table
         const newLot = {
-            name: lotName,
-            status: 'PENDING',
-            type: selectedType,
+            resource_type: selectedType.toLowerCase(),
             volume: parseFloat(volume),
-            maxPrice: parseFloat(maxPrice),
-            location: selectedDeparture,
-            startCheckpoint: selectedDeparture,
-            endCheckpoint: selectedArrival,
-            trafficManager: ['Traffic manager 1', 'Traffic manager 1', 'Traffic manager 3']
+            max_price_by_km: parseFloat(maxPrice),
+            current_checkpoint_id: selectedDeparture.id,
+            start_checkpoint_id: selectedDeparture.id,
+            end_checkpoint_id: selectedArrival.id,
+            state: 'available',
+            owner_id: '942ee444-bd7f-4af0-aa5d-60655db81204'
         };
 
-        // Create new instance of the table
-        tableData = [...tableData, newLot];
-
-        // Reset form values
-        lotName = '';
         selectedType = '';
         volume = '';
         maxPrice = '';
         selectedDeparture = checkpoints[0]; // Valeur par défaut
         selectedArrival = checkpoints[1]; // Valeur par défaut
+
+        console.log(JSON.stringify(newLot));
+
+        fetch(`${API_BASE_URL}/lots`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(newLot)
+        }).then(response => {
+          fetchLots();
+        }).catch(error => {
+            console.error('Error adding lot:', error);
+        });
+        
 
         closeModal();
     }
@@ -155,7 +198,6 @@
         <table class="table-auto w-full border-collapse border border-gray-300">
             <thead>
             <tr class="bg-gray-100">
-                <th class="border p-2 text-center">Nom</th>
                 <th class="border p-2 text-center">Status</th>
                 <th class="border p-2 text-center">Volume <span class="font-normal">(en m³)</span></th>
                 <th class="border p-2 text-center">Localisation</th>
@@ -167,13 +209,11 @@
             {#each tableData as row, index}
                 <tr class={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
 
-                    <!-- Column 1 -->
-                    <td class="border p-2 text-center">{row.name}</td>
 
                     <!-- Column 2 -->
                     <td class="border p-2 text-center">
-                            <span class={`px-2 py-1 rounded ${getStatusInfo(row.status).color}`}>
-                                {getStatusInfo(row.status).text}
+                            <span class={`px-2 py-1 rounded ${getStatusInfo(row.state).color}`}>
+                                {getStatusInfo(row.state).text}
                             </span>
                     </td>
 
@@ -181,7 +221,7 @@
                     <td class="border p-2 text-center">{row.volume}</td>
 
                     <!-- Column 4 -->
-                    <td class="border p-2 text-center">{row.location}</td>
+                    <td class="border p-2 text-center">{row.currentCheckpoint}</td>
 
                     <!-- Column 5 -->
                     <td class="border p-2 text-center">
@@ -190,7 +230,7 @@
 
                     <!-- Column 6 -->
                     <td class="border p-2 text-center">
-                        {#if row.status === 'PENDING'}
+                        {#if row.state === 'pending'}
                             <select class="border border-gray-300 rounded px-2 py-1 mx-auto w-4/5">
                                 {#each row.trafficManager as trafficManagerOption}
                                     <option>{trafficManagerOption}</option>
@@ -198,7 +238,7 @@
                             </select>
                         {:else}
                                 <span class="px-2 py-1 mx-auto w-4/5 block">
-                                    {row.trafficManager[0]}
+                                    {row.trafficManager}
                                 </span>
                         {/if}
                     </td>
@@ -231,12 +271,6 @@
             <!-- Form -->
             <form on:submit|preventDefault={addLot}>
 
-                <!-- Name -->
-                <div class="mb-2">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Nom :</label>
-                    <input type="text" class="w-full border border-gray-300 p-2 rounded" placeholder="Entrez le nom du lot" bind:value={lotName} required>
-                </div>
-
                 <!-- Type -->
                 <div class="mb-2">
                     <label class="block text-gray-700 text-sm font-bold mb-2">Type :</label>
@@ -266,7 +300,7 @@
                            class="w-full border border-gray-300 p-2 rounded"
                            placeholder="Entrez le prix maximum (par km)"
                            on:input={validateMaxPrice}
-                           value={volume}
+                           value={maxPrice}
                            required
                     >
                 </div>
@@ -276,8 +310,8 @@
                     <label class="block text-gray-700 text-sm font-bold mb-2">Départ :</label>
                     <select class="w-full border border-gray-300 p-2 rounded" bind:value={selectedDeparture}>
                         {#each checkpoints as checkpoint}
-                            {#if checkpoint !== selectedArrival}
-                                <option value={checkpoint}>{checkpoint}</option>
+                            {#if checkpoint.id !== selectedArrival.id}
+                                <option value={checkpoint}>{checkpoint.name}</option>
                             {/if}
                         {/each}
                     </select>
@@ -288,8 +322,8 @@
                     <label class="block text-gray-700 text-sm font-bold mb-2">Arrivée :</label>
                     <select class="w-full border border-gray-300 p-2 rounded" bind:value={selectedArrival}>
                         {#each checkpoints as checkpoint}
-                            {#if checkpoint !== selectedDeparture}
-                                <option value={checkpoint}>{checkpoint}</option>
+                            {#if checkpoint.id !== selectedDeparture.id}
+                                <option value={checkpoint}>{checkpoint.name}</option>
                             {/if}
                         {/each}
                     </select>

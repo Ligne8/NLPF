@@ -1,16 +1,17 @@
 package database
 
 import (
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
 	"log"
 	"tms-backend/models"
+
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 var DB *gorm.DB
 
 func InitDb() *gorm.DB {
-	dsn := "host=postgres user=ligne8 password=secret dbname=tms_db port=5432 sslmode=disable TimeZone=Europe/Paris"
+	dsn := "host=localhost user=ligne8 password=secret dbname=tms_db port=5432 sslmode=disable TimeZone=Europe/Paris"
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatal("Failed to connect to the database:", err)
