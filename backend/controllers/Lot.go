@@ -46,13 +46,13 @@ func (LotController *LotController) CreateLot(c *gin.Context) {
 	LotModel := models.Lot{
 		ResourceType:      requestBody.ResourceType,
 		Volume:            requestBody.Volume,
-		StartCheckpointId: requestBody.StartCheckpointId,
-		EndCheckpointId:   requestBody.EndCheckpointId,
+		StartCheckpointId: &requestBody.StartCheckpointId,
+		EndCheckpointId:   &requestBody.EndCheckpointId,
 		OwnerId:           requestBody.OwnerId,
 		State:             requestBody.State,
 		MaxPriceByKm:      requestBody.MaxPriceByKm,
-		TrafficManagerId:  requestBody.TrafficManagerId,
-		TraderId:          requestBody.TraderId,
+		TrafficManagerId:  &requestBody.TrafficManagerId,
+		TraderId:          &requestBody.TraderId,
 	}
 
 	if err := LotController.Db.Create(&LotModel).Error; err != nil {
@@ -109,27 +109,27 @@ func (LotController *LotController) isCompatible(c *gin.Context) {
 // UpdateLotState: Update the state of a lot
 func (LotController *LotController) UpdateLotState(c *gin.Context) {
 	var requestBody struct {
-			LotId uuid.UUID    `json:"lot_id" binding:"required"`
-			State models.State `json:"state" binding:"required"`
+		LotId uuid.UUID    `json:"lot_id" binding:"required"`
+		State models.State `json:"state" binding:"required"`
 	}
 
 	if err := c.ShouldBindJSON(&requestBody); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 	}
 
 	// Get the Lot
 	var lot models.Lot
 	if err := LotController.Db.First(&lot, "id = ?", requestBody.LotId).Error; err != nil {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Lot not found"})
-			return
+		c.JSON(http.StatusNotFound, gin.H{"error": "Lot not found"})
+		return
 	}
 
 	lot.State = requestBody.State
 	// Change the state of the Lot
 	if err := LotController.Db.Save(&lot).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
 
 	c.JSON(http.StatusOK, lot)
