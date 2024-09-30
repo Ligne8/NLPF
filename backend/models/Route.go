@@ -18,12 +18,12 @@ func (route *Route) BeforeCreate(tx *gorm.DB) (err error) {
 }
 
 type RouteCheckpoint struct {
-	Id           uuid.UUID  `json:"id" gorm:"type:uuid;primaryKey"`
-	RouteId      uuid.UUID  `json:"route_id" gorm:"not null"` // Foreign key for Route
-	Route        Route      `json:"route" gorm:"foreignKey:RouteId"`
-	CheckpointId uuid.UUID  `json:"checkpoint_id" gorm:"not null"` // Foreign key for Checkpoint
-	Checkpoint   Checkpoint `json:"checkpoint" gorm:"foreignKey:CheckpointId"`
-	Position     uint       `json:"position" gorm:"not null"`
+	Id           uuid.UUID   `json:"id" gorm:"type:uuid;primaryKey"`
+	RouteId      *uuid.UUID  `json:"route_id" gorm:"not null"` // Foreign key for Route
+	Route        *Route      `json:"route" gorm:"foreignKey:RouteId"`
+	CheckpointId *uuid.UUID  `json:"checkpoint_id" gorm:"not null"` // Foreign key for Checkpoint
+	Checkpoint   *Checkpoint `json:"checkpoint" gorm:"foreignKey:CheckpointId"`
+	Position     uint        `json:"position" gorm:"not null"`
 }
 
 func (routeCheckpoint *RouteCheckpoint) BeforeCreate(tx *gorm.DB) (err error) {
@@ -33,7 +33,7 @@ func (routeCheckpoint *RouteCheckpoint) BeforeCreate(tx *gorm.DB) (err error) {
 
 func (route *Route) GetById(db *gorm.DB, id uuid.UUID) error {
 	return db.First(route, "id = ?", id).Error
-}	
+}
 
 func (routeCheckpoint *RouteCheckpoint) GetById(db *gorm.DB, id uuid.UUID) error {
 	return db.First(routeCheckpoint, "id = ?", id).Error
@@ -41,7 +41,7 @@ func (routeCheckpoint *RouteCheckpoint) GetById(db *gorm.DB, id uuid.UUID) error
 
 func (routeCheckpoint *RouteCheckpoint) GetNextCheckpoint(db *gorm.DB, routeId uuid.UUID, position uint) error {
 	return db.First(routeCheckpoint, "route_id = ? AND position = ?", routeId, position+1).Error
-}	
+}
 
 func (routeCheckpoint *RouteCheckpoint) GetRouteCheckpoint(db *gorm.DB, routeId uuid.UUID, checkpointId uuid.UUID) error {
 	return db.First(routeCheckpoint, "route_id = ? AND checkpoint_id = ?", routeId, checkpointId).Error
