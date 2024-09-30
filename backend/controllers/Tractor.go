@@ -17,16 +17,12 @@ type TractorController struct {
 var tractorModel = models.Tractor{}
 
 func (TractorController *TractorController) AddTractor(c *gin.Context) {
-	fmt.Println("ADDING NEW TRACTOR")
 	var newTractor models.Tractor
 	if err := c.ShouldBindJSON(&newTractor); err != nil {
 		fmt.Println(newTractor)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	fmt.Println("CREATING NEW TRACTOR")
-	fmt.Println(newTractor)
-
 	if err := TractorController.Db.Create(&newTractor).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
