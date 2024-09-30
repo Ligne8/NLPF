@@ -18,11 +18,7 @@ func InitDb() *gorm.DB {
 	}
 
 	// AutoMigrate example for creating tables automatically
-<<<<<<< HEAD
-	err = db.AutoMigrate(&models.Checkpoint{}, &models.Lot{}, &models.Tractor{}, &models.Simulation{})
-=======
 	err = db.AutoMigrate(&models.Checkpoint{}, &models.Lot{}, &models.Tractor{}, &models.User{}, &models.Route{}, &models.RouteCheckpoint{})
->>>>>>> f07e4cf (gamberge)
 	if err != nil {
 		log.Fatal("Failed to migrate the database:", err)
 	}
