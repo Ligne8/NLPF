@@ -2,9 +2,10 @@ package models
 
 import (
 	"errors"
+	"time"
+
 	"github.com/google/uuid"
 	"gorm.io/gorm"
-	"time"
 )
 
 type State string
@@ -68,4 +69,84 @@ func (lot *Lot) BeforeCreate(tx *gorm.DB) (err error) {
 
 func (lot *Lot) Save(db *gorm.DB) error {
 	return db.Preload("EndCheckpoint").Preload("StartCheckpoint").Preload("Tractor").Save(lot).Error
+}
+
+func (lot *Lot) GetAllLots(db *gorm.DB) ([]Lot, error) {
+	var lots []Lot
+	if err := db.Preload("EndCheckpoint").Preload("StartCheckpoint").Preload("Tractor").Find(&lots).Error; err != nil {
+		return nil, err
+	}
+	return lots, nil
+}
+
+func (lot *Lot) FindById(db *gorm.DB, lotId uuid.UUID) (Lot, error) {
+	var foundLot Lot
+	if err := db.Preload("EndCheckpoint").Preload("StartCheckpoint").Preload("Tractor").First(&foundLot, "id = ?", lotId).Error; err != nil {
+		return Lot{}, err
+	}
+	return foundLot, nil
+}
+
+func (lot *Lot) GetLotsByState(db *gorm.DB, state State) ([]Lot, error) {
+	var lots []Lot
+	if err := db.Preload("EndCheckpoint").Preload("StartCheckpoint").Preload("Tractor").Where("state = ?", state).Find(&lots).Error; err != nil {
+		return nil, err
+	}
+	return lots, nil
+}
+
+func (lot *Lot) GetLotsByTrafficManager(db *gorm.DB, trafficManagerId uuid.UUID) ([]Lot, error) {
+	var lots []Lot
+	if err := db.Preload("EndCheckpoint").Preload("StartCheckpoint").Preload("Tractor").Where("traffic_manager_id = ?", trafficManagerId).Find(&lots).Error; err != nil {
+		return nil, err
+	}
+	return lots, nil
+}
+
+func (lot *Lot) GetLotsByTrader(db *gorm.DB, traderId uuid.UUID) ([]Lot, error) {
+	var lots []Lot
+	if err := db.Preload("EndCheckpoint").Preload("StartCheckpoint").Preload("Tractor").Where("trader_id = ?", traderId).Find(&lots).Error; err != nil {
+		return nil, err
+	}
+	return lots, nil
+}
+
+func (lot *Lot) GetLotsByOwner(db *gorm.DB, ownerId uuid.UUID) ([]Lot, error) {
+	var lots []Lot
+	if err := db.Preload("EndCheckpoint").Preload("StartCheckpoint").Preload("Tractor").Where("owner_id = ?", ownerId).Find(&lots).Error; err != nil {
+		return nil, err
+	}
+	return lots, nil
+}
+
+func (lot *Lot) GetLotsByTractor(db *gorm.DB, tractorId uuid.UUID) ([]Lot, error) {
+	var lots []Lot
+	if err := db.Preload("EndCheckpoint").Preload("StartCheckpoint").Preload("Tractor").Where("tractor_id = ?", tractorId).Find(&lots).Error; err != nil {
+		return nil, err
+	}
+	return lots, nil
+}
+
+func (lot *Lot) GetLotsByCurrentCheckpoint(db *gorm.DB, currentCheckpointId uuid.UUID) ([]Lot, error) {
+	var lots []Lot
+	if err := db.Preload("EndCheckpoint").Preload("StartCheckpoint").Preload("Tractor").Where("current_checkpoint_id = ?", currentCheckpointId).Find(&lots).Error; err != nil {
+		return nil, err
+	}
+	return lots, nil
+}
+
+func (lot *Lot) GetLotsByStartCheckpoint(db *gorm.DB, startCheckpointId uuid.UUID) ([]Lot, error) {
+	var lots []Lot
+	if err := db.Preload("EndCheckpoint").Preload("StartCheckpoint").Preload("Tractor").Where("start_checkpoint_id = ?", startCheckpointId).Find(&lots).Error; err != nil {
+		return nil, err
+	}
+	return lots, nil
+}
+
+func (lot *Lot) GetLotsByEndCheckpoint(db *gorm.DB, endCheckpointId uuid.UUID) ([]Lot, error) {
+	var lots []Lot
+	if err := db.Preload("EndCheckpoint").Preload("StartCheckpoint").Preload("Tractor").Where("end_checkpoint_id = ?", endCheckpointId).Find(&lots).Error; err != nil {
+		return nil, err
+	}
+	return lots, nil
 }
