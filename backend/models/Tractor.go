@@ -18,6 +18,7 @@ const (
 
 type Tractor struct {
 	Id                  uuid.UUID    `json:"id" gorm:"type:uuid;primaryKey"`
+	Name                string       `json:"name" gorm:"not null"`
 	ResourceType        ResourceType `json:"resource_type" gorm:"type:varchar(10)" binding:"required"`
 	MaxVolume           float64      `json:"max_units" gorm:"not null"`
 	CurrentVolume       float64      `json:"current_units" gorm:"not null"`
