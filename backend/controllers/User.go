@@ -1,11 +1,12 @@
 package controllers
 
 import (
+	"net/http"
+	"tms-backend/models"
+
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
-	"net/http"
-	"tms-backend/models"
 )
 
 type UserController struct {
@@ -153,4 +154,16 @@ func (UserController *UserController) DeleteUser(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, user)
+}
+
+
+func (UserController *UserController) GetTrafficManager(c *gin.Context) {
+	var user models.User
+	role := models.RoleTrafficManager
+	users, err := user.FindByRole(UserController.Db, role)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, users)
 }

@@ -152,3 +152,43 @@ func (LotController *LotController) UpdateLotState(c *gin.Context) {
 
 	c.JSON(http.StatusOK, lot)
 }
+
+func (LotController *LotController) AssociateToTrafficManager(c *gin.Context) {
+	var requestBody struct {
+		LotId           string `json:"lot_id" binding:"required"`
+		TrafficManagerId string `json:"traffic_manager_id" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&requestBody); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	var lotIdUUID, errIdUUID = uuid.Parse(requestBody.LotId);
+	if errIdUUID != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid lot_id"})
+		return
+	}
+	var trafficManagerIdUUID, errTrafficManagerIdUUID = uuid.Parse(requestBody.TrafficManagerId);
+	if errTrafficManagerIdUUID != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid traffic_manager_id"})
+		return
+	}
+
+	var lot models.Lot
+	lot, err := lot.FindById(LotController.Db, lotIdUUID);
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Lot not found"})
+		return
+	}
+	if err := lot.AssociateTraficManager(LotController.Db, trafficManagerIdUUID); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error updating traffic_manager": err.Error()})
+		return
+	
+	}
+
+	if err := lot.UpdateState(LotController.Db, models.StatePending); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error updating state": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, lot)
+}
