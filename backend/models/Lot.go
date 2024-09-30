@@ -12,6 +12,7 @@ type State string
 
 const (
 	StateAvailable State = "available"
+	StatePending   State = "pending"
 	StateInTransit State = "in_transit"
 	StateArchive   State = "archive"
 	StateOnMarket  State = "on_market"

@@ -21,19 +21,19 @@ type Tractor struct {
 	ResourceType        ResourceType `json:"resource_type" gorm:"type:varchar(10)" binding:"required"`
 	MaxVolume           float64      `json:"max_units" gorm:"not null"`
 	CurrentVolume       float64      `json:"current_units" gorm:"not null"`
-	CurrentCheckpointId uuid.UUID    `json:"current_checkpoint_id" gorm:"type:uuid"` // Foreign key for Checkpoint
-	CurrentCheckpoint   Checkpoint   `json:"current_checkpoint" gorm:"foreignKey:CurrentCheckpointId"`
+	CurrentCheckpointId *uuid.UUID   `json:"current_checkpoint_id" gorm:"type:uuid"` // Foreign key for Checkpoint
+	CurrentCheckpoint   *Checkpoint  `json:"current_checkpoint" gorm:"foreignKey:CurrentCheckpointId"`
 	State               State        `json:"state" gorm:"not null"`
 	CreatedAt           time.Time    `json:"created_at" gorm:"autoCreateTime"`
-	OwnerId             uuid.UUID    `json:"owner_id" gorm:"type:uuid"` // Foreign key for User
-	Owner               User         `json:"owner" gorm:"foreignKey:OwnerId"`
+	OwnerId             *uuid.UUID   `json:"owner_id" gorm:"type:uuid"` // Foreign key for User
+	Owner               *User        `json:"owner" gorm:"foreignKey:OwnerId"`
 	MinPriceByKm        uint         `json:"min_price_by_km" gorm:"not null"`
-	TrafficManagerId    uuid.UUID    `json:"traffic_manager_id" gorm:"type:uuid"` // Foreign key for User
-	TrafficManager      User         `json:"traffic_manager" gorm:"foreignKey:TrafficManagerId"`
-	TraderId            uuid.UUID    `json:"trader_id" gorm:"type:uuid"` // Foreign key for User
-	Trader              User         `json:"trader" gorm:"foreignKey:TraderId"`
-	RouteId             uuid.UUID    `json:"route_id" gorm:"type:uuid"` // Foreign key for Route
-	Route               Route        `json:"route" gorm:"foreignKey:RouteId"`
+	TrafficManagerId    *uuid.UUID   `json:"traffic_manager_id" gorm:"type:uuid"` // Foreign key for User
+	TrafficManager      *User        `json:"traffic_manager" gorm:"foreignKey:TrafficManagerId"`
+	TraderId            *uuid.UUID   `json:"trader_id" gorm:"type:uuid"` // Foreign key for User
+	Trader              *User        `json:"trader" gorm:"foreignKey:TraderId"`
+	RouteId             *uuid.UUID   `json:"route_id" gorm:"type:uuid"` // Foreign key for Route
+	Route               *Route       `json:"route" gorm:"foreignKey:RouteId"`
 }
 
 func (tractor *Tractor) BeforeCreate(tx *gorm.DB) (err error) {
@@ -104,17 +104,18 @@ func (tractor *Tractor) GetByRouteId(db *gorm.DB, routeId uuid.UUID) ([]Tractor,
 
 func (tractor *Tractor) UpdateNextCheckpoint(db *gorm.DB) error {
 	var routeCheckpoint RouteCheckpoint
-	if err := routeCheckpoint.GetRouteCheckpoint(db, tractor.RouteId, tractor.CurrentCheckpointId); err != nil {
+	if err := routeCheckpoint.GetRouteCheckpoint(db, *tractor.RouteId, *tractor.CurrentCheckpointId); err != nil {
 		return err
 	}
 	var position uint = routeCheckpoint.Position
 	var nextCheckpoint RouteCheckpoint
-	if err := nextCheckpoint.GetNextCheckpoint(db, tractor.RouteId, position); err != nil {
+	if err := nextCheckpoint.GetNextCheckpoint(db, *tractor.RouteId, position); err != nil {
 		tractor.State = StateArchive
-		return nil;
+		return nil
 	}
+
 	tractor.CurrentCheckpointId = nextCheckpoint.CheckpointId
-	if nextCheckpoint.IsNextCheckpoint(db, tractor.Route) {
+	if nextCheckpoint.IsNextCheckpoint(db, *tractor.Route) {
 		tractor.State = StateInTransit
 	} else {
 		tractor.State = StateArchive
@@ -122,22 +123,24 @@ func (tractor *Tractor) UpdateNextCheckpoint(db *gorm.DB) error {
 	return nil
 }
 
-func (tractor *Tractor) ExecTransaction(db *gorm.DB) error{
-	var transactionModel Transaction;
-	var transactions []Transaction;
-	transactions, err := transactionModel.FindByRouteId(db, tractor.RouteId);
+func (tractor *Tractor) ExecTransaction(db *gorm.DB) error {
+	var transactionModel Transaction
+	var transactions []Transaction
+	transactions, err := transactionModel.FindByRouteId(db, *tractor.RouteId)
 	if err != nil {
-		return err;
+		return err
 	}
-	var routeCheckpoint RouteCheckpoint;
-	routeCheckpoint.GetRouteCheckpoint(db, tractor.RouteId, tractor.CurrentCheckpointId);
+	var routeCheckpoint RouteCheckpoint
+	err = routeCheckpoint.GetRouteCheckpoint(db, *tractor.RouteId, *tractor.CurrentCheckpointId)
+	if err != nil {
+		return err
+	}
 	// for each transaction
 	for _, transaction := range transactions {
 		if transaction.CheckpointId != tractor.CurrentCheckpointId {
-			continue;
+			continue
 		}
 
-
 	}
-	return nil;
+	return nil
 }
