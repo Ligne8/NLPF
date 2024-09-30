@@ -24,7 +24,7 @@ func TractorRoutes(r *gin.Engine, db *gorm.DB) *gin.Engine {
 		// Get tractors by RouteId
 		v1.GET("/route/:routeId", TractorController.GetTractorsByRouteId)
 		v1.GET("/next-route", TractorController.GoToNextCheckpoint)
-		v1.PATCH("/updateState", TractorController.UpdateTractorState) 
+		v1.PATCH("/updateState", TractorController.UpdateTractorState)
 		//v1.PATCH(":id", LotController.PatchLot)
 		//v1.GET("", LotController.ListLots)
 	}
