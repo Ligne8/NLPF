@@ -28,6 +28,49 @@ func (RouteController *RouteController) GetAllRoutes(c *gin.Context) {
 	c.JSON(http.StatusOK, routes);
 }
 
+type route_payload struct {
+	Id string `json:"id"`
+	Name string `json:"name"`
+	Route_path string `json:"route_path"`
+}
+
+func (RouteController *RouteController) GetRouteStringByTrafficManagerId(c *gin.Context) {
+	var allRoutes []route_payload;
+	var routeModel models.Route;
+	var routes []models.Route;
+
+	trafficManagerId := c.Param("traffic_manager_id");
+	trafficManagerIdUUID := uuid.MustParse(trafficManagerId);
+	routes, err := routeModel.GetRoutesByTrafficManagerId(RouteController.Db, trafficManagerIdUUID);
+	
+	for _, route := range routes {
+		var path_string = route.GetRouteString(RouteController.Db);
+		var route_payload = route_payload{
+			Id: route.Id.String(),
+			Name: route.Name,
+			Route_path: path_string,
+		}
+		allRoutes = append(allRoutes, route_payload);
+	}
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()});
+	}
+	c.JSON(http.StatusOK, allRoutes);
+}
+
+
+func (RouteController *RouteController) GetRouteByTrafficManagerId(c *gin.Context) {
+	var routeModel models.Route;
+	var routes []models.Route;
+	trafficManagerId := c.Param("traffic_manager_id");
+	trafficManagerIdUUID := uuid.MustParse(trafficManagerId);
+	routes, err := routeModel.GetRoutesByTrafficManagerId(RouteController.Db, trafficManagerIdUUID);
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()});
+	}
+	c.JSON(http.StatusOK, routes);
+}
+
 // CreateRoute Create a new Route
 func (RouteController *RouteController) CreateRoute(c *gin.Context) {
 	var requestBody struct {

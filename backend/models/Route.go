@@ -26,6 +26,28 @@ type RouteCheckpoint struct {
 	Position     uint        `json:"position" gorm:"not null"`
 }
 
+func (route *Route) GetRoutesByTrafficManagerId(db *gorm.DB, trafficManagerId uuid.UUID) ([]Route, error) {
+	var routes []Route
+	if err := db.Find(&routes, "traffic_manager_id = ?", trafficManagerId).Error; err != nil {
+		return nil, err
+	}
+	return routes, nil
+}
+
+func (route *Route) GetRouteString(db *gorm.DB) string {
+	var routeName string;
+	db.Raw("select STRING_AGG(c.name, ' - ') from route_checkpoints rc join checkpoints c on c.id = rc.checkpoint_id where rc.route_id = ?", route.Id).Scan(&routeName);
+	return routeName;
+}
+
+func (routeCheckpoint *RouteCheckpoint) GetRouteCheckpointsByRouteId(db *gorm.DB, routeId uuid.UUID) ([]RouteCheckpoint, error) {
+	var routeCheckpoints []RouteCheckpoint
+	if err := db.Find(&routeCheckpoints, "route_id = ?", routeId).Error; err != nil {
+		return nil, err
+	}
+	return routeCheckpoints, nil
+}
+
 func (route *Route) GetAllRoutes(db *gorm.DB) ([]Route, error) {
 	var routes []Route
 	if err := db.Find(&routes).Error; err != nil {
