@@ -35,6 +35,8 @@ func main() {
 	router = routes.TractorRoutes(router, db)
 	router = routes.UserRoutes(router, db)
 	router = routes.AuthRoutes(router, db)
+	router = routes.RoutesRoute(router, db)
+
 
 	docs.SwaggerInfo.BasePath = "/api/v1"
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
