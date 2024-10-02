@@ -11,6 +11,10 @@ const storedId = localStorage.getItem('userId') || '0';
 export const userRole = writable<UserRole>(storedRole);
 export const userId = writable<string>(storedId);
 
+if (storedId === '0' && window.location.pathname !== '/register' && window.location.pathname !== '/login') {
+    window.location.href = "/login";
+}
+
 // Update local storage on change event
 userRole.subscribe(value => {
     localStorage.setItem('userRole', value);
