@@ -115,7 +115,7 @@ func (tractor *Tractor) UpdateNextCheckpoint(db *gorm.DB) error {
 		return nil
 	}
 
-	tractor.CurrentCheckpointId = nextCheckpoint.CheckpointId
+	//tractor.CurrentCheckpointId = nextCheckpoint.CheckpointId
 	if nextCheckpoint.IsNextCheckpoint(db, *tractor.Route) {
 		tractor.State = StateInTransit
 	} else {
