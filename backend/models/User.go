@@ -16,11 +16,10 @@ const (
 )
 
 type User struct {
-	Id             uuid.UUID `json:"id" gorm:"type:uuid;primaryKey"`
-	Firstname      string    `json:"firstname" gorm:"not null" binding:"required"`
-	Lastname       string    `json:"lastname" gorm:"not null" binding:"required"`
-	HashedPassword string    `json:"hashed_password" gorm:"not null"`
-	Role           Role      `json:"role" gorm:"not null"`
+	Id       uuid.UUID `json:"id" gorm:"type:uuid;primaryKey"`
+	Username string    `json:"username" gorm:"not null" binding:"required"`
+	Password string    `json:"password" gorm:"not null"`
+	Role     Role      `json:"role" gorm:"not null"`
 }
 
 func (user *User) BeforeCreate(tx *gorm.DB) (err error) {
