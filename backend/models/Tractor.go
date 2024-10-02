@@ -22,13 +22,17 @@ type Tractor struct {
 	ResourceType        ResourceType `json:"resource_type" gorm:"type:varchar(10)" binding:"required"`
 	MaxVolume           float64      `json:"max_units" gorm:"not null"`
 	CurrentVolume       float64      `json:"current_units" gorm:"not null"`
+	StartCheckpointId   *uuid.UUID   `json:"start_checkpoint_id" gorm:""` // Changed to pointer to allow null values
+	StartCheckpoint     *Checkpoint  `json:"start_checkpoint" gorm:"foreignKey:StartCheckpointId"`
+	EndCheckpointId     *uuid.UUID   `json:"end_checkpoint_id" gorm:""` // Changed to pointer to allow null values
+	EndCheckpoint       *Checkpoint  `json:"end_checkpoint" gorm:"foreignKey:EndCheckpointId"`
 	CurrentCheckpointId *uuid.UUID   `json:"current_checkpoint_id" gorm:"type:uuid"` // Foreign key for Checkpoint
 	CurrentCheckpoint   *Checkpoint  `json:"current_checkpoint" gorm:"foreignKey:CurrentCheckpointId"`
 	State               State        `json:"state" gorm:"not null"`
 	CreatedAt           time.Time    `json:"created_at" gorm:""`
-	OwnerId             *uuid.UUID   `json:"owner_id" gorm:"type:uuid"` // Foreign key for User
-	Owner               *User        `json:"owner" gorm:"foreignKey:OwnerId"`
-	MinPriceByKm        uint         `json:"min_price_by_km" gorm:"not null"`
+	OwnerId             uuid.UUID    `json:"owner_id" gorm:"type:uuid"` // Foreign key for User
+	Owner               User         `json:"owner" gorm:"foreignKey:OwnerId"`
+	MinPriceByKm        float64      `json:"min_price_by_km" gorm:"not null"`
 	TrafficManagerId    *uuid.UUID   `json:"traffic_manager_id" gorm:"type:uuid"` // Foreign key for User
 	TrafficManager      *User        `json:"traffic_manager" gorm:"foreignKey:TrafficManagerId"`
 	TraderId            *uuid.UUID   `json:"trader_id" gorm:"type:uuid"` // Foreign key for User
@@ -63,17 +67,29 @@ func (tractor *Tractor) BeforeCreate(tx *gorm.DB) (err error) {
 	return
 }
 
-func (tractor *Tractor) GetByOwnerId(db *gorm.DB, ownerId uuid.UUID) ([]Tractor, error) {
+func (tractor *Tractor) Save(db *gorm.DB) error {
+	return db.Preload("EndCheckpoint").Preload("StartCheckpoint").Save(tractor).Error
+}
+
+func (tractor *Tractor) GetAllTractors(db *gorm.DB) ([]Tractor, error) {
 	var tractors []Tractor
-	if err := db.Where("owner_id = ?", ownerId).Find(&tractors).Error; err != nil {
+	if err := db.Preload("EndCheckpoint").Preload("StartCheckpoint").Find(&tractors).Error; err != nil {
 		return nil, err
 	}
 	return tractors, nil
 }
 
-func (tractor *Tractor) GetAllTractors(db *gorm.DB) ([]Tractor, error) {
+func (tractor *Tractor) FindById(db *gorm.DB, tractorId uuid.UUID) (Tractor, error) {
+	var foundTractor Tractor
+	if err := db.Preload("EndCheckpoint").Preload("StartCheckpoint").First(&foundTractor, "id = ?", tractorId).Error; err != nil {
+		return Tractor{}, err
+	}
+	return foundTractor, nil
+}
+
+func (tractor *Tractor) GetByOwnerId(db *gorm.DB, ownerId uuid.UUID) ([]Tractor, error) {
 	var tractors []Tractor
-	if err := db.Find(&tractors).Error; err != nil {
+	if err := db.Preload("EndCheckpoint").Preload("StartCheckpoint").Preload("CurrentCheckpoint").Preload("TrafficManager").Where("owner_id = ?", ownerId).Find(&tractors).Error; err != nil {
 		return nil, err
 	}
 	return tractors, nil
@@ -101,6 +117,13 @@ func (tractor *Tractor) GetByRouteId(db *gorm.DB, routeId uuid.UUID) ([]Tractor,
 		return nil, err
 	}
 	return tractors, nil
+}
+func (tractor *Tractor) AssociateTraficManager(db *gorm.DB, trafficManagerId uuid.UUID) error {
+	return db.Model(&tractor).Update("traffic_manager_id", trafficManagerId).Error
+}
+
+func (tractor *Tractor) UpdateState(db *gorm.DB, state State) error {
+	return db.Model(&tractor).Update("state", state).Error
 }
 
 func (tractor *Tractor) UpdateNextCheckpoint(db *gorm.DB) error {

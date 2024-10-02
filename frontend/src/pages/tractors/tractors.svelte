@@ -1,66 +1,73 @@
 <script lang="ts">
     import { onMount } from 'svelte';
     import Navbar from '@components/Navbar.svelte';
+  import TrafficManager from '@pages/traffic_manager/traffic_manager.svelte';
 
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
+    // Types
+    interface Checkpoint {
+      id: string;
+      name: string;
+    }
+
+    interface TractorTable {
+        id: string;
+        name: string;
+        state: string;
+        volume: number;
+        currentCheckpoint: string;
+        startCheckpoint: string;
+        endCheckpoint: string;
+        trafficManager: TrafficManager;
+    }
+
+    interface TrafficManager {
+      id: string;
+      name: string;
+    }
+
     // Variables
-    let title: string = 'Gestion des tracteurs';
-    let subtitle: string = 'Suivez l’état de vos tracteurs en temps réel.';
+    let title: string = 'Tractor Management';
+    let subtitle: string = 'Track your tractors in real time.';
     let isModalOpen = false;
-    let checkpoints: string[] = [];
+    let checkpoints: Checkpoint[] = [];
     let types = ['Bulk', 'Solid', 'Liquid'];
-    let lotName: string = '';
+    let name: string = '';
     let selectedType: string = types[0];
     let volume: string = '';
-    let maxPrice: string = '';
-    let selectedDeparture: string = '';
-    let selectedArrival: string = '';
+    let minPrice: string = '';
+    let selectedDeparture: Checkpoint;
+    let selectedArrival: Checkpoint;
+    let tableData: TractorTable[] = [];
+    let trafficManagers: TrafficManager[] = [];
 
-    // Example data
-    let tableData = [
-        { name: 'tracteur 1', status: 'ON_THE_WAY', volume: 16, location: 'Paris', startCheckpoint: 'Lyon', endCheckpoint: 'Montpellier', trafficManager: ['Traffic manager 1'] },
-        { name: 'tracteur 2', status: 'ON_THE_STOCK_EXCHANGE', volume: 3, location: 'Lyon', startCheckpoint: 'Lyon', endCheckpoint: 'Paris', trafficManager: ['Traffic manager 4'] },
-        { name: 'tracteur 3', status: 'PENDING', volume: 4, location: 'Marseille', startCheckpoint: 'Marseille', endCheckpoint: 'Montpellier', trafficManager: ['Traffic manager 2', 'Traffic manager 3', 'Traffic manager 4'] },
-        { name: 'tracteur 4', status: 'ARCHIVED', volume: 8, location: 'Montpellier', startCheckpoint: 'Paris', endCheckpoint: 'Montpellier', trafficManager: ['Traffic manager 3'] },
-    ];
+
+    const fetchAllData = async () => {
+        await fetchTractors();
+        await fetchTrafficManagers();
+        await fetchCheckpoints();
+    }
 
     // Fetch all data
     onMount(async () => {
-
-        // GET checkpoints
-        try {
-            const response = await fetch(`${API_BASE_URL}/checkpoints`);
-            if (response.ok)
-            {
-                const data = await response.json();
-
-                // Extract checkpoint names
-                checkpoints = data.map((checkpoint: { name: string }) => checkpoint.name);
-
-                // Define default selected checkpoints
-                selectedDeparture = checkpoints[0];
-                selectedArrival = checkpoints.length > 1 ? checkpoints[1] : checkpoints[0];
-            }
-            else
-            {
-                console.error('Failed to fetch checkpoints:', response.status);
-            }
-        } catch (error) {
-            console.error('Error fetching checkpoints:', error);
-        }
+        fetchAllData();
     });
 
     // Function to get tag color and text based on status
-    function getStatusInfo(status: string): { color: string; text: string } {
-        switch (status) {
-            case 'PENDING':
-                return { color: 'bg-green-200 text-green-800', text: '◉ En attente' };
-            case 'ON_THE_WAY':
+    function getStateInfo(state: string): { color: string; text: string } {
+        switch (state) {
+            case 'available':
+                return { color: 'bg-green-200 text-green-800', text: '◉ Disponible' };
+            case 'pending':
+                return { color: 'bg-amber-200 text-green-800', text: '◉ En attente' };
+            case 'in_transit':
                 return { color: 'bg-orange-200 text-orange-800', text: '◉ En route' };
-            case 'ON_THE_STOCK_EXCHANGE':
+            case 'on_market':
                 return { color: 'bg-yellow-200 text-yellow-800', text: '◉ En bourse' };
-            case 'ARCHIVED':
+            case 'at_trader':
+                return { color: 'bg-blue-200 text-blue-800', text: '◉ Chez le négociant' };
+            case 'archive':
                 return { color: 'bg-gray-200 text-gray-800', text: '◉ Archivé' };
             default:
                 return { color: 'bg-gray-200 text-gray-800', text: '🛇 Inconnu' };
@@ -82,35 +89,110 @@
         input.value = input.value.replace(/[^0-9.]/g, '');
         if ((input.value.match(/\./g) || []).length > 1)
             input.value = input.value.replace(/\.+$/, '');
-        maxPrice = input.value;
+        minPrice = input.value;
     }
 
-    // Function to add lot
-    function addLot() {
+    // Function to to fetch traffic managers
+    async function fetchTrafficManagers(){
+      try {
+        const response = await fetch(`${API_BASE_URL}/users/traffic_managers`);
+        if (response.ok) {
+          const data = await response.json();
+          trafficManagers = data.map((trafficManager: any) => ({id: trafficManager.id, name: `${trafficManager.firstname}.${trafficManager.lastname}`}));
+        } else {
+          console.error('Failed to fetch traffic managers:', response.status);
+        }
+      } catch (error) {
+        console.error('Error fetching traffic managers:', error);
+      }
+    }
 
-        // Add lot to the table
-        const newLot = {
-            name: lotName,
-            status: 'PENDING',
-            type: selectedType,
+    // Function to fetch tractors
+    async function fetchTractors() {
+        try {
+            const response = await fetch(`${API_BASE_URL}/tractors/owner/942ee444-bd7f-4af0-aa5d-60655db81204`);
+            if (response.ok){
+                const data = await response.json();
+                console.log('Tractors:', data);
+                tableData = data.map((tractor: any) => ({
+                    id: tractor.id,
+                    name: tractor.name,
+                    state: tractor.state,
+                    volume: tractor.max_units,
+                    currentCheckpoint: tractor.current_checkpoint.name,
+                    startCheckpoint: tractor.start_checkpoint.name,
+                    endCheckpoint: tractor.end_checkpoint.name,
+                    trafficManager: tractor.traffic_manager == null ? null : tractor.traffic_manager.firstname + ' ' + tractor.traffic_manager.lastname
+                }));
+            } else {
+                console.error('Failed to fetch tractors:', response.status);
+            }
+        } catch (error) {
+            console.error('Error fetching tractors:', error);
+        }
+    }
+
+    // Function to fetch checkpoints
+    async function fetchCheckpoints () {
+        try {
+            const response = await fetch(`${API_BASE_URL}/checkpoints`);
+            if (response.ok)
+            {
+                const data = await response.json();
+
+                // Extract checkpoint names
+                checkpoints = data.map((checkpoint: any) => ({name: checkpoint.name, id: checkpoint.id}));
+
+                // Define default selected checkpoints
+                selectedDeparture = checkpoints[0];
+                selectedArrival = checkpoints.length > 1 ? checkpoints[1] : checkpoints[0];
+            }
+            else
+            {
+                console.error('Failed to fetch checkpoints:', response.status);
+            }
+        } catch (error) {
+            console.error('Error fetching checkpoints:', error);
+        }
+    }
+
+
+    // Function to add tractor
+    function addTractor() {
+
+        // Add tractor to the table
+        const newTractor = {
+            name: name,
+            resource_type: selectedType.toLowerCase(),
             volume: parseFloat(volume),
-            maxPrice: parseFloat(maxPrice),
-            location: selectedDeparture,
-            startCheckpoint: selectedDeparture,
-            endCheckpoint: selectedArrival,
-            trafficManager: ['Traffic manager 1', 'Traffic manager 1', 'Traffic manager 3']
+            min_price_by_km: parseFloat(minPrice),
+            current_checkpoint_id: selectedDeparture.id,
+            start_checkpoint_id: selectedDeparture.id,
+            end_checkpoint_id: selectedArrival.id,
+            state: 'available',
+            owner_id: '942ee444-bd7f-4af0-aa5d-60655db81204',
         };
+        console.log('New tractor:', newTractor);
 
-        // Create new instance of the table
-        tableData = [...tableData, newLot];
 
-        // Reset form values
-        lotName = '';
+        name = '';
         selectedType = '';
         volume = '';
-        maxPrice = '';
-        selectedDeparture = checkpoints[0]; // Valeur par défaut
-        selectedArrival = checkpoints[1]; // Valeur par défaut
+        minPrice = '';
+        selectedDeparture = checkpoints[0]; // Default value
+        selectedArrival = checkpoints[1]; // Default value
+
+        fetch(`${API_BASE_URL}/tractors`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(newTractor),
+        }).then(response => {
+            fetchTractors();
+        }).catch(error => {
+            console.error('Error adding tractor:', error);
+        });
 
         closeModal();
     }
@@ -123,6 +205,31 @@
     // Function to close modal
     function closeModal() {
         isModalOpen = false;
+    }
+
+    // Function to assign a traffic manager
+    const assignToTrafficManager = (tractorId: string, trafficManager: TrafficManager) => {
+      if (trafficManager == null) {
+        console.error('Traffic manager is null');
+        alert('Please select a traffic manager');
+        return;
+      }
+      fetch(`${API_BASE_URL}/tractors/traffic_manager`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          traffic_manager_id: trafficManager.id,
+          tractor_id: tractorId,
+        }),
+        }).then(response => {
+            fetchTractors();
+            alert('Tractor assigned successfully');
+        }).catch(error => {
+            console.error('Error assigning tractor to traffic manager:', error);
+            alert('Error assigning tractor to traffic manager');
+        });
     }
 </script>
 
@@ -140,13 +247,24 @@
             <h2 class="text-2xl text-gray-600">{subtitle}</h2>
         </div>
 
+        <div class="flex">
+
+        <!-- Reload button -->
+        <button class="bg-blue-500 mr-5 text-white font-bold px-4 py-2 rounded flex items-center hover:bg-blue-600 transition-colors self-end"
+                on:click={fetchAllData}
+        >
+            <i class="fas fa-rotate-right mr-2"></i>
+            Reload
+        </button>
+
         <!-- Create button -->
         <button class="bg-blue-500 text-white font-bold px-4 py-2 rounded flex items-center hover:bg-blue-600 transition-colors self-end"
                 on:click={openModal}
         >
             <i class="fas fa-plus mr-2"></i>
-            Ajouter un tracteur
+            Add tractor
         </button>
+        </div>
 
     </section>
 
@@ -155,12 +273,13 @@
         <table class="table-auto w-full border-collapse border border-gray-300">
             <thead>
             <tr class="bg-gray-100">
-                <th class="border p-2 text-center">Nom</th>
+                <th class="border p-2 text-center">Name</th>
                 <th class="border p-2 text-center">Status</th>
                 <th class="border p-2 text-center">Volume <span class="font-normal">(en m³)</span></th>
                 <th class="border p-2 text-center">Localisation</th>
                 <th class="border p-2 text-center">Départ / Arrivée</th>
                 <th class="border p-2 text-center">Traffic manager</th>
+                <th class="border p-2 text-center">Actions</th>
             </tr>
             </thead>
             <tbody>
@@ -172,8 +291,8 @@
 
                     <!-- Column 2 -->
                     <td class="border p-2 text-center">
-                            <span class={`px-2 py-1 rounded ${getStatusInfo(row.status).color}`}>
-                                {getStatusInfo(row.status).text}
+                            <span class={`px-2 py-1 rounded ${getStateInfo(row.state).color}`}>
+                                {getStateInfo(row.state).text}
                             </span>
                     </td>
 
@@ -181,7 +300,7 @@
                     <td class="border p-2 text-center">{row.volume}</td>
 
                     <!-- Column 4 -->
-                    <td class="border p-2 text-center">{row.location}</td>
+                    <td class="border p-2 text-center">{row.currentCheckpoint}</td>
 
                     <!-- Column 5 -->
                     <td class="border p-2 text-center">
@@ -190,18 +309,46 @@
 
                     <!-- Column 6 -->
                     <td class="border p-2 text-center">
-                        {#if row.status === 'PENDING'}
-                            <select class="border border-gray-300 rounded px-2 py-1 mx-auto w-4/5">
-                                {#each row.trafficManager as trafficManagerOption}
-                                    <option>{trafficManagerOption}</option>
+                        {#if row.state === 'available'}
+                            <select bind:value={row.trafficManager}  class="border border-gray-300 rounded px-2 py-1 mx-auto w-4/5">
+                                {#each trafficManagers as trafficManagerOption}
+                                    <option value={trafficManagerOption}>{trafficManagerOption.name}</option>
                                 {/each}
                             </select>
                         {:else}
                                 <span class="px-2 py-1 mx-auto w-4/5 block">
-                                    {row.trafficManager[0]}
+                                    {row.trafficManager}
                                 </span>
                         {/if}
                     </td>
+
+                    <!-- Column 7 -->
+                    <td class="border p-2 text-center">
+                        {#if row.state === 'in_transit'}
+                            <div class="flex flex-wrap justify-center space-x-2">
+                                <button class="bg-red-200 text-red-600 px-4 py-2 flex items-center font-bold hover:bg-red-300 transition-colors rounded-md">
+                                    <i class="fas fa-hand mr-2"></i>
+                                    Arrêter
+                                </button>
+                            </div>
+                        {:else if row.state === 'available'}
+                            <div class="flex flex-wrap justify-center space-x-2">
+                                <button on:click={()=>{assignToTrafficManager(row.id, row.trafficManager)}} class="bg-green-200 text-green-800 px-4 py-2 flex items-center font-bold hover:bg-green-300 transition-colors rounded-md">
+                                    <i class="fas fa-truck mr-2"></i>
+                                    Attribuer au TM 
+                                </button>
+                                <button class="bg-blue-200 text-blue-800 px-4 py-2 flex items-center font-bold hover:bg-blue-300 transition-colors rounded-md">
+                                    <i class="fas fa-plus mr-2"></i>
+                                    Bourse
+                                </button>
+                                <button class="bg-gray-800 text-white px-4 py-2 flex items-center font-bold hover:bg-black transition-colors rounded-md">
+                                    <i class="fas fa-right-from-bracket mr-2"></i>
+                                    Retirer
+                                </button>
+                            </div>
+                        {:else}
+                            <span class="text-gray-500">-</span>
+                        {/if}
                 </tr>
             {/each}
             </tbody>
@@ -229,12 +376,22 @@
             <h2 class="text-2xl font-bold mb-6">Ajouter un tracteur</h2>
 
             <!-- Form -->
-            <form on:submit|preventDefault={addLot}>
+            <form on:submit|preventDefault={addTractor}>
 
                 <!-- Name -->
                 <div class="mb-2">
                     <label class="block text-gray-700 text-sm font-bold mb-2">Nom :</label>
-                    <input type="text" class="w-full border border-gray-300 p-2 rounded" placeholder="Entrez le nom du lot" bind:value={lotName} required>
+                    <input type="text" class="w-full border border-gray-300 p-2 rounded" placeholder="Entrez le nom du tracteur" bind:value={name} required>
+                </div>
+
+                <!-- Type -->
+                <div class="mb-2">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Type :</label>
+                    <select class="w-full border border-gray-300 p-2 rounded" bind:value={selectedType}>
+                        {#each types as type}
+                            <option value={type}>{type}</option>
+                        {/each}
+                    </select>
                 </div>
 
                 <!-- Volume -->
@@ -242,7 +399,7 @@
                     <label class="block text-gray-700 text-sm font-bold mb-2">Volume :</label>
                     <input type="text"
                            class="w-full border border-gray-300 p-2 rounded"
-                           placeholder="Entrez le volume (en m³)"
+                           placeholder="Enrtrez le volume maximum (en m³)"
                            on:input={validateVolume}
                            value={volume}
                            required
@@ -251,16 +408,39 @@
 
                 <!-- Min price -->
                 <div class="mb-2">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Prix minimum :</label>
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Prix minimum:</label>
                     <input type="text"
                            class="w-full border border-gray-300 p-2 rounded"
-                           placeholder="Entrez le prix maximum (par km)"
+                           placeholder="Entrez le prix minimum (par km)"
                            on:input={validateMinPrice}
-                           value={volume}
+                           value={minPrice}
                            required
                     >
                 </div>
+                
+                <!-- Departure -->
+                <div class="mb-2">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Départ :</label>
+                    <select class="w-full border border-gray-300 p-2 rounded" bind:value={selectedDeparture}>
+                        {#each checkpoints as checkpoint}
+                            {#if checkpoint.id !== selectedArrival.id}
+                                <option value={checkpoint}>{checkpoint.name}</option>
+                            {/if}
+                        {/each}
+                    </select>
+                </div>
 
+                <!-- Arrival -->
+                <div class="mb-2">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Arrivé :</label>
+                    <select class="w-full border border-gray-300 p-2 rounded" bind:value={selectedArrival}>
+                        {#each checkpoints as checkpoint}
+                            {#if checkpoint.id !== selectedDeparture.id}
+                                <option value={checkpoint}>{checkpoint.name}</option>
+                            {/if}
+                        {/each}
+                    </select>
+                </div>
 
                 <!-- Add button -->
                 <div class="flex justify-center mt-4">
