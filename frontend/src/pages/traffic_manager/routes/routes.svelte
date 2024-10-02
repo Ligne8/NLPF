@@ -1,27 +1,76 @@
 <script lang="ts">
     import Navbar from '@components/Navbar.svelte';
     import TrafficManagerNavbar from '@components/TrafficManagerNavbar.svelte';
+    import { onMount } from 'svelte';
+    import axios from 'axios';
+    import {userId} from "@stores/store";
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
+    interface Checkpoints {
+        id: string;
+        name: string;
+    }
 
     // Variables
     let title: string = 'Gestion des routes';
     let subtitle: string = 'Gérez les routes et les itinéraires disponibles.';
-    let checkpoints = ['Paris', 'Lyon', 'Marseille', 'Toulouse', 'Nice', 'Nantes'];
-    let selectedCheckpoints: string[] = [checkpoints[0]];
+    let checkpoints: Checkpoints[] = [];
+    let selectedCheckpoints: Checkpoints[] = [];
     let newRouteName: string = '';
+    let tableData: Route[] = [];
 
-    // Example data
-    let tableData = [
-        { name: 'Route 1', route: ['Paris', 'Montpellier', 'Marseille'] },
-        { name: 'Route 2', route: ['Paris', 'Montpellier'] },
-        { name: 'Route 3', route: ['Marseille', 'Lyon', 'Marseille'] },
-        { name: 'Route 4', route: ['Montpellier', 'Paris', 'Lyon', 'Perpignan'] },
-    ];
+    interface Route {
+        name: string;
+        id: string;
+        route_path: string;
+    }
+
+
+
+    onMount(() => {
+        fetchCheckpoints();
+        fetchRoutes();
+    });
+
+    const fetchRoutes = async () => {
+        const response = await fetch(`${API_BASE_URL}/routes/traffic_manager/parsed/${$userId}`);
+        if (response.ok) {
+            const data = await response.json();
+            if (data != null){
+              tableData = data;
+            }
+        } else {
+            console.error('Failed to fetch routes:', response.status);
+        }
+    }
+
+    async function fetchCheckpoints(){
+        try {
+            const response = await fetch(`${API_BASE_URL}/checkpoints`);
+            if (response.ok)
+            {
+                const data = await response.json();
+                checkpoints = data.map((checkpoint: any) => ({name: checkpoint.name, id: checkpoint.id}));
+                console.log(checkpoints[0]);
+                selectedCheckpoints = [checkpoints[0]];
+            }
+            else
+            {
+                console.error('Failed to fetch checkpoints:', response.status);
+            }
+        } catch (error) {
+            console.error('Error fetching checkpoints:', error);
+        }
+    }
+
 
     // Function to add a new checkpoint select
     function addCheckpoint() {
         const availableCheckpoints = getAvailableCheckpoints(selectedCheckpoints.length);
-        const defaultCheckpoint = availableCheckpoints.length > 0 ? availableCheckpoints[0] : '';
-        selectedCheckpoints = [...selectedCheckpoints, defaultCheckpoint];
+        if (availableCheckpoints.length > 0)
+        {
+            selectedCheckpoints = [...selectedCheckpoints, availableCheckpoints[0]];
+        }
     }
 
     // Function to remove a checkpoint
@@ -32,8 +81,7 @@
         selectedCheckpoints = selectedCheckpoints.filter((value, i, arr) => i === 0 || value !== arr[i - 1]);
     }
 
-    // Function to filter checkpoints
-    function getAvailableCheckpoints(currentIndex: number): string[] {
+    function getAvailableCheckpoints(currentIndex: number): Checkpoints[] {
         if (currentIndex === 0)
             return checkpoints;
 
@@ -53,14 +101,29 @@
     function addRouteToTable() {
         const newRoute = {
             name: newRouteName,
-            route: selectedCheckpoints.filter(cp => cp !== '')
+            traffic_manager_id: $userId,
+            route: selectedCheckpoints.map((cp, index) => 
+            {
+              const payload = {
+                checkpoint_id: cp.id,
+                position: index+1
+              }
+              return payload;
+            }
+          )
         };
-        tableData = [...tableData, newRoute];
+        axios.post(`${API_BASE_URL}/routes`, newRoute)
+            .then(() => {
+                fetchRoutes();
+            })
+            .catch((error:any) => {
+                console.error('Failed to add route:', error);
+            });
     }
 
     // Function to validate the route
     function validateRoute() {
-        const validCheckpoints = selectedCheckpoints.filter(cp => cp !== '');
+        const validCheckpoints = selectedCheckpoints.filter(cp => cp.name !== '');
         if (validCheckpoints.length < 2 || newRouteName.trim() === '')
             return;
 
@@ -110,7 +173,7 @@
 
                         <!-- Column 2 -->
                         <td class="border p-2 text-center">
-                            {row.route.join(' - ')}
+                            {row.route_path}
                         </td>
 
                     </tr>
@@ -156,26 +219,25 @@
                         >
                             {#each getAvailableCheckpoints(index) as checkpoint}
                                 <option value={checkpoint}>
-                                    {checkpoint}
+                                    {checkpoint.name}
                                 </option>
                             {/each}
                         </select>
                     </div>
                 {/each}
-
                 <!-- Add checkpoint button -->
                 <button
                         on:click={addCheckpoint}
                         class="bg-gray-800 text-white rounded px-4 py-2 w-full hover:bg-gray-900 transition-colors flex items-center justify-center"
-                        disabled={selectedCheckpoints[selectedCheckpoints.length - 1] === ''}
-                        class:bg-gray-300={selectedCheckpoints[selectedCheckpoints.length - 1] === ''}
+                        disabled={selectedCheckpoints[selectedCheckpoints.length - 1] === null}
+                        class:bg-gray-300={selectedCheckpoints[selectedCheckpoints.length - 1] === null}
                 >
                     <i class="fas fa-plus"></i>
                 </button>
             </div>
 
             <!-- Validate button -->
-            {#if selectedCheckpoints.filter(cp => cp !== '').length >= 2 && newRouteName.trim() !== ''}
+            {#if selectedCheckpoints.filter(cp => cp !== null).length >= 2 && newRouteName.trim() !== ''}
                 <div class="flex justify-center mt-4">
                     <button
                             on:click={validateRoute}

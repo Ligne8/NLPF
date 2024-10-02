@@ -1,7 +1,8 @@
 <script lang="ts">
     import { onMount } from 'svelte';
     import Navbar from '@components/Navbar.svelte';
-  import TrafficManager from '@pages/traffic_manager/traffic_manager.svelte';
+    import TrafficManager from '@pages/traffic_manager/traffic_manager.svelte';
+    import {userId} from "@stores/store";
 
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -91,7 +92,7 @@
         const response = await fetch(`${API_BASE_URL}/users/traffic_managers`);
         if (response.ok) {
           const data = await response.json();
-          trafficManagers = data.map((trafficManager: any) => ({id: trafficManager.id, name: `${trafficManager.firstname}.${trafficManager.lastname}`}));
+          trafficManagers = data.map((trafficManager: any) => ({id: trafficManager.id, name: `${trafficManager.username}`}));
         } else {
           console.error('Failed to fetch traffic managers:', response.status);
         }
@@ -102,7 +103,8 @@
 
     async function fetchLots() {
       try {
-        const response = await fetch(`${API_BASE_URL}/lots/owner/21bb7647-cb19-4d19-a7f1-9cb4de647da8`);
+
+        const response = await fetch(`${API_BASE_URL}/lots/owner/${$userId}`);
         if (response.ok) {
           const data = await response.json();
           tableData = data.map((lot: any) => ({
@@ -112,8 +114,9 @@
             currentCheckpoint: lot.current_checkpoint.name,
             startCheckpoint: lot.start_checkpoint.name,
             endCheckpoint: lot.end_checkpoint.name,
-            trafficManager: lot.traffic_manager == null ? null : lot.traffic_manager.firstname + ' ' + lot.traffic_manager.lastname
-          }));
+            trafficManager: lot.traffic_manager == null ? null : lot.traffic_manager.username,
+            createdAt: new Date(lot.created_at)
+          })).sort((a:any, b:any) => b.createdAt - a.createdAt);
         } else {
           console.error('Failed to fetch lots:', response.status);
         }
@@ -153,7 +156,8 @@
             start_checkpoint_id: selectedDeparture.id,
             end_checkpoint_id: selectedArrival.id,
             state: 'available',
-            owner_id: '21bb7647-cb19-4d19-a7f1-9cb4de647da8'
+            owner_id: $userId
+
         };
 
         selectedType = '';

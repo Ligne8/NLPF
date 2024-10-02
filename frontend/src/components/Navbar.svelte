@@ -1,13 +1,16 @@
 <script lang="ts">
     import { onMount } from 'svelte';
+
     import { userRole, currentTab } from '@stores/store.js';
     import type { UserRole } from '@stores/store.js';
     import axios from 'axios';
 
+
+
     // Role permissions
     const rolePermissions: Record<UserRole, string[]> = {
         admin: ['Lots', 'Tractors', 'TrafficManager', 'Trader', 'StockExchange'],
-        trafficManager: ['TrafficManager'],
+        traffic_manager: ['TrafficManager'],
         trader: ['Trader', 'StockExchange'],
         client: ['Lots', 'Tractors', 'StockExchange']
     };
@@ -62,9 +65,11 @@
         else if (path.startsWith('/stock-exchange'))
             currentTab.set('StockExchange');
         else
+
             currentTab.set(''); // Reset if on root or unknown path
 
         fetchSimulationDate();
+
 
     });
 </script>
@@ -104,6 +109,7 @@
             {/if}
         </ul>
     </div>
+
     <div class="flex items-center space-x-4">
         {#if simulationDate}
             <!-- Affichage de la date de simulation -->
@@ -135,4 +141,5 @@
         border-radius: 50%;
     }
 </style>
+
 
