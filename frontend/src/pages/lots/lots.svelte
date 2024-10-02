@@ -103,7 +103,7 @@
 
     async function fetchLots() {
       try {
-        const response = await fetch(`${API_BASE_URL}/lots/owner/${userId}`);
+        const response = await fetch(`${API_BASE_URL}/lots/owner/${$userId}`);
         if (response.ok) {
           const data = await response.json();
           tableData = data.map((lot: any) => ({
@@ -155,7 +155,7 @@
             start_checkpoint_id: selectedDeparture.id,
             end_checkpoint_id: selectedArrival.id,
             state: 'available',
-            owner_id: userId
+            owner_id: $userId
         };
 
         selectedType = '';
