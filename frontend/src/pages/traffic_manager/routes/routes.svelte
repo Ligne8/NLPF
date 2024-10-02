@@ -4,7 +4,6 @@
     import { onMount } from 'svelte';
     import axios from 'axios';
     import {userId} from "@stores/store";
-
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
     interface Checkpoints {
@@ -37,7 +36,9 @@
         const response = await fetch(`${API_BASE_URL}/routes/traffic_manager/parsed/${$userId}`);
         if (response.ok) {
             const data = await response.json();
-            tableData = data;
+            if (data != null){
+              tableData = data;
+            }
         } else {
             console.error('Failed to fetch routes:', response.status);
         }
@@ -50,6 +51,7 @@
             {
                 const data = await response.json();
                 checkpoints = data.map((checkpoint: any) => ({name: checkpoint.name, id: checkpoint.id}));
+                console.log(checkpoints[0]);
                 selectedCheckpoints = [checkpoints[0]];
             }
             else
@@ -223,7 +225,6 @@
                         </select>
                     </div>
                 {/each}
-
                 <!-- Add checkpoint button -->
                 <button
                         on:click={addCheckpoint}
