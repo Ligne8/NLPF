@@ -3,13 +3,14 @@
     import TrafficManagerNavbar from '@components/TrafficManagerNavbar.svelte';
     import {onMount} from "svelte";
     import type {Tractor} from "../../../interface/tractorInterface";
+    import {userId, userRole} from "@stores/store";
+    import axios from "axios";
 
     // Variables
     let title: string = 'Gestion des Tracteurs';
     let subtitle: string = 'Suivez l’état de votre flotte en temps réel.';
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
     let tractors: Tractor[]  = [];
-
 
     // Function to get tag color and text based on status
     function getStatusInfo(status: string): { color: string; text: string } {
@@ -26,38 +27,20 @@
     }
 
     onMount(() => {
-        console.log('Tractors page mounted');
         fetchTableInfo();
     });
 
     async function fetchTableInfo() {
-        console.log('Fetching table data...');
-        try {
-            console.log(`${API_BASE_URL}`);
-            const response = await fetch(`${API_BASE_URL}/tractors/trafficManager/97b3e70e-4db5-4fb4-858a-b8cc79b5edf0`);
-            if (response.ok)
-            {
-                const data = await response.json();
-                console.log('Data:', data);
-                tractors = data;
-                console.log('Tractors:', tractors);
-            }
-            else
-            {
-                console.error('Failed to fetch checkpoints:', response.status);
-            }
-        } catch (error) {
-            console.error('Error fetching checkpoints:', error);
+        if($userRole !== "trafficManager") {
+            return;
         }
+        await axios.get(`${API_BASE_URL}/tractors/trafficManager/${$userId}`)
+            .then((response) => {
+                tractors = response.data;
+            }).catch((error) => {
+                console.error('Error fetching tractors:', error.response);
+            });
     }
-
-    // Example data
-    const tableData = [
-        { name: 'Tracteur 1', status: 'ON_THE_WAY', currentCapacity: 120, totalCapacity: 120, location: 'Paris', route: ['Paris / Nantes'] },
-        { name: 'Tracteur 2', status: 'ON_THE_STOCK_EXCHANGE', currentCapacity: 38, totalCapacity: 154, location: 'Lyon', route: ['Paris / Perpignan'] },
-        { name: 'Tracteur 3', status: 'AVAILABLE', currentCapacity: 52, totalCapacity: 86, location: 'Marseille', route: ['Marseille / Lyon'] },
-        { name: 'Tracteur 4', status: 'AVAILABLE', currentCapacity: 0, totalCapacity: 94, location: 'Montpellier', route: ['Montpellier / Marseille', 'Montpellier / Paris', 'Montpellier / Lyon', 'Montpellier / Perpignan'] },
-    ];
 </script>
 
 
