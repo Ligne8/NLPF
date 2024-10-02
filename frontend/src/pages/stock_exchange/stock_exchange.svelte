@@ -18,11 +18,6 @@
         { id: 2, expirationDate: 1698242400000, type: 'Liquid', spaceAvailable: 800, minPrice: 1.8, currentPrice: 2.1 },
         { id: 3, expirationDate: 1700834400000, type: 'Solid', spaceAvailable: 300, minPrice: 3.0, currentPrice: 3.5 }
     ];
-    const lotsData = [
-        { id: 1, expirationDate: 1695564000000, type: 'Bulk', volume: 80, maxPrice: 1.5, currentPrice: 1.2 },
-        { id: 2, expirationDate: 1698242400000, type: 'Liquid', volume: 50, maxPrice: 0.8, currentPrice: 1.7 },
-        { id: 3, expirationDate: 1700834400000, type: 'Solid', volume: 30, maxPrice: 2.0, currentPrice: 0.5 }
-    ];
 
     // Function to format timestamp into DD/MM/YYYY
     const formatDate = (timestamp: number) => {
