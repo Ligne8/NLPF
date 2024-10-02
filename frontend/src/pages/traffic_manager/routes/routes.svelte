@@ -1,10 +1,11 @@
 <script lang="ts">
     import Navbar from '@components/Navbar.svelte';
     import TrafficManagerNavbar from '@components/TrafficManagerNavbar.svelte';
-  import { onMount } from 'svelte';
+    import { onMount } from 'svelte';
+    import axios from 'axios';
 
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-    const USER_ID = localStorage.getItem('user_id') || '942ee444-bd7f-4af0-aa5d-60655db81204';
+    const USER_ID = localStorage.getItem('user_id') || '942ee444-bd7f-4af0-aa5d-60655db81256';
 
     interface Checkpoints {
         id: string;
@@ -17,10 +18,30 @@
     let checkpoints: Checkpoints[] = [];
     let selectedCheckpoints: Checkpoints[] = [];
     let newRouteName: string = '';
+    let tableData: Route[] = [];
+
+    interface Route {
+        name: string;
+        id: string;
+        route_path: string;
+    }
+
+
 
     onMount(() => {
         fetchCheckpoints();
+        fetchRoutes();
     });
+
+    const fetchRoutes = async () => {
+        const response = await fetch(`${API_BASE_URL}/routes/traffic_manager/parsed/${USER_ID}`);
+        if (response.ok) {
+            const data = await response.json();
+            tableData = data;
+        } else {
+            console.error('Failed to fetch routes:', response.status);
+        }
+    }
 
     async function fetchCheckpoints(){
         try {
@@ -40,13 +61,6 @@
         }
     }
 
-    // Example data
-    let tableData = [
-        { name: 'Route 1', route: ['Paris', 'Montpellier', 'Marseille'] },
-        { name: 'Route 2', route: ['Paris', 'Montpellier'] },
-        { name: 'Route 3', route: ['Marseille', 'Lyon', 'Marseille'] },
-        { name: 'Route 4', route: ['Montpellier', 'Paris', 'Lyon', 'Perpignan'] },
-    ];
 
     // Function to add a new checkpoint select
     function addCheckpoint() {
@@ -96,8 +110,13 @@
             }
           )
         };
-        //tableData = [...tableData, newRoute];
-        console.log(JSON.stringify(newRoute));
+        axios.post(`${API_BASE_URL}/routes`, newRoute)
+            .then(() => {
+                fetchRoutes();
+            })
+            .catch((error:any) => {
+                console.error('Failed to add route:', error);
+            });
     }
 
     // Function to validate the route
@@ -152,7 +171,7 @@
 
                         <!-- Column 2 -->
                         <td class="border p-2 text-center">
-                            {row.route.join(' - ')}
+                            {row.route_path}
                         </td>
 
                     </tr>
