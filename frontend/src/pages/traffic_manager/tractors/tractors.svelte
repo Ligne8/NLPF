@@ -49,14 +49,6 @@
             console.error('Error fetching checkpoints:', error);
         }
     }
-
-    // Example data
-    const tableData = [
-        { name: 'Tracteur 1', status: 'ON_THE_WAY', currentCapacity: 120, totalCapacity: 120, location: 'Paris', route: ['Paris / Nantes'] },
-        { name: 'Tracteur 2', status: 'ON_THE_STOCK_EXCHANGE', currentCapacity: 38, totalCapacity: 154, location: 'Lyon', route: ['Paris / Perpignan'] },
-        { name: 'Tracteur 3', status: 'AVAILABLE', currentCapacity: 52, totalCapacity: 86, location: 'Marseille', route: ['Marseille / Lyon'] },
-        { name: 'Tracteur 4', status: 'AVAILABLE', currentCapacity: 0, totalCapacity: 94, location: 'Montpellier', route: ['Montpellier / Marseille', 'Montpellier / Paris', 'Montpellier / Lyon', 'Montpellier / Perpignan'] },
-    ];
 </script>
 
 
