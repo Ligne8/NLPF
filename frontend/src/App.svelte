@@ -20,8 +20,8 @@
 <Router {url} >
     <div>
         <Route path="/" component={Home} />
-        <Route path="/Register" component={Register} />
-        <Route path="/Login" component={Login} />
+        <Route path="/register" component={Register} />
+        <Route path="/login" component={Login} />
         <Route path="/lots" component={Lots} />
         <Route path="/tractors" component={Tractors} />
         <Route path="/traffic-manager" component={TrafficManager} />
