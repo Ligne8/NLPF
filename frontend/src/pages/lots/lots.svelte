@@ -1,6 +1,7 @@
 <script lang="ts">
     import { onMount } from 'svelte';
     import Navbar from '@components/Navbar.svelte';
+    import TrafficManager from '@pages/traffic_manager/traffic_manager.svelte';
 
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
     const USER_ID = localStorage.getItem('user_id') || '942ee444-bd7f-4af0-aa5d-60655db81204';
