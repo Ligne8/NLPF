@@ -31,7 +31,7 @@
     });
 
     async function fetchTableInfo() {
-        if($userRole !== "trafficManager") {
+        if($userRole !== "traffic_manager") {
             return;
         }
         await axios.get(`${API_BASE_URL}/tractors/trafficManager/${$userId}`)

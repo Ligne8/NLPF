@@ -6,7 +6,7 @@
     // Role permissions
     const rolePermissions: Record<UserRole, string[]> = {
         admin: ['Lots', 'Tractors', 'TrafficManager', 'Trader', 'StockExchange'],
-        trafficManager: ['TrafficManager'],
+        traffic_manager: ['TrafficManager'],
         trader: ['Trader', 'StockExchange'],
         client: ['Lots', 'Tractors', 'StockExchange']
     };
