@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 	"tms-backend/models"
 
@@ -12,41 +13,21 @@ import (
 type TractorController struct {
 	Db *gorm.DB
 }
+
 var tractorModel = models.Tractor{}
 
-
 func (TractorController *TractorController) AddTractor(c *gin.Context) {
-	var requestBody struct {
-		ResourceType        models.ResourceType `json:"resource_type" binding:"required"`
-		MaxVolume           float64             `json:"max_units"`
-		CurrentVolume       float64             `json:"current_units"`
-		CurrentCheckpointId uuid.UUID           `json:"current_checkpoint_id" gorm:"type:uuid"` // Foreign key for Checkpoint
-		State               models.State        `json:"state"`
-		OwnerId             uuid.UUID           `json:"owner_id"` // Foreign key for User
-		MinPriceByKm        uint                `json:"min_price_by_km"`
-		TrafficManagerId    uuid.UUID           `json:"traffic_manager_id"` // Foreign key for User
-	}
-	if err := c.ShouldBindJSON(&requestBody); err != nil {
+	var newTractor models.Tractor
+	if err := c.ShouldBindJSON(&newTractor); err != nil {
+		fmt.Println(newTractor)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-
-	TractorModel := models.Tractor{
-		ResourceType:        requestBody.ResourceType,
-		MaxVolume:           requestBody.MaxVolume,
-		CurrentVolume:       requestBody.CurrentVolume,
-		CurrentCheckpointId: requestBody.CurrentCheckpointId,
-		State:               requestBody.State,
-		OwnerId:             requestBody.OwnerId,
-		MinPriceByKm:        requestBody.MinPriceByKm,
-		TrafficManagerId:    requestBody.TrafficManagerId,
-	}
-
-	if err := TractorController.Db.Create(&TractorModel).Error; err != nil {
+	if err := TractorController.Db.Create(&newTractor).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, tractorModel);
+	c.JSON(http.StatusOK, newTractor)
 }
 
 func (TractorController *TractorController) GoToNextCheckpoint(c *gin.Context) {
@@ -59,17 +40,13 @@ func (TractorController *TractorController) GoToNextCheckpoint(c *gin.Context) {
 	// for each tractor
 	for _, tractor := range tractors {
 
+		tractor.UpdateNextCheckpoint(TractorController.Db)
 
-		tractor.UpdateNextCheckpoint(TractorController.Db);
-		
-
-
-		TractorController.Db.Save(&tractor);
+		TractorController.Db.Save(&tractor)
 	}
 
 	c.JSON(http.StatusOK, tractors)
 }
-
 
 func (TractorController *TractorController) GetTractorsByOwnerId(c *gin.Context) {
 	ownerId := c.Param("ownerId")
@@ -150,8 +127,6 @@ func (TractorController *TractorController) GetTractorsByRouteId(c *gin.Context)
 	c.JSON(http.StatusOK, tractors)
 }
 
-
-
 func (TractorController *TractorController) AddTrafficManager(c *gin.Context) {
 	var requestBody struct {
 		TractorId        uuid.UUID `json:"tractor_id" binding:"required"`
@@ -180,13 +155,8 @@ func (TractorController *TractorController) AddTrafficManager(c *gin.Context) {
 		return
 	}
 
-	tractor.TrafficManagerId = requestBody.TrafficManagerId
-
-	// C le bon state ?
-	tractor.State = models.StateInTransit
-
-	//Il faut ajouter le traffic manager au tracteur direct comme ca ? pq pas juste utiliser la cle etrangere ?
-	//tractor.TrafficManager = &trafficManager
+	tractor.TrafficManagerId = &requestBody.TrafficManagerId
+	tractor.State = models.StatePending
 
 	if err := TractorController.Db.Save(&tractor).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -197,25 +167,23 @@ func (TractorController *TractorController) AddTrafficManager(c *gin.Context) {
 // UpdateTractorState: Update the state of a tractor
 func (TractorController *TractorController) UpdateTractorState(c *gin.Context) {
 	var requestBody struct {
-			TractorId uuid.UUID    `json:"tractor_id" binding:"required"`
-			State     models.State `json:"state" binding:"required"`
+		Id    uuid.UUID    `json:"id" binding:"required"`
+		State models.State `json:"state" binding:"required"`
 	}
-
 	if err := c.ShouldBindJSON(&requestBody); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 	}
-
 	var tractor models.Tractor
-	if err := TractorController.Db.First(&tractor, "id = ?", requestBody.TractorId).Error; err != nil {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Tractor not found when trying to update its state"})
-			return
+	if err := TractorController.Db.First(&tractor, "id = ?", requestBody.Id).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Tractor not found when trying to update its state"})
+		return
 	}
-
 	tractor.State = requestBody.State
 
 	if err := TractorController.Db.Save(&tractor).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
+	c.JSON(http.StatusOK, tractor)
 }
