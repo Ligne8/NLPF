@@ -2,7 +2,7 @@
     import { onMount } from 'svelte';
 
     import { userRole, currentTab } from '@stores/store.js';
-    import type { UserRole, userId } from '@stores/store.js';
+    import type { UserRole } from '@stores/store.js';
     import axios from 'axios';
 
     // Role permissions
@@ -16,11 +16,12 @@
     // State for simulation date
     let simulationDate: string = '';
     let error: string = '';
+
     // Fetch simulation date from the backend
     async function fetchSimulationDate() {
         try {
             const response = await axios.get('http://localhost:8080/api/v1/simulations/date');
-            simulationDate = response.data.simulation_date; // Récupération de la date au format YYYY-MM-DD
+            simulationDate = response.data.simulation_date; // Get datetime format YYYY-MM-DD
         } catch (err) {
             error = 'Erreur lors de la récupération de la date de simulation';
             console.error(err);
@@ -36,7 +37,6 @@
             console.error(err);
         }
     }
-
 
     // Function to check user access
     function hasAccess(tab: string): boolean {
@@ -63,76 +63,106 @@
         else if (path.startsWith('/stock-exchange'))
             currentTab.set('StockExchange');
         else
-
             currentTab.set(''); // Reset if on root or unknown path
 
         fetchSimulationDate();
-
     });
 </script>
 
-
 <!-- Navbar -->
-<nav class="bg-gray-800 p-4 text-white">
+<nav class="bg-gray-800 p-4 text-white shadow-md">
     <div class="flex items-center justify-between">
-    <div class="flex items-center">
-    
+        <div class="flex items-center">
+            <!-- Logo -->
+            <a href="/" class="flex-shrink-0">
+                <img src="/images/logo.png" alt="Logo" class="h-12 w-auto transition-transform duration-300 hover:scale-105" />
+            </a>
+            <a href="/">
+                <span class="ml-3 text-xl font-bold tracking-widest hover:text-blue-400 transition-colors duration-300">
+                    LIGNE<span class="text-blue-400">8</span>
+                </span>
+            </a>
 
-        <!-- Logo -->
-        <a href="/" class="flex-shrink-0">
-            <img src="/images/logo.png" alt="Logo" class="h-12 w-auto" />
-        </a>
-        <a href="/">
-            <span class="ml-3 text-xl font-bold tracking-[8px]">
-                LIGNE<span class="text-blue-400">8</span>
-            </span>
-        </a>
+            <!-- Navigation Links -->
+            <ul class="flex space-x-8 ml-16 text-base">
+                {#if hasAccess('Lots')}
+                    <li>
+                        <a href="/lots" on:click={() => switchTab('Lots')} class="{$currentTab === 'Lots' ? 'font-bold text-blue-400' : 'hover:text-blue-400 transition-colors duration-300'}">
+                            Lots
+                        </a>
+                    </li>
+                {/if}
+                {#if hasAccess('Tractors')}
+                    <li>
+                        <a href="/tractors" on:click={() => switchTab('Tractors')} class="{$currentTab === 'Tractors' ? 'font-bold text-blue-400' : 'hover:text-blue-400 transition-colors duration-300'}">
+                            Tracteurs
+                        </a>
+                    </li>
+                {/if}
+                {#if hasAccess('TrafficManager')}
+                    <li>
+                        <a href="/traffic-manager" on:click={() => switchTab('TrafficManager')} class="{$currentTab === 'TrafficManager' ? 'font-bold text-blue-400' : 'hover:text-blue-400 transition-colors duration-300'}">
+                            Traffic manager
+                        </a>
+                    </li>
+                {/if}
+                {#if hasAccess('Trader')}
+                    <li>
+                        <a href="/trader" on:click={() => switchTab('Trader')} class="{$currentTab === 'Trader' ? 'font-bold text-blue-400' : 'hover:text-blue-400 transition-colors duration-300'}">
+                            Trader
+                        </a>
+                    </li>
+                {/if}
+                {#if hasAccess('StockExchange')}
+                    <li>
+                        <a href="/stock-exchange" on:click={() => switchTab('StockExchange')} class="{$currentTab === 'StockExchange' ? 'font-bold text-blue-400' : 'hover:text-blue-400 transition-colors duration-300'}">
+                            Bourse
+                        </a>
+                    </li>
+                {/if}
+            </ul>
+        </div>
 
-        <!-- Navigation Links -->
-        <ul class="flex space-x-16 ml-16">
-            {#if hasAccess('Lots')}
-                <li><a href="/lots" on:click={() => switchTab('Lots')} class="{$currentTab === 'Lots' ? 'font-bold' : ''}">Lots</a></li>
-            {/if}
-            {#if hasAccess('Tractors')}
-                <li><a href="/tractors" on:click={() => switchTab('Tractors')} class="{$currentTab === 'Tractors' ? 'font-bold' : ''}">Tracteurs</a></li>
-            {/if}
-            {#if hasAccess('TrafficManager')}
-                <li><a href="/traffic-manager" on:click={() => switchTab('TrafficManager')} class="{$currentTab === 'TrafficManager' ? 'font-bold' : ''}">Traffic manager</a></li>
-            {/if}
-            {#if hasAccess('Trader')}
-                <li><a href="/trader" on:click={() => switchTab('Trader')} class="{$currentTab === 'Trader' ? 'font-bold' : ''}">Trader</a></li>
-            {/if}
-            {#if hasAccess('StockExchange')}
-                <li><a href="/stock-exchange" on:click={() => switchTab('StockExchange')} class="{$currentTab === 'StockExchange' ? 'font-bold' : ''}">Bourse</a></li>
-            {/if}
-        </ul>
-    </div>
-
-      <button on:click={() => {
-        localStorage.clear()
-        window.location.reload();
-        } } class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4">
-        <div class="fa-solid fa-right-from-bracket"></div>
-      </button>
-
-    <div class="flex items-center space-x-4">
-        {#if simulationDate}
-            <!-- Affichage de la date de simulation -->
-            <div class="text-lg font-semibold">
-                Date de simulation: <span class="text-blue-400">{simulationDate}</span>
-            </div>
-        {:else}
-            <!-- Message d'erreur si la date de simulation ne peut pas être récupérée -->
-            <div class="text-lg font-semibold text-red-500">
-                Unable to retrieve simulation date
-            </div>
+        <!-- Centered User Role Title -->
+        <div class="text-center flex-1 hidden lg:block">
+    <span class="text-lg font-semibold text-gray-300 hover:text-white transition-colors duration-300">
+        {#if $userRole === 'traffic_manager'}
+            TRAFFIC MANAGER
+        {:else if $userRole === 'client'}
+            CLIENT
+        {:else if $userRole === 'trader'}
+            TRADER
+        {:else if $userRole === 'admin'}
+            ADMIN
         {/if}
+    </span>
+        </div>
 
-        <!-- Bouton + pour mettre à jour la date -->
-        <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full" on:click={updateSimulationDate}>
-            +
-        </button>
-    </div>
+        <!-- Right section: buttons -->
+        <div class="flex items-center space-x-4">
+            {#if simulationDate}
+                <div class="text-lg font-semibold text-gray-300">
+                    Simulation : <span class="text-blue-400">{simulationDate}</span>
+                </div>
+            {:else}
+                <div class="text-lg font-semibold text-red-500">
+                    Erreur de date
+                </div>
+            {/if}
+
+            <!-- Update Simulation Date Button -->
+            <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full transition-all duration-300 transform hover:scale-105" on:click={updateSimulationDate}>
+                +
+            </button>
+
+            <!-- Logout Button -->
+            <button on:click={() => {
+                localStorage.clear();
+                window.location.reload();
+            }} class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105">
+                <i class="fa-solid fa-right-from-bracket"></i>
+            </button>
+        </div>
     </div>
 </nav>
 
@@ -145,5 +175,27 @@
         height: 40px;
         border-radius: 50%;
     }
-</style>
 
+    /* Hover and transition effects */
+    a {
+        transition: color 0.3s ease;
+    }
+
+    a:hover {
+        color: #60a5fa; /* Tailwind's blue-400 */
+    }
+
+    .rounded-lg {
+        border-radius: 8px;
+    }
+
+    /* Flex adjustments */
+    .flex-1 {
+        flex-grow: 1;
+    }
+
+    /* Ensure spacing and margin are balanced */
+    .ml-16 {
+        margin-left: 4rem;
+    }
+</style>
