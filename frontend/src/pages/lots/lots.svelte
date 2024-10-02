@@ -92,7 +92,7 @@
         const response = await fetch(`${API_BASE_URL}/users/traffic_managers`);
         if (response.ok) {
           const data = await response.json();
-          trafficManagers = data.map((trafficManager: any) => ({id: trafficManager.id, name: `${trafficManager.firstname}.${trafficManager.lastname}`}));
+          trafficManagers = data.map((trafficManager: any) => ({id: trafficManager.id, name: `${trafficManager.username}`}));
         } else {
           console.error('Failed to fetch traffic managers:', response.status);
         }
@@ -113,7 +113,7 @@
             currentCheckpoint: lot.current_checkpoint.name,
             startCheckpoint: lot.start_checkpoint.name,
             endCheckpoint: lot.end_checkpoint.name,
-            trafficManager: lot.traffic_manager == null ? null : lot.traffic_manager.firstname + ' ' + lot.traffic_manager.lastname,
+            trafficManager: lot.traffic_manager == null ? null : lot.traffic_manager.username,
             createdAt: new Date(lot.created_at)
           })).sort((a:any, b:any) => b.createdAt - a.createdAt);
         } else {

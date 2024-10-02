@@ -13,7 +13,7 @@
     // Roles data
     const roles = [
         { role: 'client', title: 'Client', icon: faUser},
-        { role: 'trafficManager', title: 'Traffic Manager', icon: faTruck },
+        { role: 'traffic_manager', title: 'Traffic Manager', icon: faTruck },
         { role: 'trader', title: 'Trader', icon: faChartLine},
         { role: 'admin', title: 'Admin', icon: faLock}
     ];
