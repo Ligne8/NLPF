@@ -102,7 +102,7 @@
 
     async function fetchLots() {
       try {
-        const response = await fetch(`${API_BASE_URL}/lots/owner/942ee444-bd7f-4af0-aa5d-60655db81204`);
+        const response = await fetch(`${API_BASE_URL}/lots/owner/21bb7647-cb19-4d19-a7f1-9cb4de647da8`);
         if (response.ok) {
           const data = await response.json();
           tableData = data.map((lot: any) => ({
@@ -153,7 +153,7 @@
             start_checkpoint_id: selectedDeparture.id,
             end_checkpoint_id: selectedArrival.id,
             state: 'available',
-            owner_id: '942ee444-bd7f-4af0-aa5d-60655db81204'
+            owner_id: '21bb7647-cb19-4d19-a7f1-9cb4de647da8'
         };
 
         selectedType = '';

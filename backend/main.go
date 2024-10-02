@@ -1,6 +1,7 @@
 package main
 
 import (
+	"gorm.io/gorm"
 	"time"
 	"tms-backend/database"
 	docs "tms-backend/docs"
@@ -34,9 +35,23 @@ func main() {
 	router = routes.LotRoutes(router, db)
 	router = routes.TractorRoutes(router, db)
 	router = routes.UserRoutes(router, db)
+	router = routes.SimulationRoutes(router, db)
+
+	// Initialize simulation datetime
+	initializeSimulationDate(db)
 
 	docs.SwaggerInfo.BasePath = "/api/v1"
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
 	router.Run(":8080")
+}
+
+func initializeSimulationDate(db *gorm.DB) {
+	var simulation models.Simulation
+	if err := db.First(&simulation).Error; err != nil {
+		simulation = models.Simulation{
+			SimulationDate: time.Now().Truncate(24 * time.Hour),
+		}
+		db.Create(&simulation)
+	}
 }
