@@ -2,9 +2,9 @@
     import { onMount } from 'svelte';
     import Navbar from '@components/Navbar.svelte';
     import TrafficManager from '@pages/traffic_manager/traffic_manager.svelte';
+    import {userId} from "@stores/store";
 
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-    const USER_ID = localStorage.getItem('userId') || '942ee444-bd7f-4af0-aa5d-60655db81204';
 
     interface Checkpoint {
       id: string;
@@ -103,7 +103,7 @@
 
     async function fetchLots() {
       try {
-        const response = await fetch(`${API_BASE_URL}/lots/owner/${USER_ID}`);
+        const response = await fetch(`${API_BASE_URL}/lots/owner/${userId}`);
         if (response.ok) {
           const data = await response.json();
           tableData = data.map((lot: any) => ({
@@ -155,7 +155,7 @@
             start_checkpoint_id: selectedDeparture.id,
             end_checkpoint_id: selectedArrival.id,
             state: 'available',
-            owner_id: USER_ID
+            owner_id: userId
         };
 
         selectedType = '';
