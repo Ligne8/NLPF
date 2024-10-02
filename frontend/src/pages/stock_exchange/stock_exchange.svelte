@@ -6,14 +6,14 @@
     let subtitle: string = 'This is a subtitle.';
     let isModalOpen = false;
     let priceValue: number = 1.0;
-    const minPriceValue: number = 1.0;
-    const maxPriceValue: number = 10.0;
+    let minPriceValue: number = 1.0;
+    let maxPriceValue: number = 10.0;
     let volumeValue: number = 1.0;
-    const minVolumeValue: number = 1.0;
-    const maxVolumeValue: number = 10.0;
+    let minVolumeValue: number = 1.0;
+    let maxVolumeValue: number = 10.0;
 
     // Example data
-    const tractorsData = [
+    const tableData = [
         { id: 1, expirationDate: 1695564000000, type: 'Bulk', spaceAvailable: 500, minPrice: 2.5, currentPrice: 3.2 },
         { id: 2, expirationDate: 1698242400000, type: 'Liquid', spaceAvailable: 800, minPrice: 1.8, currentPrice: 2.1 },
         { id: 3, expirationDate: 1700834400000, type: 'Solid', spaceAvailable: 300, minPrice: 3.0, currentPrice: 3.5 }
@@ -42,7 +42,10 @@
     }
 
     // Function to open tractors modal
-    function openModal() {
+    function openModal(currentPrice: number, spaceAvailable: number) {
+        priceValue = currentPrice;
+        minPriceValue = currentPrice;
+        maxVolumeValue = spaceAvailable;
         isModalOpen = true;
     }
 
@@ -84,7 +87,7 @@
             </tr>
         </thead>
         <tbody>
-            {#each tractorsData as row, index}
+            {#each tableData as row, index}
                 <tr class={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
 
                     <!-- Column 1 -->
@@ -109,7 +112,7 @@
                     <td class="border p-2 text-center">
                         <div class="flex flex-wrap justify-center space-x-2">
                             <button class="bg-blue-200 text-blue-800 px-4 py-2 flex items-center font-bold hover:bg-blue-300 transition-colors rounded-md"
-                                    on:click={openModal}
+                                on:click={() => openModal(row.currentPrice, row.spaceAvailable)}
                             >
                                 <i class="fas fa-coins mr-2"></i>
                                 Enchérir
