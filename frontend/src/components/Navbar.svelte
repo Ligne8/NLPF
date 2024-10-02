@@ -2,7 +2,7 @@
     import { onMount } from 'svelte';
 
     import { userRole, currentTab } from '@stores/store.js';
-    import type { UserRole } from '@stores/store.js';
+    import type { UserRole, userId } from '@stores/store.js';
     import axios from 'axios';
 
 
@@ -79,6 +79,7 @@
 <nav class="bg-gray-800 p-4 text-white">
     <div class="flex items-center justify-between">
     <div class="flex items-center">
+    
 
         <!-- Logo -->
         <a href="/" class="flex-shrink-0">
@@ -109,6 +110,13 @@
             {/if}
         </ul>
     </div>
+
+      <button on:click={() => {
+        localStorage.clear()
+        window.location.reload();
+        } } class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4">
+        <div class="fa-solid fa-right-from-bracket"></div>
+      </button>
 
     <div class="flex items-center space-x-4">
         {#if simulationDate}
