@@ -4,8 +4,13 @@
     // Variables
     let title: string = 'Title';
     let subtitle: string = 'This is a subtitle.';
-    let isTractorsModalOpen = false;
-    let isLotsModalOpen = false;
+    let isModalOpen = false;
+    let priceValue: number = 1.0;
+    const minPriceValue: number = 1.0;
+    const maxPriceValue: number = 10.0;
+    let volumeValue: number = 1.0;
+    const minVolumeValue: number = 1.0;
+    const maxVolumeValue: number = 10.0;
 
     // Example data
     const tractorsData = [
@@ -25,36 +30,31 @@
         return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
     };
 
+    // Function to increase volume
+    function increaseVolume() {
+    if (volumeValue < maxVolumeValue)
+        volumeValue += 1;
+}
+    // Function to decrease volume
+    function decreaseVolume() {
+        if (volumeValue > minVolumeValue)
+            volumeValue -= 1;
+    }
+
     // Function to open tractors modal
-    function openTractorsModal() {
-        isTractorsModalOpen = true;
+    function openModal() {
+        isModalOpen = true;
     }
 
     // Function to close tractors modal
-    function closeTractorsModal() {
-        isTractorsModalOpen = false;
+    function closeModal() {
+        isModalOpen = false;
     }
 
-    // Function to open lots modal
-    function openLotsModal() {
-        isTractorsModalOpen = true;
-    }
-
-    // Function to close lots modal
-    function closeLotsModal() {
-        isTractorsModalOpen = false;
-    }
-
-    // Function to add bid on tractors
-    function bidTractors() {
+    // Function to bid
+    function bid() {
         console.log("Form submitted!");
-        closeTractorsModal();
-    }
-
-    // Function to add bid on lots
-    function bidLots() {
-        console.log("Form submitted!");
-        closeLotsModal();
+        closeModal();
     }
 
 </script>
@@ -71,126 +71,56 @@
         <h2 class="text-2xl mb-8 text-gray-600">{subtitle}</h2>
     </section>
 
-    <div class="flex">
+    <table class="table-auto w-full border-collapse border border-gray-300">
+        <thead>
+            <tr class="bg-gray-100">
+                <th class="border p-2 text-center">ID</th>
+                <th class="border p-2 text-center">Date d'expiration</th>
+                <th class="border p-2 text-center">Type</th>
+                <th class="border p-2 text-center">Espace disponible<br><span class="font-normal">(en m³)</span></th>
+                <th class="border p-2 text-center">Prix minimum<br><span class="font-normal">(en €/km)</span></th>
+                <th class="border p-2 text-center">Prix actuel<br><span class="font-normal">(en €/km)</span></th>
+                <th class="border p-2 text-center">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {#each tractorsData as row, index}
+                <tr class={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
 
-        <!-- Left part -->
-        <div class="w-1/2 pr-8 border-r border-gray-300">
-            <h2 class="text-2xl text-gray-800 font-bold mb-4">
-                <i class="fas fa-truck mr-2"></i>
-                Offre de tracteurs
-            </h2>
-            <table class="table-auto w-full border-collapse border border-gray-300">
-                <thead>
-                    <tr class="bg-gray-100">
-                        <th class="border p-2 text-center">ID</th>
-                        <th class="border p-2 text-center">Date d'expiration</th>
-                        <th class="border p-2 text-center">Type</th>
-                        <th class="border p-2 text-center">Espace disponible<br><span class="font-normal">(en m³)</span></th>
-                        <th class="border p-2 text-center">Prix minimum<br><span class="font-normal">(en €/km)</span></th>
-                        <th class="border p-2 text-center">Prix actuel<br><span class="font-normal">(en €/km)</span></th>
-                        <th class="border p-2 text-center">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {#each tractorsData as row, index}
-                        <tr class={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
+                    <!-- Column 1 -->
+                    <td class="border p-2 text-center">{row.id}</td>
+                    
+                    <!-- Column 2 -->
+                    <td class="border p-2 text-center">{formatDate(row.expirationDate)}</td>
 
-                            <!-- Column 1 -->
-                            <td class="border p-2 text-center">{row.id}</td>
-                            
-                            <!-- Column 2 -->
-                            <td class="border p-2 text-center">{formatDate(row.expirationDate)}</td>
+                    <!-- Column 3 -->
+                    <td class="border p-2 text-center">{row.type}</td>
+                    
+                    <!-- Column 4 -->
+                    <td class="border p-2 text-center">{row.spaceAvailable}</td>
+                    
+                    <!-- Column 5 -->
+                    <td class="border p-2 text-center">{row.minPrice.toFixed(2)}</td>
+                    
+                    <!-- Column 6 -->
+                    <td class="border p-2 text-center">{row.currentPrice.toFixed(2)}</td>
+                    
+                    <!-- Column 7 -->
+                    <td class="border p-2 text-center">
+                        <div class="flex flex-wrap justify-center space-x-2">
+                            <button class="bg-blue-200 text-blue-800 px-4 py-2 flex items-center font-bold hover:bg-blue-300 transition-colors rounded-md"
+                                    on:click={openModal}
+                            >
+                                <i class="fas fa-coins mr-2"></i>
+                                Enchérir
+                            </button>
+                        </div>
+                    </td>
 
-                            <!-- Column 3 -->
-                            <td class="border p-2 text-center">{row.type}</td>
-                            
-                            <!-- Column 4 -->
-                            <td class="border p-2 text-center">{row.spaceAvailable}</td>
-                            
-                            <!-- Column 5 -->
-                            <td class="border p-2 text-center">{row.minPrice.toFixed(2)}</td>
-                            
-                            <!-- Column 6 -->
-                            <td class="border p-2 text-center">{row.currentPrice.toFixed(2)}</td>
-                            
-                            <!-- Column 7 -->
-                            <td class="border p-2 text-center">
-                                <div class="flex flex-wrap justify-center space-x-2">
-                                    <button class="bg-blue-200 text-blue-800 px-4 py-2 flex items-center font-bold hover:bg-blue-300 transition-colors rounded-md"
-                                            on:click={openTractorsModal}
-                                    >
-                                        <i class="fas fa-coins mr-2"></i>
-                                        Enchérir
-                                    </button>
-                                </div>
-                            </td>
-
-                        </tr>
-                    {/each}
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Right part -->
-        <div class="w-1/2 pl-8">
-            <h2 class="text-2xl text-gray-800 font-bold mb-4">
-                <i class="fas fa-box-open mr-2"></i>
-                Offres de lots
-            </h2>
-
-            <table class="table-auto w-full border-collapse border border-gray-300">
-                <thead>
-                    <tr class="bg-gray-100">
-                        <th class="border p-2 text-center">ID</th>
-                        <th class="border p-2 text-center">Date d'expiration</th>
-                        <th class="border p-2 text-center">Type</th>
-                        <th class="border p-2 text-center">Volume<br><span class="font-normal">(en m³)</span></th>
-                        <th class="border p-2 text-center">Prix maximum<br><span class="font-normal">(en €/km)</span></th>
-                        <th class="border p-2 text-center">Prix actuel<br><span class="font-normal">(en €/km)</span></th>
-                        <th class="border p-2 text-center">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {#each lotsData as row, index}
-                        <tr class={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
-
-                            <!-- Column 1 -->
-                            <td class="border p-2 text-center">{row.id}</td>
-                            
-                            <!-- Column 2 -->
-                            <td class="border p-2 text-center">{formatDate(row.expirationDate)}</td>
-
-                            <!-- Column 3 -->
-                            <td class="border p-2 text-center">{row.type}</td>
-                            
-                            <!-- Column 4 -->
-                            <td class="border p-2 text-center">{row.volume}</td>
-                            
-                            <!-- Column 5 -->
-                            <td class="border p-2 text-center">{row.maxPrice.toFixed(2)}</td>
-                            
-                            <!-- Column 6 -->
-                            <td class="border p-2 text-center">{row.currentPrice.toFixed(2)}</td>
-                            
-                            <!-- Column 7 -->
-                            <td class="border p-2 text-center">
-                                <div class="flex flex-wrap justify-center space-x-2">
-                                    <button class="bg-blue-200 text-blue-800 px-4 py-2 flex items-center font-bold hover:bg-blue-300 transition-colors rounded-md"
-                                            on:click={openLotsModal}
-                                    >
-                                        <i class="fas fa-coins mr-2"></i>
-                                        Enchérir
-                                    </button>
-                                </div>
-                            </td>
-
-                        </tr>
-                    {/each}
-                </tbody>
-            </table>
-        </div>
-
-    </div>
+                </tr>
+            {/each}
+        </tbody>
+    </table>
 </main>
 
 <!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -198,31 +128,75 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-label-has-associated-control -->
 
-{#if isTractorsModalOpen}
+{#if isModalOpen}
 
-    <div class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50" on:click={closeTractorsModal}>
+    <div class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50" on:click={closeModal}>
 
-        <div class="bg-white p-6 rounded-lg shadow-lg w-1/3" on:click|stopPropagation>
+        <div class="bg-white text-center p-6 rounded-lg shadow-lg w-1/4" on:click|stopPropagation>
 
             <!-- Close Button -->
-            <button class="absolute top-2 right-2 text-gray-500 hover:text-gray-800" on:click={closeTractorsModal}>
+            <button class="absolute top-2 right-2 text-gray-500 hover:text-gray-800" on:click={closeModal}>
                 &times;
             </button>
 
             <!-- Modal Title -->
-            <h2 class="text-2xl font-bold mb-6">Associer un lot à l'enchère</h2>
+            <h2 class="text-2xl font-bold mb-6">Enchérir sur le tracteur</h2>
 
             <!-- Form -->
-            <form on:submit|preventDefault={bidTractors}>
+            <form on:submit|preventDefault={bid}>
 
-                <!-- Current price -->
-                <div class="mb-2 flex justify-left items-center">
-                    <span class="text-xl mr-2 font-bold">Prix actuel :</span>
-                    <span class="text-xl font-normal">12 €/km</span>
+                <!-- Price -->
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-lg font-bold">Prix</label>
+                    <p class="text-3xl font-bold text-gray-700">{priceValue} <span class="font-normal">€/km</span></p>
+                    <input
+                        type="range"
+                        min={minPriceValue}
+                        max={maxPriceValue}
+                        step="0.1"
+                        bind:value={priceValue}
+                        class="range w-full mt-2"
+                    />
                 </div>
 
-                <!-- Add button -->
-                <div class="flex justify-center mt-4">
+                <!-- Volume -->
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-lg font-bold">Volume <span class="font-normal">(en m³)</span></label>
+                    <div class="flex items-center justify-between">
+                        <button
+                            type="button"
+                            class="bg-gray-200 px-3 py-2 rounded disabled:opacity-50"
+                            on:click|stopPropagation={decreaseVolume}
+                            disabled={volumeValue === minVolumeValue}
+                        >
+                            <i class="fas fa-minus"></i>
+                        </button>
+
+                        <input
+                            type="number"
+                            min={minVolumeValue}
+                            max={maxVolumeValue}
+                            bind:value={volumeValue}
+                            class="text-2xl font-bold mx-4 text-gray-700 w-16 text-center"
+                            on:input|preventDefault={() => {
+                                if (volumeValue < minVolumeValue) volumeValue = minVolumeValue;
+                                if (volumeValue > maxVolumeValue) volumeValue = maxVolumeValue;
+                            }}
+                        />
+
+                        <button
+                            type="button"
+                            class="bg-gray-200 px-3 py-2 rounded disabled:opacity-50"
+                            on:click|stopPropagation={increaseVolume}
+                            disabled={volumeValue === maxVolumeValue}
+                        >
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Validate button -->
+                <div class="flex justify-center mt-8">
                     <button type="submit" class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600">
                         <i class="fas fa-check"></i>
                         <span class="font-bold">Valider</span>
@@ -233,36 +207,58 @@
     </div>
 {/if}
 
-<!-- svelte-ignore a11y-no-static-element-interactions -->
-<!-- svelte-ignore a11y-no-static-element-interactions -->
-<!-- svelte-ignore a11y-click-events-have-key-events -->
-<!-- svelte-ignore a11y-label-has-associated-control -->
 
-{#if isLotsModalOpen}
+<!-- Style -->
+<style>
+    .range {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 100%;
+        height: 15px;
+        border-radius: 5px;
+        background: #e2e8f0;
+        outline: none;
+        transition: background 0.3s;
+    }
 
-    <div class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50" on:click={closeLotsModal}>
+    .range:hover {
+        background: #cbd5e1;
+    }
 
-        <div class="bg-white p-6 rounded-lg shadow-lg w-1/3" on:click|stopPropagation>
+    .range::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #374151;
+        cursor: pointer;
+    }
 
-            <!-- Close Button -->
-            <button class="absolute top-2 right-2 text-gray-500 hover:text-gray-800" on:click={closeLotsModal}>
-                &times;
-            </button>
+    .range::-moz-range-thumb {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #374151;
+        cursor: pointer;
+    }
 
-            <!-- Modal Title -->
-            <h2 class="text-2xl font-bold mb-6">Ajouter un lot</h2>
+    .range::-ms-thumb {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #374151;
+        cursor: pointer;
+    }
 
-            <!-- Form -->
-            <form on:submit|preventDefault={bidLots}>
+    input[type="number"] {
+        -moz-appearance: textfield;
+    }
 
-                <!-- Add button -->
-                <div class="flex justify-center mt-4">
-                    <button type="submit" class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600">
-                        <i class="fas fa-plus"></i>
-                        <span class="font-bold">Ajouter</span>
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-{/if}
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+</style>
