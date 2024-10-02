@@ -1,7 +1,7 @@
-<script>
+<script lang="ts">
     import {onMount} from "svelte";
     import axios from "axios";
-    import {currentTab} from "@stores/store.js";
+    import {currentTab} from "@stores/store";
 
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -16,9 +16,8 @@
                 password,
                 role
             });
-            console.log(response.data);
-            if (response.data.success) {
-                currentTab.set('Login');
+            if (response.status === 200) {
+                window.location.href = '/login';
             }
         } catch (error) {
             console.error(error);
@@ -41,5 +40,6 @@
             <input type="text" id="role" name="role" class="shadow appearance-none border border-red rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline" bind:value={role}>
         </div>
         <button type="button" on:click={registerUser} class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Register</button>
+        <button type="button" on:click={() => window.location.href = '/login'} class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Already register</button>
     </form>
 </main>
