@@ -1,7 +1,7 @@
 import { writable } from 'svelte/store';
 
 // Types
-export type UserRole = 'admin' | 'trafficManager' | 'trader' | 'client';
+export type UserRole = 'admin' | 'traffic_manager' | 'trader' | 'client';
 
 // Store data into local storage
 const storedRole = localStorage.getItem('userRole') as UserRole || 'admin';
