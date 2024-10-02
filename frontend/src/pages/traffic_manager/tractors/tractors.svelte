@@ -33,18 +33,13 @@
         if(localStorage.getItem('userRole') !== "trafficManager") {
             return;
         }
-        {
-            userId = localStorage.getItem('userId');
-        }
         try {
             console.log(`${API_BASE_URL}`);
             const response = await fetch(`${API_BASE_URL}/tractors/trafficManager/${userId}`);
             if (response.ok)
             {
                 const data = await response.json();
-                console.log('Data:', data);
                 tractors = data;
-                console.log('Tractors:', tractors);
             }
             else
             {
