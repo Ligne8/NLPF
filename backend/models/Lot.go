@@ -29,7 +29,7 @@ type Lot struct {
 	EndCheckpoint       *Checkpoint  `json:"end_checkpoint" gorm:"foreignKey:EndCheckpointId"`
 	TractorId           *uuid.UUID   `json:"tractor_id" gorm:""` // Changed to pointer to allow null values
 	Tractor             *Tractor     `json:"tractor" gorm:"foreignKey:TractorId"`
-	CreatedAt           time.Time    `json:"created_at" gorm:"autoCreateTime"`
+	CreatedAt           time.Time    `json:"created_at" gorm:""`
 	CurrentCheckpointId *uuid.UUID   `json:"current_checkpoint_id" gorm:""` // Changed to pointer to allow null values
 	CurrentCheckpoint   *Checkpoint  `json:"current_checkpoint" gorm:"foreignKey:CurrentCheckpointId"`
 	OwnerId             uuid.UUID    `json:"owner_id" gorm:"not null"` // Changed from User to UUID

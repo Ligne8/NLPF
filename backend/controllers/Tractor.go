@@ -23,6 +23,15 @@ func (TractorController *TractorController) AddTractor(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
+	var simulation models.Simulation
+	if err := TractorController.Db.First(&simulation).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to fetch simulation date"})
+		return
+	}
+
+	newTractor.CreatedAt = simulation.SimulationDate
+
 	if err := TractorController.Db.Create(&newTractor).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
