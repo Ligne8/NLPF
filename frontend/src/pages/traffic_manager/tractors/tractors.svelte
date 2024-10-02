@@ -3,6 +3,7 @@
     import TrafficManagerNavbar from '@components/TrafficManagerNavbar.svelte';
     import {onMount} from "svelte";
     import type {Tractor} from "../../../interface/tractorInterface";
+    import {userId, userRole} from "@stores/store";
     import axios from "axios";
 
     // Variables
@@ -10,7 +11,6 @@
     let subtitle: string = 'Suivez l’état de votre flotte en temps réel.';
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
     let tractors: Tractor[]  = [];
-    let userId = localStorage.getItem('userId');
 
     // Function to get tag color and text based on status
     function getStatusInfo(status: string): { color: string; text: string } {
@@ -31,10 +31,10 @@
     });
 
     async function fetchTableInfo() {
-        if(localStorage.getItem('userRole') !== "trafficManager") {
+        if($userRole !== "trafficManager") {
             return;
         }
-        await axios.get(`${API_BASE_URL}/tractors/trafficManager/${userId}`)
+        await axios.get(`${API_BASE_URL}/tractors/trafficManager/${$userId}`)
             .then((response) => {
                 tractors = response.data;
             }).catch((error) => {
