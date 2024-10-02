@@ -3,6 +3,7 @@
     import TrafficManagerNavbar from '@components/TrafficManagerNavbar.svelte';
     import {onMount} from "svelte";
     import type {Tractor} from "../../../interface/tractorInterface";
+    import axios from "axios";
 
     // Variables
     let title: string = 'Gestion des Tracteurs';
@@ -33,21 +34,12 @@
         if(localStorage.getItem('userRole') !== "trafficManager") {
             return;
         }
-        try {
-            console.log(`${API_BASE_URL}`);
-            const response = await fetch(`${API_BASE_URL}/tractors/trafficManager/${userId}`);
-            if (response.ok)
-            {
-                const data = await response.json();
-                tractors = data;
-            }
-            else
-            {
-                console.error('Failed to fetch checkpoints:', response.status);
-            }
-        } catch (error) {
-            console.error('Error fetching checkpoints:', error);
-        }
+        await axios.get(`${API_BASE_URL}/tractors/trafficManager/${userId}`)
+            .then((response) => {
+                tractors = response.data;
+            }).catch((error) => {
+                console.error('Error fetching tractors:', error.response);
+            });
     }
 </script>
 
