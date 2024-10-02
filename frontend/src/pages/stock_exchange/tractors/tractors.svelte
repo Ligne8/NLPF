@@ -3,8 +3,8 @@
     import StockExchangeNavbar from '@components/StockExchangeNavbar.svelte';
 
     // Variables
-    let title: string = 'Title';
-    let subtitle: string = 'This is a subtitle.';
+    let title: string = 'Marché des tracteurs';
+    let subtitle: string = 'Négociez l’espace de fret disponible en fonction des besoins du marché.';
     let isModalOpen = false;
     let priceValue: number = 1.0;
     let minPriceValue: number = 1.0;
