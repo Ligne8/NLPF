@@ -30,7 +30,7 @@ type Tractor struct {
 	CurrentCheckpoint   *Checkpoint  `json:"current_checkpoint" gorm:"foreignKey:CurrentCheckpointId"`
 	State               State        `json:"state" gorm:"not null"`
 	CreatedAt           time.Time    `json:"created_at" gorm:""`
-	OwnerId             uuid.UUID    `json:"owner_id" gorm:"type:uuid"` // Foreign key for User
+	OwnerId             uuid.UUID    `json:"owner_id" gorm:"not null"` // Foreign key for User
 	Owner               User         `json:"owner" gorm:"foreignKey:OwnerId"`
 	MinPriceByKm        float64      `json:"min_price_by_km" gorm:"not null"`
 	TrafficManagerId    *uuid.UUID   `json:"traffic_manager_id" gorm:"type:uuid"` // Foreign key for User

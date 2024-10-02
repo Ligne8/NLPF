@@ -1,7 +1,8 @@
 <script lang="ts">
     import { onMount } from 'svelte';
     import Navbar from '@components/Navbar.svelte';
-  import TrafficManager from '@pages/traffic_manager/traffic_manager.svelte';
+    import TrafficManager from '@pages/traffic_manager/traffic_manager.svelte';
+    import {userId} from "@stores/store";
 
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -110,7 +111,7 @@
     // Function to fetch tractors
     async function fetchTractors() {
         try {
-            const response = await fetch(`${API_BASE_URL}/tractors/owner/942ee444-bd7f-4af0-aa5d-60655db81204`);
+            const response = await fetch(`${API_BASE_URL}/tractors/owner/${$userId}`);
             if (response.ok){
                 const data = await response.json();
                 console.log('Tractors:', data);
@@ -170,7 +171,7 @@
             start_checkpoint_id: selectedDeparture.id,
             end_checkpoint_id: selectedArrival.id,
             state: 'available',
-            owner_id: '942ee444-bd7f-4af0-aa5d-60655db81204',
+            owner_id: $userId,
         };
         console.log('New tractor:', newTractor);
 

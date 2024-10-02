@@ -39,7 +39,6 @@ func (TractorController *TractorController) CreateTractor(c *gin.Context) {
 		return
 	}
 
-	if err := TractorController.Db.Create(&newTractor).Error; err != nil {
 	TractorModel := models.Tractor{
 		Name:                requestBody.Name,
 		ResourceType:        requestBody.ResourceType,
@@ -63,7 +62,7 @@ func (TractorController *TractorController) CreateTractor(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, TractorModel)
+	c.JSON(http.StatusCreated, TractorModel)
 }
 
 func (TractorController *TractorController) GoToNextCheckpoint(c *gin.Context) {
