@@ -3,9 +3,9 @@
     import TrafficManagerNavbar from '@components/TrafficManagerNavbar.svelte';
     import { onMount } from 'svelte';
     import axios from 'axios';
+    import {userId} from "@stores/store";
 
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-    const USER_ID = localStorage.getItem('userId') || '942ee444-bd7f-4af0-aa5d-60655db81256';
 
     interface Checkpoints {
         id: string;
@@ -34,7 +34,7 @@
     });
 
     const fetchRoutes = async () => {
-        const response = await fetch(`${API_BASE_URL}/routes/traffic_manager/parsed/${USER_ID}`);
+        const response = await fetch(`${API_BASE_URL}/routes/traffic_manager/parsed/${userId}`);
         if (response.ok) {
             const data = await response.json();
             tableData = data;
@@ -99,7 +99,7 @@
     function addRouteToTable() {
         const newRoute = {
             name: newRouteName,
-            traffic_manager_id: USER_ID,
+            traffic_manager_id: userId,
             route: selectedCheckpoints.map((cp, index) => 
             {
               const payload = {
