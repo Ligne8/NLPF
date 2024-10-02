@@ -34,7 +34,7 @@
     });
 
     const fetchRoutes = async () => {
-        const response = await fetch(`${API_BASE_URL}/routes/traffic_manager/parsed/${userId}`);
+        const response = await fetch(`${API_BASE_URL}/routes/traffic_manager/parsed/${$userId}`);
         if (response.ok) {
             const data = await response.json();
             tableData = data;
@@ -99,7 +99,7 @@
     function addRouteToTable() {
         const newRoute = {
             name: newRouteName,
-            traffic_manager_id: userId,
+            traffic_manager_id: $userId,
             route: selectedCheckpoints.map((cp, index) => 
             {
               const payload = {
