@@ -4,7 +4,7 @@
     import TrafficManager from '@pages/traffic_manager/traffic_manager.svelte';
 
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-    const USER_ID = localStorage.getItem('user_id') || '942ee444-bd7f-4af0-aa5d-60655db81204';
+    const USER_ID = localStorage.getItem('userId') || '942ee444-bd7f-4af0-aa5d-60655db81204';
 
     interface Checkpoint {
       id: string;
