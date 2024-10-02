@@ -1,7 +1,7 @@
 <script>
     import {onMount} from "svelte";
     import axios from "axios";
-    import {currentTab} from "@stores/store";
+    import {currentTab, userId, userRole} from "@stores/store";
 
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -16,7 +16,8 @@
             });
             if (response.status === 200) {
                 console.log(response.data);
-                localStorage.setItem('isConnected', 'true');
+                userId.set(response.data.user.id);
+                userRole.set(response.data.user.role);
                 window.location.href = '/';
             }
         } catch (error) {

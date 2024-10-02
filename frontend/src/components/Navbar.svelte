@@ -1,7 +1,7 @@
 <script lang="ts">
     import { onMount } from 'svelte';
-    import { userRole, currentTab } from '@stores/store.js';
-    import type { UserRole } from '@stores/store.js';
+    import { userRole, currentTab } from '@stores/store';
+    import type { UserRole } from '@stores/store';
 
     // Role permissions
     const rolePermissions: Record<UserRole, string[]> = {
@@ -36,7 +36,7 @@
         else if (path.startsWith('/stock-exchange'))
             currentTab.set('StockExchange');
         else
-            currentTab.set(''); // Reset if on root or unknown path
+            currentTab.set('');
     });
 </script>
 

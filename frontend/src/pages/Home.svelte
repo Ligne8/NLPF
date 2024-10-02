@@ -1,12 +1,14 @@
-<script>
-  import Navbar from '@components/Navbar.svelte';
-  const userRole = localStorage.getItem('userRole');
-  const isLogin = localStorage.getItem('isConnected');
-  console.log(isLogin);
-  if ( isLogin !== 'true' ) {
-    window.location.href = '/login';
-  }
+<script lang="ts">
+    import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
+    import Navbar from "@components/Navbar.svelte";
+
+    // Variables
+    let title: string = 'Accueil';
+    let subtitle: string = 'Sélectionnez un rôle pour accéder à votre espace.';
 
 </script>
 
-<Navbar />
+
+<Navbar/>
+<main class="px-10 flex flex-col items-center justify-center min-h-screen">
+</main>
