@@ -5,7 +5,7 @@
     import axios from 'axios';
 
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-    const USER_ID = localStorage.getItem('user_id') || '942ee444-bd7f-4af0-aa5d-60655db81256';
+    const USER_ID = localStorage.getItem('userId') || '942ee444-bd7f-4af0-aa5d-60655db81256';
 
     interface Checkpoints {
         id: string;

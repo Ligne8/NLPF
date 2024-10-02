@@ -28,14 +28,14 @@ func (RouteController *RouteController) GetAllRoutes(c *gin.Context) {
 	c.JSON(http.StatusOK, routes);
 }
 
-type route_payload struct {
+type routePayload struct {
 	Id string `json:"id"`
 	Name string `json:"name"`
 	Route_path string `json:"route_path"`
 }
 
 func (RouteController *RouteController) GetRouteStringByTrafficManagerId(c *gin.Context) {
-	var allRoutes []route_payload;
+	var allRoutes []routePayload;
 	var routeModel models.Route;
 	var routes []models.Route;
 
@@ -45,7 +45,7 @@ func (RouteController *RouteController) GetRouteStringByTrafficManagerId(c *gin.
 	
 	for _, route := range routes {
 		var path_string = route.GetRouteString(RouteController.Db);
-		var route_payload = route_payload{
+		var route_payload = routePayload{
 			Id: route.Id.String(),
 			Name: route.Name,
 			Route_path: path_string,
