@@ -9,7 +9,7 @@
     let subtitle: string = 'Suivez l’état de votre flotte en temps réel.';
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
     let tractors: Tractor[]  = [];
-
+    let userId = localStorage.getItem('userId');
 
     // Function to get tag color and text based on status
     function getStatusInfo(status: string): { color: string; text: string } {
@@ -26,15 +26,19 @@
     }
 
     onMount(() => {
-        console.log('Tractors page mounted');
         fetchTableInfo();
     });
 
     async function fetchTableInfo() {
-        console.log('Fetching table data...');
+        if(localStorage.getItem('userRole') !== "trafficManager") {
+            return;
+        }
+        {
+            userId = localStorage.getItem('userId');
+        }
         try {
             console.log(`${API_BASE_URL}`);
-            const response = await fetch(`${API_BASE_URL}/tractors/trafficManager/97b3e70e-4db5-4fb4-858a-b8cc79b5edf0`);
+            const response = await fetch(`${API_BASE_URL}/tractors/trafficManager/${userId}`);
             if (response.ok)
             {
                 const data = await response.json();
