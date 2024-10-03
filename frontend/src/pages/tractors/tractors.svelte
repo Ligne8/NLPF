@@ -25,7 +25,7 @@
 
     interface TrafficManager {
       id: string;
-      name: string;
+      username: string;
     }
 
     // Variables
@@ -99,7 +99,7 @@
         const response = await fetch(`${API_BASE_URL}/users/traffic_managers`);
         if (response.ok) {
           const data = await response.json();
-          trafficManagers = data.map((trafficManager: any) => ({id: trafficManager.id, name: `${trafficManager.firstname}.${trafficManager.lastname}`}));
+          trafficManagers = data.map((trafficManager: any) => ({id: trafficManager.id, username: `${trafficManager.username}`}));
         } else {
           console.error('Failed to fetch traffic managers:', response.status);
         }
@@ -123,8 +123,9 @@
                     currentCheckpoint: tractor.current_checkpoint.name,
                     startCheckpoint: tractor.start_checkpoint.name,
                     endCheckpoint: tractor.end_checkpoint.name,
-                    trafficManager: tractor.traffic_manager == null ? null : tractor.traffic_manager.firstname + ' ' + tractor.traffic_manager.lastname
+                    trafficManager: tractor.traffic_manager
                 }));
+                console.log('Table data:', tableData);  
             } else {
                 console.error('Failed to fetch tractors:', response.status);
             }
@@ -313,12 +314,12 @@
                         {#if row.state === 'available'}
                             <select bind:value={row.trafficManager}  class="border border-gray-300 rounded px-2 py-1 mx-auto w-4/5">
                                 {#each trafficManagers as trafficManagerOption}
-                                    <option value={trafficManagerOption}>{trafficManagerOption.name}</option>
+                                    <option value={trafficManagerOption}>{trafficManagerOption.username}</option>
                                 {/each}
                             </select>
                         {:else}
                                 <span class="px-2 py-1 mx-auto w-4/5 block">
-                                    {row.trafficManager}
+                                    {row.trafficManager.username}
                                 </span>
                         {/if}
                     </td>
