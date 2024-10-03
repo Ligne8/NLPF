@@ -22,6 +22,8 @@
     let selectedArrival: Checkpoint;
     let tableData: LotTable[] = [];
     let trafficManagers: TrafficManager[] = [];
+    let selectedStatus: string = 'all';
+    let sortOption: string = 'none';
     
     interface TrafficManager {
       id: string;
@@ -55,11 +57,11 @@
             case 'available':
                 return { color: 'bg-green-200 text-green-800', text: '◉ Available' };
             case 'pending':
-                return { color: 'bg-amber-200 text-green-800', text: '◉ Pending' };
+                return { color: 'bg-yellow-200 text-yellow-800', text: '◉ Pending' };
             case 'on_the_way':
-                return { color: 'bg-orange-200 text-orange-800', text: '◉ On the road' };
+                return { color: 'bg-orange-200 text-orange-800', text: '◉ On the way' };
             case 'on_the_stock_exchange':
-                return { color: 'bg-yellow-200 text-yellow-800', text: '◉ On the stock exchange' };
+                return { color: 'bg-blue-200 text-blue-800', text: '◉ On the stock exchange' };
             case 'archived':
                 return { color: 'bg-gray-200 text-gray-800', text: '◉ Archived' };
             default:
@@ -84,7 +86,6 @@
             input.value = input.value.replace(/\.+$/, '');
         maxPrice = input.value;
     }
-
 
     async function fetchTrafficManagers(){
       try {
@@ -210,6 +211,25 @@
           alert('Erreur lors de l\'attribution du lot');
       });
     }
+
+    // Update data depending on filters
+    $: sortedData = (() => {
+        let data = selectedStatus === 'all' ? tableData : tableData.filter(lot => lot.state === selectedStatus);
+
+        switch (sortOption) {
+            case 'volume_asc':
+                return data.sort((a, b) => a.volume - b.volume);
+            case 'volume_desc':
+                return data.sort((a, b) => b.volume - a.volume);
+            case 'location_asc':
+                return data.sort((a, b) => a.currentCheckpoint.localeCompare(b.currentCheckpoint));
+            case 'location_desc':
+                return data.sort((a, b) => b.currentCheckpoint.localeCompare(a.currentCheckpoint));
+            default:
+                return data;
+        }
+    })();
+
 </script>
 
 
@@ -218,18 +238,42 @@
 
 <main class="p-10 pt-40">
 
+    <!-- Title and subtitle -->
+    <div class="mb-2">
+        <h1 class="text-4xl font-bold mb-2">{title}</h1>
+        <h2 class="text-2xl text-gray-600">{subtitle}</h2>
+    </div>
+
     <section class="flex justify-between items-center mb-4">
 
-        <!-- Title and subtitle -->
-        <div>
-            <h1 class="text-4xl font-bold mb-2">{title}</h1>
-            <h2 class="text-2xl text-gray-600">{subtitle}</h2>
+        <div class="flex justify-between items-center self-end">
+
+            <!-- Filter by status -->
+            <select bind:value={selectedStatus} class="mr-2 border border-gray-300 rounded px-2 py-1">
+                <option value="all" disabled selected>Filter by status</option>
+                <option value="all">All</option>
+                <option value="available">Available</option>
+                <option value="pending">Pending</option>
+                <option value="on_the_way">On the way</option>
+                <option value="on_the_stock_exchange">On the stock exchange</option>
+                <option value="archived">Archived</option>
+            </select>
+
+            <!-- Sort by volume and location -->
+            <select bind:value={sortOption} class="border border-gray-300 rounded px-2 py-1">
+                <option value="none" disabled selected>Sort by</option>
+                <option value="volume_asc">Volume (Ascending)</option>
+                <option value="volume_desc">Volume (Descending)</option>
+                <option value="location_asc">Location (A-Z)</option>
+                <option value="location_desc">Location (Z-A)</option>
+            </select>
+
         </div>
 
         <div class="flex justify-between items-center self-end">
 
             <!-- Create button -->
-            <button class="bg-blue-500 text-white mr-5 font-bold px-4 py-2 rounded flex items-center hover:bg-blue-600 transition-colors self-end"
+            <button class="bg-blue-500 text-white mr-2 font-bold px-4 py-2 rounded flex items-center hover:bg-blue-600 transition-colors self-end"
                     on:click={openModal}
             >
                 <i class="fas fa-plus mr-2"></i>
@@ -262,7 +306,7 @@
             </tr>
             </thead>
             <tbody>
-            {#each tableData as row, index}
+            {#each sortedData as row, index}
                 <tr class={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
 
 
@@ -293,9 +337,7 @@
                                 {/each}
                             </select>
                         {:else}
-                                <span class="px-2 py-1 mx-auto w-4/5 block">
-                                    {row.trafficManager}
-                                </span>
+                            <span class="text-gray-500">-</span>
                         {/if}
                     </td>
 
