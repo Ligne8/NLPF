@@ -48,7 +48,7 @@
 <Navbar/>
 <TrafficManagerNavbar/>
 
-<main class="p-10">
+<main class="p-10 mt-40">
 
     <section class="flex justify-between items-center mb-4">
 

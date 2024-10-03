@@ -26,7 +26,7 @@
 <Navbar/>
 <TraderNavbar/>
 
-<main class="p-10">
+<main class="p-10 mt-40">
 
     <!-- Title and subtitle -->
     <section>

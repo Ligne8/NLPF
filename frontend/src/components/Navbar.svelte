@@ -70,7 +70,7 @@
 </script>
 
 <!-- Centered User Role Title -->
-<div class="text-center flex-1 hidden lg:block bg-blue-500">
+<div class="text-center flex-1 hidden lg:block bg-yellow-500 fixed top-0 left-0 w-full z-100">
     <p class="text-lg text-gray-800">
         <span class="font-bold">
             {#if $userRole === 'traffic_manager'}
@@ -88,7 +88,7 @@
 </div>
 
 <!-- Navbar -->
-<nav class="bg-gray-800 p-4 text-white shadow-md">
+<nav class="bg-gray-800 p-4 text-white shadow-md fixed top-0 left-0 w-full z-50 mt-7">
     <div class="flex items-center justify-between">
 
         <div class="flex items-center">
