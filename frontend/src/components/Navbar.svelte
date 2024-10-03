@@ -69,9 +69,28 @@
     });
 </script>
 
+<!-- Centered User Role Title -->
+<div class="text-center flex-1 hidden lg:block bg-blue-500">
+    <p class="text-lg text-gray-800">
+        <span class="font-bold">
+            {#if $userRole === 'traffic_manager'}
+                Traffic Manager
+            {:else if $userRole === 'client'}
+                Client
+            {:else if $userRole === 'trader'}
+                Trader
+            {:else if $userRole === 'admin'}
+                Admin
+            {/if}
+        </span>
+        view
+    </p>
+</div>
+
 <!-- Navbar -->
 <nav class="bg-gray-800 p-4 text-white shadow-md">
     <div class="flex items-center justify-between">
+
         <div class="flex items-center">
             <!-- Logo -->
             <a href="/" class="flex-shrink-0">
@@ -123,79 +142,32 @@
             </ul>
         </div>
 
-        <!-- Centered User Role Title -->
-        <div class="text-center flex-1 hidden lg:block">
-    <span class="text-lg font-semibold text-gray-300 hover:text-white transition-colors duration-300">
-        {#if $userRole === 'traffic_manager'}
-            TRAFFIC MANAGER
-        {:else if $userRole === 'client'}
-            CLIENT
-        {:else if $userRole === 'trader'}
-            TRADER
-        {:else if $userRole === 'admin'}
-            ADMIN
-        {/if}
-    </span>
-        </div>
-
-        <!-- Right section: buttons -->
+        <!-- Right section -->
         <div class="flex items-center space-x-4">
             {#if simulationDate}
-                <div class="text-lg font-semibold text-gray-300">
-                    Simulation : <span class="text-blue-400">{simulationDate}</span>
+                <div class="text-lg text-white">
+                    Simulation date : <span class="font-bold text-blue-400">{simulationDate}</span>
                 </div>
             {:else}
-                <div class="text-lg font-semibold text-red-500">
-                    Erreur de date
+                <div class="text-lg font-normal text-red-500">
+                    No date found
                 </div>
             {/if}
 
-            <!-- Update Simulation Date Button -->
-            <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full transition-all duration-300 transform hover:scale-105" on:click={updateSimulationDate}>
-                +
-            </button>
+            <!-- Update simulation date button -->
+            <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold rounded-full transition-all duration-300 transform hover:scale-105 w-10 h-10 flex items-center justify-center"
+                    on:click={updateSimulationDate}
+            >
+                <i class="fas fa-plus"></i>
+            </button>            
 
-            <!-- Logout Button -->
+            <!-- Logout button -->
             <button on:click={() => {
                 localStorage.clear();
                 window.location.reload();
-            }} class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105">
+            }} class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-md transition-all duration-300 transform hover:scale-105">
                 <i class="fa-solid fa-right-from-bracket"></i>
             </button>
         </div>
     </div>
 </nav>
-
-<style>
-    button {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-    }
-
-    /* Hover and transition effects */
-    a {
-        transition: color 0.3s ease;
-    }
-
-    a:hover {
-        color: #60a5fa; /* Tailwind's blue-400 */
-    }
-
-    .rounded-lg {
-        border-radius: 8px;
-    }
-
-    /* Flex adjustments */
-    .flex-1 {
-        flex-grow: 1;
-    }
-
-    /* Ensure spacing and margin are balanced */
-    .ml-16 {
-        margin-left: 4rem;
-    }
-</style>
