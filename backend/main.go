@@ -1,12 +1,13 @@
 package main
 
 import (
-	"gorm.io/gorm"
 	"time"
 	"tms-backend/database"
 	docs "tms-backend/docs"
 	"tms-backend/models"
 	"tms-backend/routes"
+
+	"gorm.io/gorm"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -29,14 +30,18 @@ func main() {
 	}))
 
 	db := database.InitDb()
+  
+  // Initialize simulation datetime
+	initializeSimulationDate(db)
 
 	models.CreateCheckpoints(db)
 	router = routes.CheckpointsRoute(router, db)
 	router = routes.LotRoutes(router, db)
 	router = routes.TractorRoutes(router, db)
 	router = routes.UserRoutes(router, db)
-	router = routes.RoutesRoute(router, db)
+	router = routes.SimulationRoutes(router, db)
 	router = routes.AuthRoutes(router, db)
+	router = routes.RoutesRoute(router, db)
 
 	docs.SwaggerInfo.BasePath = "/api/v1"
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))

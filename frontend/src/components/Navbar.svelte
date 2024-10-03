@@ -1,5 +1,6 @@
 <script lang="ts">
     import { onMount } from 'svelte';
+
     import { userRole, currentTab } from '@stores/store.js';
     import type { UserRole, userId } from '@stores/store.js';
     import axios from 'axios';
@@ -62,6 +63,7 @@
         else if (path.startsWith('/stock-exchange'))
             currentTab.set('StockExchange');
         else
+
             currentTab.set(''); // Reset if on root or unknown path
 
         fetchSimulationDate();
