@@ -21,7 +21,7 @@
 
 
 <!-- Sub-Navbar -->
-<nav class="bg-gray-200 px-10 py-4 text-gray-800">
+<nav class="bg-gray-200 px-10 py-4 text-gray-800 fixed top-24 mt-3 left-0 w-full z-40">
     <ul class="flex space-x-16">
         <li>
             <a
@@ -34,7 +34,7 @@
             <a
                     href="/stock-exchange/tractors"
                     on:click={() => switchTab('Tractors')}
-                    class="{$currentTrafficManagerTab === 'Tractors' ? 'font-bold bg-gray-800 text-gray-200 rounded-md px-4 py-2' : ''}">Tracteurs
+                    class="{$currentTrafficManagerTab === 'Tractors' ? 'font-bold bg-gray-800 text-gray-200 rounded-md px-4 py-2' : ''}">Tractors
             </a>
         </li>
     </ul>

@@ -5,8 +5,8 @@
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
     // Variables
-    let title: string = 'Gestion des tracteurs';
-    let subtitle: string = 'Suivez l’état de vos tracteurs en temps réel.';
+    let title: string = 'Tractor management';
+    let subtitle: string = 'Track the status of your tractors in real time.';
     let isModalOpen = false;
     let checkpoints: string[] = [];
     let types = ['Bulk', 'Solid', 'Liquid'];
@@ -19,10 +19,10 @@
 
     // Example data
     let tableData = [
-        { name: 'tracteur 1', status: 'ON_THE_WAY', volume: 16, location: 'Paris', startCheckpoint: 'Lyon', endCheckpoint: 'Montpellier', trafficManager: ['Traffic manager 1'] },
-        { name: 'tracteur 2', status: 'ON_THE_STOCK_EXCHANGE', volume: 3, location: 'Lyon', startCheckpoint: 'Lyon', endCheckpoint: 'Paris', trafficManager: ['Traffic manager 4'] },
-        { name: 'tracteur 3', status: 'PENDING', volume: 4, location: 'Marseille', startCheckpoint: 'Marseille', endCheckpoint: 'Montpellier', trafficManager: ['Traffic manager 2', 'Traffic manager 3', 'Traffic manager 4'] },
-        { name: 'tracteur 4', status: 'ARCHIVED', volume: 8, location: 'Montpellier', startCheckpoint: 'Paris', endCheckpoint: 'Montpellier', trafficManager: ['Traffic manager 3'] },
+        { name: 'tractor 1', status: 'ON_THE_WAY', volume: 16, location: 'Paris', startCheckpoint: 'Lyon', endCheckpoint: 'Montpellier', trafficManager: ['Traffic manager 1'] },
+        { name: 'tractor 2', status: 'ON_THE_STOCK_EXCHANGE', volume: 3, location: 'Lyon', startCheckpoint: 'Lyon', endCheckpoint: 'Paris', trafficManager: ['Traffic manager 4'] },
+        { name: 'tractor 3', status: 'PENDING', volume: 4, location: 'Marseille', startCheckpoint: 'Marseille', endCheckpoint: 'Montpellier', trafficManager: ['Traffic manager 2', 'Traffic manager 3', 'Traffic manager 4'] },
+        { name: 'tractor 4', status: 'ARCHIVED', volume: 8, location: 'Montpellier', startCheckpoint: 'Paris', endCheckpoint: 'Montpellier', trafficManager: ['Traffic manager 3'] },
     ];
 
     // Fetch all data
@@ -55,15 +55,15 @@
     function getStatusInfo(status: string): { color: string; text: string } {
         switch (status) {
             case 'PENDING':
-                return { color: 'bg-green-200 text-green-800', text: '◉ En attente' };
+                return { color: 'bg-green-200 text-green-800', text: '◉ Pending' };
             case 'ON_THE_WAY':
-                return { color: 'bg-orange-200 text-orange-800', text: '◉ En route' };
+                return { color: 'bg-orange-200 text-orange-800', text: '◉ On the road' };
             case 'ON_THE_STOCK_EXCHANGE':
-                return { color: 'bg-yellow-200 text-yellow-800', text: '◉ En bourse' };
+                return { color: 'bg-yellow-200 text-yellow-800', text: '◉ On the stock exchange' };
             case 'ARCHIVED':
-                return { color: 'bg-gray-200 text-gray-800', text: '◉ Archivé' };
+                return { color: 'bg-gray-200 text-gray-800', text: '◉ Archived' };
             default:
-                return { color: 'bg-gray-200 text-gray-800', text: '🛇 Inconnu' };
+                return { color: 'bg-gray-200 text-gray-800', text: '🛇 Unknown' };
         }
     }
 
@@ -85,10 +85,10 @@
         maxPrice = input.value;
     }
 
-    // Function to add lot
+    // Function to add a lot
     function addLot() {
 
-        // Add lot to the table
+        // Add a lot to the table
         const newLot = {
             name: lotName,
             status: 'PENDING',
@@ -130,7 +130,7 @@
 <!-- Navbar -->
 <Navbar/>
 
-<main class="p-10">
+<main class="p-10 pt-40">
 
     <section class="flex justify-between items-center mb-4">
 
@@ -145,7 +145,7 @@
                 on:click={openModal}
         >
             <i class="fas fa-plus mr-2"></i>
-            Ajouter un tracteur
+            Add a tractor
         </button>
 
     </section>
@@ -155,11 +155,11 @@
         <table class="table-auto w-full border-collapse border border-gray-300">
             <thead>
             <tr class="bg-gray-100">
-                <th class="border p-2 text-center">Nom</th>
+                <th class="border p-2 text-center">Name</th>
                 <th class="border p-2 text-center">Status</th>
-                <th class="border p-2 text-center">Volume <span class="font-normal">(en m³)</span></th>
-                <th class="border p-2 text-center">Localisation</th>
-                <th class="border p-2 text-center">Départ / Arrivée</th>
+                <th class="border p-2 text-center">Volume <span class="font-normal">(in m³)</span></th>
+                <th class="border p-2 text-center">Location</th>
+                <th class="border p-2 text-center">Departure / Arrival</th>
                 <th class="border p-2 text-center">Traffic manager</th>
             </tr>
             </thead>
@@ -226,15 +226,15 @@
             </button>
 
             <!-- Modal Title -->
-            <h2 class="text-2xl font-bold mb-6">Ajouter un tracteur</h2>
+            <h2 class="text-2xl font-bold mb-6">Add a tractor</h2>
 
             <!-- Form -->
             <form on:submit|preventDefault={addLot}>
 
                 <!-- Name -->
                 <div class="mb-2">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Nom :</label>
-                    <input type="text" class="w-full border border-gray-300 p-2 rounded" placeholder="Entrez le nom du lot" bind:value={lotName} required>
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Name :</label>
+                    <input type="text" class="w-full border border-gray-300 p-2 rounded" placeholder="Enter lot name" bind:value={lotName} required>
                 </div>
 
                 <!-- Volume -->
@@ -242,7 +242,7 @@
                     <label class="block text-gray-700 text-sm font-bold mb-2">Volume :</label>
                     <input type="text"
                            class="w-full border border-gray-300 p-2 rounded"
-                           placeholder="Entrez le volume (en m³)"
+                           placeholder="Enter volume (in m³)"
                            on:input={validateVolume}
                            value={volume}
                            required
@@ -251,10 +251,10 @@
 
                 <!-- Min price -->
                 <div class="mb-2">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Prix minimum :</label>
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Minimum price :</label>
                     <input type="text"
                            class="w-full border border-gray-300 p-2 rounded"
-                           placeholder="Entrez le prix maximum (par km)"
+                           placeholder="Enter maximum price (per km)"
                            on:input={validateMinPrice}
                            value={volume}
                            required
@@ -266,7 +266,7 @@
                 <div class="flex justify-center mt-4">
                     <button type="submit" class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600">
                         <i class="fas fa-plus"></i>
-                        <span class="font-bold">Ajouter</span>
+                        <span class="font-bold">Add</span>
                     </button>
                 </div>
             </form>

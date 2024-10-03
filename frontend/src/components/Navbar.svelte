@@ -21,9 +21,9 @@
     async function fetchSimulationDate() {
         try {
             const response = await axios.get('http://localhost:8080/api/v1/simulations/date');
-            simulationDate = response.data.simulation_date; // Get datetime format YYYY-MM-DD
+            simulationDate = response.data.simulation_date; // Date retrieval in YYYY-MM-DD format
         } catch (err) {
-            error = 'Erreur lors de la récupération de la date de simulation';
+            error = 'Error retrieving simulation date';
             console.error(err);
         }
     }
@@ -33,7 +33,7 @@
             await axios.patch('http://localhost:8080/api/v1/simulations/date', {});
             await fetchSimulationDate(); // Re-fetch the date after updating
         } catch (err) {
-            error = 'Erreur lors de la mise à jour de la date de simulation';
+            error = 'Error updating simulation date';
             console.error(err);
         }
     }
@@ -70,7 +70,7 @@
 </script>
 
 <!-- Centered User Role Title -->
-<div class="text-center flex-1 hidden lg:block bg-blue-500">
+<div class="text-center flex-1 hidden lg:block bg-yellow-500 fixed top-0 left-0 w-full z-50">
     <p class="text-lg text-gray-800">
         <span class="font-bold">
             {#if $userRole === 'traffic_manager'}
@@ -88,7 +88,7 @@
 </div>
 
 <!-- Navbar -->
-<nav class="bg-gray-800 p-4 text-white shadow-md">
+<nav class="bg-gray-800 p-4 text-white shadow-md fixed top-0 left-0 w-full z-50 mt-7">
     <div class="flex items-center justify-between">
 
         <div class="flex items-center">
