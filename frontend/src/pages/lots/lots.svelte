@@ -1,7 +1,6 @@
 <script lang="ts">
     import { onMount } from 'svelte';
     import Navbar from '@components/Navbar.svelte';
-    import TrafficManager from '@pages/traffic_manager/traffic_manager.svelte';
     import {userId} from "@stores/store";
 
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -11,8 +10,8 @@
       name: string;
     }
 
-    let title: string = 'Gestion des Lots';
-    let subtitle: string = 'Suivez l’état de vos lots en temps réel.';
+    let title: string = 'Lot management';
+    let subtitle: string = 'Track the status of your lots in real time.';
     let isModalOpen = false;
     let checkpoints: Checkpoint[] = [];
     let types = ['Bulk', 'Solid', 'Liquid'];
@@ -23,6 +22,8 @@
     let selectedArrival: Checkpoint;
     let tableData: LotTable[] = [];
     let trafficManagers: TrafficManager[] = [];
+    let selectedStatus: string = 'all';
+    let sortOption: string = 'none';
     
     interface TrafficManager {
       id: string;
@@ -62,9 +63,9 @@
             case 'on_market':
                 return { color: 'bg-yellow-200 text-yellow-800', text: '◉ En bourse' };
             case 'archived':
-                return { color: 'bg-gray-200 text-gray-800', text: '◉ Archivé' };
+                return { color: 'bg-gray-200 text-gray-800', text: '◉ Archived' };
             default:
-                return { color: 'bg-gray-200 text-gray-800', text: '🛇 Inconnu' };
+                return { color: 'bg-gray-200 text-gray-800', text: '🛇 Unknown' };
         }
     }
 
@@ -86,7 +87,6 @@
         maxPrice = input.value;
     }
 
-
     async function fetchTrafficManagers(){
       try {
         const response = await fetch(`${API_BASE_URL}/users/traffic_managers`);
@@ -103,7 +103,6 @@
 
     async function fetchLots() {
       try {
-
         const response = await fetch(`${API_BASE_URL}/lots/owner/${$userId}`);
         if (response.ok) {
           const data = await response.json();
@@ -144,10 +143,10 @@
         }
     }
 
-    // Function to add lot
+    // Function to add a lot
     function addLot() {
 
-        // Add lot to the table
+        // Add a lot to the table
         const newLot = {
             resource_type: selectedType.toLowerCase(),
             volume: parseFloat(volume),
@@ -157,7 +156,6 @@
             end_checkpoint_id: selectedArrival.id,
             state: 'available',
             owner_id: $userId
-
         };
 
         selectedType = '';
@@ -213,38 +211,83 @@
           alert('Erreur lors de l\'attribution du lot');
       });
     }
+
+    // Update data depending on filters
+    $: sortedData = (() => {
+        let data = selectedStatus === 'all' ? tableData : tableData.filter(lot => lot.state === selectedStatus);
+
+        switch (sortOption) {
+            case 'volume_asc':
+                return data.sort((a, b) => a.volume - b.volume);
+            case 'volume_desc':
+                return data.sort((a, b) => b.volume - a.volume);
+            case 'location_asc':
+                return data.sort((a, b) => a.currentCheckpoint.localeCompare(b.currentCheckpoint));
+            case 'location_desc':
+                return data.sort((a, b) => b.currentCheckpoint.localeCompare(a.currentCheckpoint));
+            default:
+                return data;
+        }
+    })();
+
 </script>
 
 
 <!-- Navbar -->
 <Navbar/>
 
-<main class="p-10">
+<main class="p-10 pt-40">
+
+    <!-- Title and subtitle -->
+    <div class="mb-2">
+        <h1 class="text-4xl font-bold mb-2">{title}</h1>
+        <h2 class="text-2xl text-gray-600">{subtitle}</h2>
+    </div>
 
     <section class="flex justify-between items-center mb-4">
 
-        <!-- Title and subtitle -->
-        <div>
-            <h1 class="text-4xl font-bold mb-2">{title}</h1>
-            <h2 class="text-2xl text-gray-600">{subtitle}</h2>
+        <div class="flex justify-between items-center self-end">
+
+            <!-- Filter by status -->
+            <select bind:value={selectedStatus} class="mr-2 border border-gray-300 rounded px-2 py-1">
+                <option value="all" disabled selected>Filter by status</option>
+                <option value="all">All</option>
+                <option value="available">Available</option>
+                <option value="pending">Pending</option>
+                <option value="on_the_way">On the way</option>
+                <option value="on_the_stock_exchange">On the stock exchange</option>
+                <option value="archived">Archived</option>
+            </select>
+
+            <!-- Sort by volume and location -->
+            <select bind:value={sortOption} class="border border-gray-300 rounded px-2 py-1">
+                <option value="none" disabled selected>Sort by</option>
+                <option value="volume_asc">Volume (Ascending)</option>
+                <option value="volume_desc">Volume (Descending)</option>
+                <option value="location_asc">Location (A-Z)</option>
+                <option value="location_desc">Location (Z-A)</option>
+            </select>
+
         </div>
 
-        <div class="flex">
+        <div class="flex justify-between items-center self-end">
 
-        <button class="bg-blue-500 mr-5 text-white font-bold px-4 py-2 rounded flex items-center hover:bg-blue-600 transition-colors self-end"
-                on:click={fetchAllData}
-        >
-            <i class="fas fa-rotate-right mr-2"></i>
-            Reload
-        </button>
+            <!-- Create button -->
+            <button class="bg-blue-500 text-white mr-2 font-bold px-4 py-2 rounded flex items-center hover:bg-blue-600 transition-colors self-end"
+                    on:click={openModal}
+            >
+                <i class="fas fa-plus mr-2"></i>
+                Add a lot
+            </button>
 
-        <!-- Create button -->
-        <button class="bg-blue-500 text-white font-bold px-4 py-2 rounded flex items-center hover:bg-blue-600 transition-colors self-end"
-                on:click={openModal}
-        >
-            <i class="fas fa-plus mr-2"></i>
-            Add lot
-        </button>
+            <!-- Reload button -->
+            <button class="bg-gray-800 text-white font-bold px-4 py-2 rounded flex items-center hover:bg-gray-900 transition-colors self-end"
+                    on:click={fetchAllData}
+            >
+                <i class="fas fa-rotate-right mr-2"></i>
+                Reload
+            </button>
+
         </div>
 
     </section>
@@ -255,15 +298,15 @@
             <thead>
             <tr class="bg-gray-100">
                 <th class="border p-2 text-center">Status</th>
-                <th class="border p-2 text-center">Volume <span class="font-normal">(en m³)</span></th>
-                <th class="border p-2 text-center">Localisation</th>
-                <th class="border p-2 text-center">Départ / Arrivée</th>
+                <th class="border p-2 text-center">Volume <span class="font-normal">(in m³)</span></th>
+                <th class="border p-2 text-center">Location</th>
+                <th class="border p-2 text-center">Departure / Arrival</th>
                 <th class="border p-2 text-center">Traffic manager</th>
                 <th class="border p-2 text-center">Actions</th>
             </tr>
             </thead>
             <tbody>
-            {#each tableData as row, index}
+            {#each sortedData as row, index}
                 <tr class={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
 
 
@@ -294,9 +337,7 @@
                                 {/each}
                             </select>
                         {:else}
-                                <span class="px-2 py-1 mx-auto w-4/5 block">
-                                    {row.trafficManager}
-                                </span>
+                            <span class="text-gray-500">-</span>
                         {/if}
                     </td>
 
@@ -312,11 +353,11 @@
                             <div class="flex flex-wrap justify-center space-x-2">
                                 <button on:click={()=>{assignToTrafficManager(row.id, row.trafficManager)}} class="bg-green-200 text-green-800 px-4 py-2 flex items-center font-bold hover:bg-green-300 transition-colors rounded-md">
                                     <i class="fas fa-truck mr-2"></i>
-                                    Attribuer au TM 
+                                    Assign
                                 </button>
                                 <button class="bg-blue-200 text-blue-800 px-4 py-2 flex items-center font-bold hover:bg-blue-300 transition-colors rounded-md">
                                     <i class="fas fa-plus mr-2"></i>
-                                    Bourse
+                                    Stock exchange
                                 </button>
                                 <button class="bg-gray-800 text-white px-4 py-2 flex items-center font-bold hover:bg-black transition-colors rounded-md">
                                     <i class="fas fa-right-from-bracket mr-2"></i>
@@ -351,7 +392,7 @@
             </button>
 
             <!-- Modal Title -->
-            <h2 class="text-2xl font-bold mb-6">Ajouter un lot</h2>
+            <h2 class="text-2xl font-bold mb-6">Add a lot</h2>
 
             <!-- Form -->
             <form on:submit|preventDefault={addLot}>
@@ -371,7 +412,7 @@
                     <label class="block text-gray-700 text-sm font-bold mb-2">Volume :</label>
                     <input type="text"
                            class="w-full border border-gray-300 p-2 rounded"
-                           placeholder="Entrez le volume (en m³)"
+                           placeholder="Enter volume (in m³)"
                            on:input={validateVolume}
                            value={volume}
                            required
@@ -380,19 +421,19 @@
 
                 <!-- Max price -->
                 <div class="mb-2">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Prix maximum :</label>
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Maximum price :</label>
                     <input type="text"
                            class="w-full border border-gray-300 p-2 rounded"
-                           placeholder="Entrez le prix maximum (par km)"
+                           placeholder="Enter maximum price (per km)"
                            on:input={validateMaxPrice}
                            value={maxPrice}
                            required
                     >
                 </div>
 
-                <!-- Départ -->
+                <!-- Departure -->
                 <div class="mb-2">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Départ :</label>
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Departure :</label>
                     <select class="w-full border border-gray-300 p-2 rounded" bind:value={selectedDeparture}>
                         {#each checkpoints as checkpoint}
                             {#if checkpoint.id !== selectedArrival.id}
@@ -402,9 +443,9 @@
                     </select>
                 </div>
 
-                <!-- Arrivée -->
+                <!-- Arrival -->
                 <div class="mb-2">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Arrivée :</label>
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Arrival :</label>
                     <select class="w-full border border-gray-300 p-2 rounded" bind:value={selectedArrival}>
                         {#each checkpoints as checkpoint}
                             {#if checkpoint.id !== selectedDeparture.id}
@@ -418,7 +459,7 @@
                 <div class="flex justify-center mt-4">
                     <button type="submit" class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600">
                         <i class="fas fa-plus"></i>
-                        <span class="font-bold">Ajouter</span>
+                        <span class="font-bold">Add</span>
                     </button>
                 </div>
             </form>

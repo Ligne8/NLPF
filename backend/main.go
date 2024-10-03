@@ -1,12 +1,13 @@
 package main
 
 import (
-	"gorm.io/gorm"
 	"time"
 	"tms-backend/database"
 	docs "tms-backend/docs"
 	"tms-backend/models"
 	"tms-backend/routes"
+
+	"gorm.io/gorm"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"

@@ -29,22 +29,22 @@ func (SimulationController *SimulationController) GetSimulationDate(c *gin.Conte
 func (SimulationController *SimulationController) UpdateSimulationDate(c *gin.Context) {
 	var simulation models.Simulation
 
-	// Récupérer la date actuelle de simulation depuis la base de données
+	// Get the current simulation date from the database
 	if err := SimulationController.Db.First(&simulation).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to fetch simulation date"})
 		return
 	}
 
-	// Incrémenter la date de simulation de 1 jour
+	// Increase simulation date by one day
 	newDate := simulation.SimulationDate.AddDate(0, 0, 1)
 
-	// Mettre à jour la date de simulation dans la base de données avec une condition WHERE basée sur l'ID
+	// Update simulation date in database with ID-based WHERE condition
 	if err := SimulationController.Db.Model(&simulation).Where("id = ?", simulation.ID).Update("simulation_date", newDate).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to update simulation date"})
 		return
 	}
 
-	// Retourner la nouvelle date mise à jour
+	// Return the new updated date
 	c.JSON(http.StatusOK, gin.H{
 		"message":         "Simulation date updated successfully",
 		"simulation_date": newDate.Format("2006-01-02"),

@@ -1,10 +1,11 @@
 package controllers
 
 import (
-	"github.com/gin-gonic/gin"
-	"golang.org/x/crypto/bcrypt"
 	"net/http"
 	"tms-backend/models"
+
+	"github.com/gin-gonic/gin"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func (AuthController *AuthController) LoginUser(c *gin.Context) {

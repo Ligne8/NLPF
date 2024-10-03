@@ -3,31 +3,31 @@
     import TrafficManagerNavbar from '@components/TrafficManagerNavbar.svelte';
 
     // Variables
-    let title: string = 'Gestion des Lots';
-    let subtitle: string = 'Suivez l’état de vos lots en temps réel.';
+    let title: string = 'Lot management';
+    let subtitle: string = 'Track the status of your lots in real time.';
 
     // Function to get tag color and text based on status
     function getStatusInfo(status: string): { color: string; text: string } {
         switch (status) {
             case 'PENDING':
-                return { color: 'bg-green-200 text-green-800', text: '◉ En attente' };
+                return { color: 'bg-green-200 text-green-800', text: '◉ Pending' };
             case 'ON_THE_WAY':
-                return { color: 'bg-orange-200 text-orange-800', text: '◉ En route' };
+                return { color: 'bg-orange-200 text-orange-800', text: '◉ On the way' };
             case 'ON_THE_STOCK_EXCHANGE':
-                return { color: 'bg-yellow-200 text-yellow-800', text: '◉ En bourse' };
+                return { color: 'bg-yellow-200 text-yellow-800', text: '◉ On the stock exchange' };
             case 'ARCHIVED':
-                return { color: 'bg-gray-200 text-gray-800', text: '◉ Archivé' };
+                return { color: 'bg-gray-200 text-gray-800', text: '◉ Archived' };
             default:
-                return { color: 'bg-gray-200 text-gray-800', text: '🛇 Inconnu' };
+                return { color: 'bg-gray-200 text-gray-800', text: '🛇 Unknown' };
         }
     }
 
     // Example data
     const tableData = [
-        { name: 'Lot 1', status: 'ON_THE_WAY', volume: 16, location: 'Paris', startCheckpoint: 'Lyon', endCheckpoint: 'Montpellier', tractor: ['Tracteur 1'] },
-        { name: 'Lot 2', status: 'ON_THE_STOCK_EXCHANGE', volume: 3, location: 'Lyon', startCheckpoint: 'Lyon', endCheckpoint: 'Paris', tractor: ['Tracteur 4'] },
-        { name: 'Lot 3', status: 'PENDING', volume: 4, location: 'Marseille', startCheckpoint: 'Marseille', endCheckpoint: 'Montpellier', tractor: ['Tracteur 2', 'Tracteur 3', 'Tracteur 4'] },
-        { name: 'Lot 4', status: 'ARCHIVED', volume: 8, location: 'Montpellier', startCheckpoint: 'Paris', endCheckpoint: 'Montpellier', tractor: ['Tracteur 3'] },
+        { name: 'Lot 1', status: 'ON_THE_WAY', volume: 16, location: 'Paris', startCheckpoint: 'Lyon', endCheckpoint: 'Montpellier', tractor: ['tractor 1'] },
+        { name: 'Lot 2', status: 'ON_THE_STOCK_EXCHANGE', volume: 3, location: 'Lyon', startCheckpoint: 'Lyon', endCheckpoint: 'Paris', tractor: ['tractor 4'] },
+        { name: 'Lot 3', status: 'PENDING', volume: 4, location: 'Marseille', startCheckpoint: 'Marseille', endCheckpoint: 'Montpellier', tractor: ['tractor 2', 'tractor 3', 'tractor 4'] },
+        { name: 'Lot 4', status: 'ARCHIVED', volume: 8, location: 'Montpellier', startCheckpoint: 'Paris', endCheckpoint: 'Montpellier', tractor: ['tractor 3'] },
     ];
 </script>
 
@@ -36,7 +36,7 @@
 <Navbar/>
 <TrafficManagerNavbar/>
 
-<main class="p-10">
+<main class="p-10 mt-40">
 
     <!-- Title and subtitle -->
     <section>
@@ -49,12 +49,12 @@
         <table class="table-auto w-full border-collapse border border-gray-300">
             <thead>
             <tr class="bg-gray-100">
-                <th class="border p-2 text-center">Nom</th>
+                <th class="border p-2 text-center">Name</th>
                 <th class="border p-2 text-center">Status</th>
-                <th class="border p-2 text-center">Volume <span class="font-normal">(en m³)</span></th>
-                <th class="border p-2 text-center">Localisation</th>
-                <th class="border p-2 text-center">Départ / Arrivée</th>
-                <th class="border p-2 text-center">Tracteur</th>
+                <th class="border p-2 text-center">Volume <span class="font-normal">(in m³)</span></th>
+                <th class="border p-2 text-center">Location</th>
+                <th class="border p-2 text-center">Departure / Arrival</th>
+                <th class="border p-2 text-center">Tractor</th>
                 <th class="border p-2 text-center">Actions</th>
             </tr>
             </thead>
@@ -104,7 +104,7 @@
                             <div class="flex flex-wrap justify-center space-x-2">
                                 <button class="bg-blue-200 text-blue-800 px-4 py-2 flex items-center font-bold hover:bg-blue-300 transition-colors rounded-md">
                                     <i class="fas fa-plus mr-2"></i>
-                                    Bourse
+                                    Stock exchange
                                 </button>
                             </div>
                         {:else}

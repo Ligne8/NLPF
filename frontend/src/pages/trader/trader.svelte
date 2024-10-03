@@ -1,6 +1,8 @@
-<script>
-    import Navbar from "@components/Navbar.svelte";
+<script lang="ts">
+    import { onMount } from 'svelte';
+
+    onMount(() => {
+        window.history.replaceState({}, '', '/trader/lots');
+        window.dispatchEvent(new Event('popstate'));
+    });
 </script>
-    
-<Navbar/>
-<h1>trader</h1>

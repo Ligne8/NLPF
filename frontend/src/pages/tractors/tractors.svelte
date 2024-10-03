@@ -29,8 +29,8 @@
     }
 
     // Variables
-    let title: string = 'Tractor Management';
-    let subtitle: string = 'Track your tractors in real time.';
+    let title: string = 'Tractor management';
+    let subtitle: string = 'Track the status of your tractors in real time.';
     let isModalOpen = false;
     let checkpoints: Checkpoint[] = [];
     let types = ['Bulk', 'Solid', 'Liquid'];
@@ -71,7 +71,7 @@
             case 'archive':
                 return { color: 'bg-gray-200 text-gray-800', text: '◉ Archivé' };
             default:
-                return { color: 'bg-gray-200 text-gray-800', text: '🛇 Inconnu' };
+                return { color: 'bg-gray-200 text-gray-800', text: '🛇 Unknown' };
         }
     }
 
@@ -239,7 +239,7 @@
 <!-- Navbar -->
 <Navbar/>
 
-<main class="p-10">
+<main class="p-10 pt-40">
 
     <section class="flex justify-between items-center mb-4">
 
@@ -277,9 +277,9 @@
             <tr class="bg-gray-100">
                 <th class="border p-2 text-center">Name</th>
                 <th class="border p-2 text-center">Status</th>
-                <th class="border p-2 text-center">Volume <span class="font-normal">(en m³)</span></th>
-                <th class="border p-2 text-center">Localisation</th>
-                <th class="border p-2 text-center">Départ / Arrivée</th>
+                <th class="border p-2 text-center">Volume <span class="font-normal">(in m³)</span></th>
+                <th class="border p-2 text-center">Location</th>
+                <th class="border p-2 text-center">Departure / Arrival</th>
                 <th class="border p-2 text-center">Traffic manager</th>
                 <th class="border p-2 text-center">Actions</th>
             </tr>
@@ -375,7 +375,7 @@
             </button>
 
             <!-- Modal Title -->
-            <h2 class="text-2xl font-bold mb-6">Ajouter un tracteur</h2>
+            <h2 class="text-2xl font-bold mb-6">Add a tractor</h2>
 
             <!-- Form -->
             <form on:submit|preventDefault={addTractor}>
@@ -401,7 +401,7 @@
                     <label class="block text-gray-700 text-sm font-bold mb-2">Volume :</label>
                     <input type="text"
                            class="w-full border border-gray-300 p-2 rounded"
-                           placeholder="Enrtrez le volume maximum (en m³)"
+                           placeholder="Enter volume (in m³)"
                            on:input={validateVolume}
                            value={volume}
                            required
@@ -410,10 +410,10 @@
 
                 <!-- Min price -->
                 <div class="mb-2">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Prix minimum:</label>
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Minimum price :</label>
                     <input type="text"
                            class="w-full border border-gray-300 p-2 rounded"
-                           placeholder="Entrez le prix minimum (par km)"
+                           placeholder="Enter maximum price (per km)"
                            on:input={validateMinPrice}
                            value={minPrice}
                            required
@@ -448,7 +448,7 @@
                 <div class="flex justify-center mt-4">
                     <button type="submit" class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600">
                         <i class="fas fa-plus"></i>
-                        <span class="font-bold">Ajouter</span>
+                        <span class="font-bold">Add</span>
                     </button>
                 </div>
             </form>

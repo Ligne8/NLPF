@@ -10,7 +10,11 @@
     import TrafficManagerLots from "@pages/traffic_manager/lots/lots.svelte";
     import TrafficManagerTractors from "@pages/traffic_manager/tractors/tractors.svelte";
     import Trader from '@pages/trader/trader.svelte';
+    import TraderLots from '@pages/trader/lots/lots.svelte';
+    import TraderTractors from '@pages/trader/tractors/tractors.svelte';
     import StockExchange from '@pages/stock_exchange/stock_exchange.svelte';
+    import StockExchangeLots from '@pages/stock_exchange/lots/lots.svelte';
+    import StockExchangeTractors from '@pages/stock_exchange/tractors/tractors.svelte';
     import NotFound from '@pages/404.svelte'
     import './app.css';
     import '@fortawesome/fontawesome-free/css/all.css';
@@ -29,6 +33,10 @@
         <Route path="/traffic-manager/lots" component={TrafficManagerLots} />
         <Route path="/traffic-manager/tractors" component={TrafficManagerTractors} />
         <Route path="/trader" component={Trader} />
+        <Route path="/trader/lots" component={TraderLots} />
+        <Route path="/trader/tractors" component={TraderTractors} />
         <Route path="/stock-exchange" component={StockExchange} />
+        <Route path="/stock-exchange/lots" component={StockExchangeLots} />
+        <Route path="/stock-exchange/tractors" component={StockExchangeTractors} />
     </div>
 </Router>
