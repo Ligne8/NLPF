@@ -12,7 +12,7 @@
             case 'PENDING':
                 return { color: 'bg-green-200 text-green-800', text: '◉ Pending' };
             case 'ON_THE_WAY':
-                return { color: 'bg-orange-200 text-orange-800', text: '◉ On the road' };
+                return { color: 'bg-orange-200 text-orange-800', text: '◉ On the way' };
             case 'ON_THE_STOCK_EXCHANGE':
                 return { color: 'bg-yellow-200 text-yellow-800', text: '◉ On the stock exchange' };
             case 'ARCHIVED':
