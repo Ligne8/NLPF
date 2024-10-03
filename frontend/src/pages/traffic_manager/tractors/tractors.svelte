@@ -50,18 +50,21 @@
 
 <main class="p-10">
 
-    <!-- Title and subtitle -->
-    <section>
-        <div class="flex justify-between">
-            <h1 class="text-4xl font-bold mb-4">{title}</h1>
-            <div class="flex items-center space-x-2">
-                <button on:click={fetchTableInfo} class="bg-blue-200 text-blue-800 px-4 py-2 flex items-center font-bold hover:bg-blue-300 transition-colors rounded-md">
-                    Recharger
-                </button>
-            </div>
+    <section class="flex justify-between items-center mb-4">
+
+        <!-- Title and subtitle -->
+        <div>
+            <h1 class="text-4xl font-bold mb-2">{title}</h1>
+            <h2 class="text-2xl text-gray-600">{subtitle}</h2>
         </div>
 
-        <h2 class="text-2xl mb-8 text-gray-600">{subtitle}</h2>
+        <button class="bg-gray-800 text-white font-bold px-4 py-2 rounded flex items-center hover:bg-gray-900 transition-colors self-end"
+            on:click={fetchTableInfo}
+        >
+            <i class="fas fa-rotate-right mr-2"></i>
+            Reload
+        </button>
+
     </section>
 
     <!-- Table -->

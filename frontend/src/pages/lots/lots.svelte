@@ -227,22 +227,24 @@
             <h2 class="text-2xl text-gray-600">{subtitle}</h2>
         </div>
 
-        <div class="flex">
+        <div class="flex justify-between items-center self-end">
 
-        <button class="bg-blue-500 mr-5 text-white font-bold px-4 py-2 rounded flex items-center hover:bg-blue-600 transition-colors self-end"
-                on:click={fetchAllData}
-        >
-            <i class="fas fa-rotate-right mr-2"></i>
-            Reload
-        </button>
+            <!-- Create button -->
+            <button class="bg-blue-500 text-white mr-5 font-bold px-4 py-2 rounded flex items-center hover:bg-blue-600 transition-colors self-end"
+                    on:click={openModal}
+            >
+                <i class="fas fa-plus mr-2"></i>
+                Add lot
+            </button>
 
-        <!-- Create button -->
-        <button class="bg-blue-500 text-white font-bold px-4 py-2 rounded flex items-center hover:bg-blue-600 transition-colors self-end"
-                on:click={openModal}
-        >
-            <i class="fas fa-plus mr-2"></i>
-            Add lot
-        </button>
+            <!-- Reload button -->
+            <button class="bg-gray-800 text-white font-bold px-4 py-2 rounded flex items-center hover:bg-gray-900 transition-colors self-end"
+                    on:click={fetchAllData}
+            >
+                <i class="fas fa-rotate-right mr-2"></i>
+                Reload
+            </button>
+
         </div>
 
     </section>
