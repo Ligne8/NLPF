@@ -3,8 +3,8 @@
     import StockExchangeNavbar from '@components/StockExchangeNavbar.svelte';
 
     // Variables
-    let title: string = 'Marché des tracteurs';
-    let subtitle: string = 'Négociez l’espace de fret disponible en fonction des besoins du marché.';
+    let title: string = 'Tractor market';
+    let subtitle: string = 'Negotiate available freight space according to market needs.';
     let isModalOpen = false;
     let priceValue: number = 1.0;
     let minPriceValue: number = 1.0;
@@ -75,11 +75,11 @@
         <thead>
             <tr class="bg-gray-100">
                 <th class="border p-2 text-center">ID</th>
-                <th class="border p-2 text-center">Date d'expiration</th>
+                <th class="border p-2 text-center">Expiration date</th>
                 <th class="border p-2 text-center">Type</th>
-                <th class="border p-2 text-center">Espace disponible<br><span class="font-normal">(en m³)</span></th>
-                <th class="border p-2 text-center">Prix minimum<br><span class="font-normal">(en €/km)</span></th>
-                <th class="border p-2 text-center">Prix actuel<br><span class="font-normal">(en €/km)</span></th>
+                <th class="border p-2 text-center">Available space<br><span class="font-normal">(in m³)</span></th>
+                <th class="border p-2 text-center">Minimum price<br><span class="font-normal">(in €/km)</span></th>
+                <th class="border p-2 text-center">Current price<br><span class="font-normal">(in €/km)</span></th>
                 <th class="border p-2 text-center">Actions</th>
             </tr>
         </thead>
@@ -112,7 +112,7 @@
                                 on:click={() => openModal(row.currentPrice, row.spaceAvailable)}
                             >
                                 <i class="fas fa-coins mr-2"></i>
-                                Enchérir
+                                Bid
                             </button>
                         </div>
                     </td>
@@ -140,14 +140,14 @@
             </button>
 
             <!-- Modal Title -->
-            <h2 class="text-2xl font-bold mb-6">Enchérir sur le tracteur</h2>
+            <h2 class="text-2xl font-bold mb-6">Bid on the tractor</h2>
 
             <!-- Form -->
             <form on:submit|preventDefault={bid}>
 
                 <!-- Price -->
                 <div class="mb-4">
-                    <label class="block text-gray-700 text-lg font-bold">Prix</label>
+                    <label class="block text-gray-700 text-lg font-bold">Price</label>
                     <p class="text-3xl font-bold text-gray-700">{priceValue} <span class="font-normal">€/km</span></p>
                     <input
                         type="range"
@@ -161,7 +161,7 @@
 
                 <!-- Volume -->
                 <div class="mb-4">
-                    <label class="block text-gray-700 text-lg font-bold">Volume <span class="font-normal">(en m³)</span></label>
+                    <label class="block text-gray-700 text-lg font-bold">Volume <span class="font-normal">(in m³)</span></label>
                     <div class="flex items-center justify-between">
                         <button
                             type="button"

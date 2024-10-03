@@ -3,8 +3,8 @@
     import StockExchangeNavbar from '@components/StockExchangeNavbar.svelte';
 
     // Variables
-    let title: string = 'Marché des lots';
-    let subtitle: string = 'Explorez une large sélection de lots avec des volumes et des prix dynamiques.';
+    let title: string = 'Lot market';
+    let subtitle: string = 'Explore a wide selection of lots with dynamic volumes and prices.';
     let isModalOpen = false;
     let priceValue: number = 1.0;
     let minPriceValue: number = 1.0;
@@ -73,11 +73,11 @@
         <thead>
             <tr class="bg-gray-100">
                 <th class="border p-2 text-center">ID</th>
-                <th class="border p-2 text-center">Date d'expiration</th>
+                <th class="border p-2 text-center">Expiration date</th>
                 <th class="border p-2 text-center">Type</th>
-                <th class="border p-2 text-center">Volume<br><span class="font-normal">(en m³)</span></th>
-                <th class="border p-2 text-center">Prix maximum<br><span class="font-normal">(en €/km)</span></th>
-                <th class="border p-2 text-center">Prix actuel<br><span class="font-normal">(en €/km)</span></th>
+                <th class="border p-2 text-center">Volume<br><span class="font-normal">(in m³)</span></th>
+                <th class="border p-2 text-center">Maximum price<br><span class="font-normal">(in €/km)</span></th>
+                <th class="border p-2 text-center">Current price<br><span class="font-normal">(in €/km)</span></th>
                 <th class="border p-2 text-center">Actions</th>
             </tr>
         </thead>
@@ -110,7 +110,7 @@
                                 on:click={() => openModal(row.currentPrice)}
                             >
                                 <i class="fas fa-coins mr-2"></i>
-                                Enchérir
+                                Bid
                             </button>
                         </div>
                     </td>
@@ -138,14 +138,14 @@
             </button>
 
             <!-- Modal Title -->
-            <h2 class="text-2xl font-bold mb-6">Enchérir sur le lot</h2>
+            <h2 class="text-2xl font-bold mb-6">Bid on the lot</h2>
 
             <!-- Form -->
             <form on:submit|preventDefault={bid}>
 
                 <!-- Price -->
                 <div class="mb-4">
-                    <label class="block text-gray-700 text-lg font-bold">Prix</label>
+                    <label class="block text-gray-700 text-lg font-bold">Price</label>
                     <p class="text-3xl font-bold text-gray-700">{priceValue} <span class="font-normal">€/km</span></p>
                     <input
                         type="range"
@@ -159,7 +159,7 @@
 
                 <!-- Volume -->
                 <div class="mb-4">
-                    <label class="block text-gray-700 text-lg font-bold">Volume <span class="font-normal">(en m³)</span></label>
+                    <label class="block text-gray-700 text-lg font-bold">Volume <span class="font-normal">(in m³)</span></label>
                     <div class="flex items-center justify-between">
                         <button
                             type="button"

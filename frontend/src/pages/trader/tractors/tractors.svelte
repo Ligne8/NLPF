@@ -3,8 +3,8 @@
     import TraderNavbar from '@components/TraderNavbar.svelte';
 
     // Variables
-    let title: string = 'Offres de tracteurs';
-    let subtitle: string = 'Créer des offres de tracteurs en temps réel.';
+    let title: string = 'Tractor offers';
+    let subtitle: string = 'Create tractor offers in real time.';
 
     // Example data
     const tableData = [
@@ -40,11 +40,11 @@
             <thead>
                 <tr class="bg-gray-100">
                     <th class="border p-2 text-center">ID</th>
-                    <th class="border p-2 text-center">Date d'expiration</th>
+                    <th class="border p-2 text-center">Expiration date</th>
                     <th class="border p-2 text-center">Type</th>
-                    <th class="border p-2 text-center">Espace disponible<br><span class="font-normal">(en m³)</span></th>
-                    <th class="border p-2 text-center">Prix minimum<br><span class="font-normal">(en €/km)</span></th>
-                    <th class="border p-2 text-center">Prix actuel<br><span class="font-normal">(en €/km)</span></th>
+                    <th class="border p-2 text-center">Available space<br><span class="font-normal">(in m³)</span></th>
+                    <th class="border p-2 text-center">Minimum price<br><span class="font-normal">(in €/km)</span></th>
+                    <th class="border p-2 text-center">Current price<br><span class="font-normal">(in €/km)</span></th>
                     <th class="border p-2 text-center">Actions</th>
                 </tr>
             </thead>
@@ -75,7 +75,7 @@
                             <div class="flex flex-wrap justify-center space-x-2">
                                 <button class="bg-blue-200 text-blue-800 px-4 py-2 flex items-center font-bold hover:bg-blue-300 transition-colors rounded-md">
                                     <i class="fas fa-plus mr-2"></i>
-                                    Offre
+                                    Offer
                                 </button>
                             </div>
                         </td>

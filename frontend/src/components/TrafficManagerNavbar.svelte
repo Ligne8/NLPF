@@ -43,7 +43,7 @@
             <a
                     href="/traffic-manager/tractors"
                     on:click={() => switchTab('Tractors')}
-                    class="{$currentTrafficManagerTab === 'Tractors' ? 'font-bold bg-gray-800 text-gray-200 rounded-md px-4 py-2' : ''}">Tracteurs
+                    class="{$currentTrafficManagerTab === 'Tractors' ? 'font-bold bg-gray-800 text-gray-200 rounded-md px-4 py-2' : ''}">Tractors
             </a>
         </li>
     </ul>

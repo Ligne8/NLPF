@@ -21,9 +21,9 @@
     async function fetchSimulationDate() {
         try {
             const response = await axios.get('http://localhost:8080/api/v1/simulations/date');
-            simulationDate = response.data.simulation_date; // Get datetime format YYYY-MM-DD
+            simulationDate = response.data.simulation_date; // Date retrieval in YYYY-MM-DD format
         } catch (err) {
-            error = 'Erreur lors de la récupération de la date de simulation';
+            error = 'Error retrieving simulation date';
             console.error(err);
         }
     }
@@ -33,7 +33,7 @@
             await axios.patch('http://localhost:8080/api/v1/simulations/date', {});
             await fetchSimulationDate(); // Re-fetch the date after updating
         } catch (err) {
-            error = 'Erreur lors de la mise à jour de la date de simulation';
+            error = 'Error updating simulation date';
             console.error(err);
         }
     }

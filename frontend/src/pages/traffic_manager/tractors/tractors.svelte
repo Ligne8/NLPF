@@ -7,8 +7,8 @@
     import axios from "axios";
 
     // Variables
-    let title: string = 'Gestion des Tracteurs';
-    let subtitle: string = 'Suivez l’état de votre flotte en temps réel.';
+    let title: string = 'Tractor management';
+    let subtitle: string = 'Track the status of your tractors in real time.';
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
     let tractors: Tractor[]  = [];
 
@@ -16,13 +16,13 @@
     function getStatusInfo(status: string): { color: string; text: string } {
         switch (status) {
             case 'available':
-                return { color: 'bg-green-200 text-green-800', text: '◉ Disponible' };
+                return { color: 'bg-green-200 text-green-800', text: '◉ Available' };
             case 'in_transit':
-                return { color: 'bg-orange-200 text-orange-800', text: '◉ En route' };
+                return { color: 'bg-orange-200 text-orange-800', text: '◉ On the road' };
             case 'on_market':
-                return { color: 'bg-yellow-200 text-yellow-800', text: '◉ En bourse' };
+                return { color: 'bg-yellow-200 text-yellow-800', text: '◉ On the stock exchange' };
             default:
-                return { color: 'bg-gray-200 text-gray-800', text: '🛇 Inconnu' };
+                return { color: 'bg-gray-200 text-gray-800', text: '🛇 Unknown' };
         }
     }
 
@@ -72,10 +72,10 @@
         <table class="table-auto w-full border-collapse border border-gray-300">
             <thead>
             <tr class="bg-gray-100">
-                <th class="border p-2 text-center">Nom</th>
+                <th class="border p-2 text-center">Name</th>
                 <th class="border p-2 text-center">Status</th>
-                <th class="border p-2 text-center">Chargement <span class="font-normal">(en m³)</span></th>
-                <th class="border p-2 text-center">Localisation</th>
+                <th class="border p-2 text-center">Loading <span class="font-normal">(in m³)</span></th>
+                <th class="border p-2 text-center">Location</th>
                 <th class="border p-2 text-center">Route</th>
                 <th class="border p-2 text-center">Actions</th>
             </tr>
@@ -132,7 +132,7 @@
                                 </button>
                                 <button class="bg-blue-200 text-blue-800 px-4 py-2 flex items-center font-bold hover:bg-blue-300 transition-colors rounded-md">
                                     <i class="fas fa-plus mr-2"></i>
-                                    Bourse
+                                    Stock exchange
                                 </button>
                                 <button class="bg-gray-800 text-white px-4 py-2 flex items-center font-bold hover:bg-black transition-colors rounded-md">
                                     <i class="fas fa-right-from-bracket mr-2"></i>

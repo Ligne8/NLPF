@@ -12,8 +12,8 @@
     }
 
     // Variables
-    let title: string = 'Gestion des routes';
-    let subtitle: string = 'Gérez les routes et les itinéraires disponibles.';
+    let title: string = 'Route management';
+    let subtitle: string = 'Manage available routes and itineraries.';
     let checkpoints: Checkpoints[] = [];
     let selectedCheckpoints: Checkpoints[] = [];
     let newRouteName: string = '';
@@ -155,13 +155,13 @@
         <div class="w-2/3 pr-8 border-r border-gray-300">
             <h2 class="text-2xl text-gray-800 font-bold mb-4">
                 <i class="fas fa-list mr-2"></i>
-                Liste des routes
+                List of routes
             </h2>
             <table class="w-full border-collapse border border-gray-300">
                 <thead>
                 <tr class="bg-gray-100">
-                    <th class="border p-2 text-center">Nom</th>
-                    <th class="border p-2 text-center">Étapes</th>
+                    <th class="border p-2 text-center">Name</th>
+                    <th class="border p-2 text-center">Steps</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -186,7 +186,7 @@
         <div class="w-1/3 pl-8">
             <h2 class="text-2xl text-gray-800 font-bold mb-4">
                 <i class="fas fa-plus mr-2"></i>
-                Ajouter une route
+                Add a route
             </h2>
 
             <!-- Route name input field -->
@@ -196,7 +196,7 @@
                         id="route-name"
                         class="border border-gray-300 rounded px-3 py-2 w-full"
                         bind:value={newRouteName}
-                        placeholder="Entrez le nom de la route"
+                        placeholder="Enter route name"
                 />
             </div>
 
