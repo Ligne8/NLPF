@@ -433,3 +433,28 @@ func (TractorController *TractorController) UnbindRoute(c *gin.Context) {
 
 	c.JSON(http.StatusOK, tractor)
 }
+
+// DeleteTractorByOwnerId : Delete a tractor with the owner id
+func (TractorController *TractorController) DeleteTractor(c *gin.Context) {
+	tractorId := c.Param("tractor_id")
+	tractorIdUUID, errIdUUID := uuid.Parse(tractorId)
+
+	if errIdUUID != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid tractor_id"})
+		return
+	}
+
+	var tractor models.Tractor
+	tractor, err := tractor.FindById(TractorController.Db, tractorIdUUID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Tractor not found"})
+		return
+	}
+
+	if err := TractorController.Db.Delete(&tractor).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Tractor \"" + tractorId + "\" deleted successfully"})
+}
