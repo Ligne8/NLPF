@@ -171,7 +171,7 @@
                     <td class="border p-2 text-center max-w-16">
                       {#if row.state === 'pending' && row.route_id == null }
                         <select bind:value={row.selected_route} class="border border-gray-300 rounded px-2 py-1 mx-auto w-4/5">
-                          {#each routes as routeOption}
+                          {#each routes.filter((r)=>{return r.route_path.split(' ')[0].toLocaleLowerCase() == row.current_checkpoint.name.toLocaleLowerCase()}) as routeOption}
                             <option value={routeOption}>{routeOption.route_path}</option>
                           {/each}
                         </select>
