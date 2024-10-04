@@ -14,7 +14,7 @@
             case 'ON_THE_WAY':
                 return { color: 'bg-orange-200 text-orange-800', text: '◉ On the way' };
             case 'ON_THE_STOCK_EXCHANGE':
-                return { color: 'bg-yellow-200 text-yellow-800', text: '◉ On the stock exchange' };
+                return { color: 'bg-blue-200 text-blue-800', text: '◉ On the stock exchange' };
             case 'ARCHIVED':
                 return { color: 'bg-gray-200 text-gray-800', text: '◉ Archived' };
             default:

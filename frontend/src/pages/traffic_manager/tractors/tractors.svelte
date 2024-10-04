@@ -23,7 +23,7 @@
     function getStatusInfo(status: string): { color: string; text: string } {
         switch (status) {
             case 'pending':
-                return { color: 'bg-amber-200 text-green-800', text: '◉ Pending' };
+                return { color: 'bg-yellow-200 text-yellow-800', text: '◉ Pending' };
             case 'in_transit':
                 return { color: 'bg-orange-200 text-orange-800', text: '◉ On the way' };
             case 'on_market':
