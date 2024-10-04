@@ -199,7 +199,7 @@
                 <div class="flex justify-center mt-8">
                     <button type="submit" class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600">
                         <i class="fas fa-check"></i>
-                        <span class="font-bold">Valider</span>
+                        <span class="font-bold">Validate</span>
                     </button>
                 </div>
             </form>

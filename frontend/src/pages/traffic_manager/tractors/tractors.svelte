@@ -101,34 +101,19 @@
                     <td class="border p-2 text-center">{row.current_checkpoint_id}</td>
 
                     <!-- Column 5 -->
-<!--                    <td class="border p-2 text-center">-->
-<!--                        {#if row.state === 'available' && row.currentVolume === 0 && row.route !== undefined}-->
-<!--                            <select class="border border-gray-300 rounded px-2 py-1 mx-auto w-4/5">-->
-<!--                                {#each row.routeId as routeOption}-->
-<!--                                    <option>{routeOption}</option>-->
-<!--                                {/each}-->
-<!--                            </select>-->
-<!--                        {:else}-->
-<!--                                <span class="px-2 py-1 mx-auto w-4/5 block">-->
-<!--                                    {row.route[0]}-->
-<!--                                </span>-->
-<!--                        {/if}-->
-<!--                    </td>-->
-
-                    <!-- Column 6 -->
                     <td class="border p-2 text-center">
                         {#if row.state === 'in_transit'}
                             <div class="flex flex-wrap justify-center space-x-2">
                                 <button class="bg-red-200 text-red-600 px-4 py-2 flex items-center font-bold hover:bg-red-300 transition-colors rounded-md">
                                     <i class="fas fa-hand mr-2"></i>
-                                    Arrêter
+                                    Stop
                                 </button>
                             </div>
                         {:else if row.state === 'available'}
                             <div class="flex flex-wrap justify-center space-x-2">
                                 <button class="bg-green-200 text-green-800 px-4 py-2 flex items-center font-bold hover:bg-green-300 transition-colors rounded-md">
                                     <i class="fas fa-truck mr-2"></i>
-                                    Démarrer
+                                    Start
                                 </button>
                                 <button class="bg-blue-200 text-blue-800 px-4 py-2 flex items-center font-bold hover:bg-blue-300 transition-colors rounded-md">
                                     <i class="fas fa-plus mr-2"></i>
@@ -136,7 +121,7 @@
                                 </button>
                                 <button class="bg-gray-800 text-white px-4 py-2 flex items-center font-bold hover:bg-black transition-colors rounded-md">
                                     <i class="fas fa-right-from-bracket mr-2"></i>
-                                    Retirer
+                                    Remove
                                 </button>
                             </div>
                         {:else}
