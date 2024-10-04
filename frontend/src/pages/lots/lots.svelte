@@ -57,11 +57,11 @@
             case 'available':
                 return { color: 'bg-green-200 text-green-800', text: '◉ Available' };
             case 'pending':
-                return { color: 'bg-amber-200 text-green-800', text: '◉ Pending' };
+                return { color: 'bg-yellow-200 text-yellow-800', text: '◉ Pending' };
             case 'in_transit':
                 return { color: 'bg-orange-200 text-orange-800', text: '◉ On the way' };
             case 'on_market':
-                return { color: 'bg-yellow-200 text-yellow-800', text: '◉ On the stock exchange' };
+                return { color: 'bg-blue-200 text-blue-800', text: '◉ On the stock exchange' };
             case 'archived':
                 return { color: 'bg-gray-200 text-gray-800', text: '◉ Archived' };
             default:
