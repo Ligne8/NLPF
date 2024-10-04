@@ -176,8 +176,6 @@
         }).catch(error => {
             console.error('Error adding lot:', error);
         });
-        
-
         closeModal();
     }
 
@@ -337,7 +335,7 @@
                                 {/each}
                             </select>
                         {:else}
-                            <span class="text-gray-500">-</span>
+                            <span class="text-gray-500">{row.trafficManager}</span>
                         {/if}
                     </td>
 

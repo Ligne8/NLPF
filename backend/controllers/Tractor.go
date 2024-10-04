@@ -205,23 +205,108 @@ func (TractorController *TractorController) AssociateToTrafficManager(c *gin.Con
 // UpdateTractorState: Update the state of a tractor
 func (TractorController *TractorController) UpdateTractorState(c *gin.Context) {
 	var requestBody struct {
-		Id    uuid.UUID    `json:"id" binding:"required"`
+		Id    string    `json:"id" binding:"required"`
 		State models.State `json:"state" binding:"required"`
 	}
 	if err := c.ShouldBindJSON(&requestBody); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
+	var tractorIdUUID, errIdUUID = uuid.Parse(requestBody.Id)
+	if errIdUUID != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid tractor_id"})
+		return
+	}
 	var tractor models.Tractor
-	if err := TractorController.Db.First(&tractor, "id = ?", requestBody.Id).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Tractor not found when trying to update its state"})
+	tractor, err := tractor.FindById(TractorController.Db, tractorIdUUID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Tractor not found"})
 		return
 	}
 	tractor.State = requestBody.State
+	
 
 	if err := TractorController.Db.Save(&tractor).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+	if requestBody.State == models.StateInTransit {
+		var lot models.Lot
+		lot.UpdateStateByTractorId(TractorController.Db, tractorIdUUID, models.StateInTransit);
+	} else if requestBody.State == models.StatePending {
+		var lot models.Lot
+		lot.UpdateStateByTractorId(TractorController.Db, tractorIdUUID, models.StatePending);
+	}
+	c.JSON(http.StatusOK, tractor)
+}
+
+func (TractorController *TractorController) BindRoute(c *gin.Context) {
+	var requestBody struct {
+		TractorId string `json:"tractor_id" binding:"required"`
+		RouteId   string `json:"route_id" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&requestBody); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var tractorIdUUID, errIdUUID = uuid.Parse(requestBody.TractorId)
+	if errIdUUID != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid tractor_id"})
+		return
+	}
+	var routeIdUUID, errRouteIdUUID = uuid.Parse(requestBody.RouteId)
+	if errRouteIdUUID != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid route_id"})
+		return
+	}
+
+	var tractor models.Tractor
+	tractor, err := tractor.FindById(TractorController.Db, tractorIdUUID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Tractor not found"})
+		return
+	}
+
+	tractor.RouteId = &routeIdUUID
+	if err := tractor.Save(TractorController.Db); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, tractor)
+}
+
+func (TractorController *TractorController) UnbindeRoute(c *gin.Context) {
+	var requestBody struct {
+		TractorId string `json:"tractor_id" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&requestBody); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var tractorIdUUID, errIdUUID = uuid.Parse(requestBody.TractorId)
+	if errIdUUID != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid tractor_id"})
+		return
+	}
+
+	var tractor models.Tractor
+	tractor, err := tractor.FindById(TractorController.Db, tractorIdUUID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Tractor not found"})
+		return
+	}
+
+	tractor.RouteId = nil
+	if err := tractor.Save(TractorController.Db); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
 	c.JSON(http.StatusOK, tractor)
 }

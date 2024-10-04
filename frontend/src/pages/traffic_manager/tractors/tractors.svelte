@@ -11,12 +11,19 @@
     let subtitle: string = 'Track the status of your tractors in real time.';
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
     let tractors: Tractor[]  = [];
+    let routes: Route[]  = [];
+
+    interface Route {
+        name: string;
+        id: string;
+        route_path: string;
+    }
 
     // Function to get tag color and text based on status
     function getStatusInfo(status: string): { color: string; text: string } {
         switch (status) {
-            case 'available':
-                return { color: 'bg-green-200 text-green-800', text: '◉ Available' };
+            case 'pending':
+                return { color: 'bg-amber-200 text-green-800', text: '◉ Pending' };
             case 'in_transit':
                 return { color: 'bg-orange-200 text-orange-800', text: '◉ On the way' };
             case 'on_market':
@@ -28,7 +35,21 @@
 
     onMount(() => {
         fetchTableInfo();
+        fetchRoutes();
     });
+
+
+    const fetchRoutes = async () => {
+        const response = await fetch(`${API_BASE_URL}/routes/traffic_manager/parsed/${$userId}`);
+        if (response.ok) {
+            const data = await response.json();
+            if (data != null){
+              routes = data;
+            }
+        } else {
+            console.error('Failed to fetch routes:', response.status);
+        }
+    }
 
     async function fetchTableInfo() {
         if($userRole !== "traffic_manager") {
@@ -37,10 +58,56 @@
         await axios.get(`${API_BASE_URL}/tractors/trafficManager/${$userId}`)
             .then((response) => {
                 tractors = response.data;
+                console.log(tractors)
             }).catch((error) => {
                 console.error('Error fetching tractors:', error.response);
             });
     }
+
+    const addRoute = async (t: Tractor)=>{
+      if (t.selected_route == null){
+        alert("Please select a route first")
+        return
+      }
+      axios.post(`${API_BASE_URL}/tractors/route`, {tractor_id: t.id ,route_id: t.selected_route.id})
+        .then((response) => {
+          fetchTableInfo()
+          fetchTableInfo()
+        }).catch((error) => {
+          console.error('Error adding route:', error.response);
+        });
+    }
+    const removeRoute = async (t: Tractor)=>{
+      axios.delete(`${API_BASE_URL}/tractors/route`, {data: {tractor_id: t.id}})
+        .then((response) => {
+          fetchTableInfo()
+        }).catch((error) => {
+          console.error('Error removing route:', error.response);
+        });
+    }
+
+    const startTractor = async (t: Tractor)=>{
+      if (t.route_id == null){
+        alert("Please select a route first")
+        return
+      }
+      axios.patch(`${API_BASE_URL}/tractors/updateState`, {id: t.id, state: "in_transit"})
+        .then((response) => {
+          fetchTableInfo()
+        }).catch((error) => {
+          console.error('Error starting tractor:', error.response);
+        });
+    }
+
+    const stopTractor = async (t: Tractor)=>{
+      axios.patch(`${API_BASE_URL}/tractors/updateState`, {id: t.id, state: "pending"})
+        .then((response) => {
+          fetchTableInfo()
+        }).catch((error) => {
+          console.error('Error starting tractor:', error.response);
+        });
+    }
+
 </script>
 
 
@@ -73,11 +140,11 @@
             <thead>
             <tr class="bg-gray-100">
                 <th class="border p-2 text-center">Name</th>
-                <th class="border p-2 text-center">Status</th>
-                <th class="border p-2 text-center">Loading <span class="font-normal">(in m³)</span></th>
-                <th class="border p-2 text-center">Location</th>
+                <th class="border p-2 text-center max-w-16">Status</th>
+                <th class="border p-2 text-center max-w-16">Loading <span class="font-normal">(in m³)</span></th>
+                <th class="border p-2 text-center max-w-16">Location</th>
                 <th class="border p-2 text-center">Route</th>
-                <th class="border p-2 text-center">Actions</th>
+                <th class="border p-2 text-center w-60">Actions</th>
             </tr>
             </thead>
             <tbody>
@@ -85,33 +152,48 @@
                 <tr class={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
 
                     <!-- Column 1 -->
-                    <td class="border p-2 text-center">{row.id}</td>
+                    <td class="border p-2 text-center">{row.id.slice(0, 5)}</td>
 
                     <!-- Column 2 -->
-                    <td class="border p-2 text-center">
+                    <td class="border p-2 text-center max-w-16">
                             <span class={`px-2 py-1 rounded ${getStatusInfo(row.state).color}`}>
                                 {getStatusInfo(row.state).text}
                             </span>
                     </td>
 
                     <!-- Column 3 -->
-                    <td class="border p-2 text-center">{row.current_units}/{row.max_units}</td>
+                    <td class="border p-2 text-center max-w-16 ">{row.current_units}/{row.max_units}</td>
 
                     <!-- Column 4 -->
-                    <td class="border p-2 text-center">{row.current_checkpoint_id}</td>
+                    <td class="border p-2 text-center">{row.current_checkpoint.name}</td>
 
                     <!-- Column 5 -->
+                    <td class="border p-2 text-center max-w-16">
+                      {#if row.state === 'pending' && row.route_id == null }
+                        <select bind:value={row.selected_route} class="border border-gray-300 rounded px-2 py-1 mx-auto w-4/5">
+                          {#each routes.filter((r)=>{return r.route_path.split(' ')[0].toLocaleLowerCase() == row.current_checkpoint.name.toLocaleLowerCase()}) as routeOption}
+                            <option value={routeOption}>{routeOption.route_path}</option>
+                          {/each}
+                        </select>
+                      {:else}
+                        <span class="px-2 py-1 mx-auto w-4/5 block">
+                          {row.route.name}
+                        </span>
+                      {/if}
+                    </td>
+
+                    <!-- Column 6 -->
                     <td class="border p-2 text-center">
                         {#if row.state === 'in_transit'}
                             <div class="flex flex-wrap justify-center space-x-2">
-                                <button class="bg-red-200 text-red-600 px-4 py-2 flex items-center font-bold hover:bg-red-300 transition-colors rounded-md">
+                                <button on:click={()=>(stopTractor(row))} class="bg-red-200 text-red-600 px-4 py-2 flex items-center font-bold hover:bg-red-300 transition-colors rounded-md">
                                     <i class="fas fa-hand mr-2"></i>
                                     Stop
                                 </button>
                             </div>
-                        {:else if row.state === 'available'}
-                            <div class="flex flex-wrap justify-center space-x-2">
-                                <button class="bg-green-200 text-green-800 px-4 py-2 flex items-center font-bold hover:bg-green-300 transition-colors rounded-md">
+                        {:else if row.state === 'pending'}
+                            <div class="flex flex-wrap justify-center space-x-2  space-y-2">
+                                <button on:click={()=>{startTractor(row)}} class="bg-green-200 text-green-800 px-4 py-2 flex items-center font-bold hover:bg-green-300 transition-colors rounded-md">
                                     <i class="fas fa-truck mr-2"></i>
                                     Start
                                 </button>
@@ -119,10 +201,17 @@
                                     <i class="fas fa-plus mr-2"></i>
                                     Stock exchange
                                 </button>
-                                <button class="bg-gray-800 text-white px-4 py-2 flex items-center font-bold hover:bg-black transition-colors rounded-md">
-                                    <i class="fas fa-right-from-bracket mr-2"></i>
-                                    Remove
-                                </button>
+                                {#if row.route_id == null}
+                                    <button on:click={()=>{addRoute(row)}} class="bg-blue-200 text-blue-800 px-4 py-2 flex items-center font-bold hover:bg-blue-300 transition-colors rounded-md">
+                                        <i class="fas fa-plus mr-2"></i>
+                                        Add route
+                                    </button>
+                                {:else}
+                                    <button on:click={()=>{removeRoute(row)}} class="bg-red-200 text-red-800 px-4 py-2 flex items-center font-bold hover:bg-red-300 transition-colors rounded-md">
+                                        <i class="fas fa-eraser mr-2"></i>
+                                        Remove route
+                                    </button>
+                                {/if}
                             </div>
                         {:else}
                             <span class="text-gray-500">-</span>

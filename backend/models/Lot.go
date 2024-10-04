@@ -159,3 +159,7 @@ func (lot *Lot) GetLotsByEndCheckpoint(db *gorm.DB, endCheckpointId uuid.UUID) (
 func (lot *Lot) UpdateState(db *gorm.DB, state State) error {
 	return db.Model(&lot).Update("state", state).Error
 }
+
+func (lot *Lot) UpdateStateByTractorId(db *gorm.DB, tractorId uuid.UUID, state State) error {
+	return db.Model(&lot).Where("tractor_id = ?", tractorId).Update("state", state).Error
+}

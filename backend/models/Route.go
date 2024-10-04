@@ -36,7 +36,7 @@ func (route *Route) GetRoutesByTrafficManagerId(db *gorm.DB, trafficManagerId uu
 
 func (route *Route) GetRouteString(db *gorm.DB) string {
 	var routeName string;
-	db.Raw("select STRING_AGG(c.name, ' - ') from route_checkpoints rc join checkpoints c on c.id = rc.checkpoint_id where rc.route_id = ?", route.Id).Scan(&routeName);
+	db.Raw("select STRING_AGG(c.name, ' - ' order by rc.position) from route_checkpoints rc join checkpoints c on c.id = rc.checkpoint_id where rc.route_id = ?", route.Id).Scan(&routeName);
 	return routeName;
 }
 
