@@ -97,7 +97,7 @@ func (tractor *Tractor) GetByOwnerId(db *gorm.DB, ownerId uuid.UUID) ([]Tractor,
 
 func (tractor *Tractor) GetByTrafficManagerId(db *gorm.DB, trafficManagerId uuid.UUID) ([]Tractor, error) {
 	var tractors []Tractor
-	if err := db.Where("traffic_manager_id = ?", trafficManagerId).Find(&tractors).Error; err != nil {
+	if err := db.Preload("Route").Preload("CurrentCheckpoint").Where("traffic_manager_id = ?", trafficManagerId).Find(&tractors).Error; err != nil {
 		return nil, err
 	}
 	return tractors, nil
