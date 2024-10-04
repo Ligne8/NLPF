@@ -21,7 +21,7 @@ func LotRoutes(r *gin.Engine, db *gorm.DB) *gin.Engine {
 		//v1.PATCH(":id", LotController.PatchLot)
 		v1.GET("owner/:owner_id", LotController.ListLotsByOwner)
 		v1.GET("traffic_manager/:traffic_manager_id", LotController.ListLotsByTrafficManager)
-
+		v1.GET("/tractors/compatible/:traffic_manager_id/:lot_id", LotController.ListCompatibleTractorsForLot)
 	}
 	return r
 }

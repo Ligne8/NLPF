@@ -297,3 +297,75 @@ func (LotController *LotController) ListLotsByTrafficManager(c *gin.Context) {
 
 	c.JSON(http.StatusOK, lots)
 }
+
+// ListCompatibleTractorsForLot : Get all compatible tractors for a lot
+//
+// @Summary      Get all compatible tractors for a lot
+// @Tags         tractors
+// @Accept       json
+// @Produce      json
+// @Param        lot_id  path  string  true  "Lot Id"
+// @Param        traffic_manager_id  path  string  true  "Traffic Manager Id"
+// @Success      200  {array}  models.Tractor
+// @Failure      400  "Invalid lot_id"
+// @Failure      400  "Invalid traffic_manager_id"
+// @Failure      404  "Lot not found"
+// @Failure      404  "Traffic Manager not found"
+// @Failure      500  "Unable to retrieve tractors"
+// @Router       /tractors/compatible/{traffic_manager_id}/{lot_id} [get]
+func (LotController *LotController) ListCompatibleTractorsForLot(c *gin.Context) {
+	lotId := c.Param("lot_id")
+	trafficManagerId := c.Param("traffic_manager_id")
+
+	lotIdUUID, errLotId := uuid.Parse(lotId)
+	if errLotId != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid lot_id"})
+		return
+	}
+
+	trafficManagerIdUUID, errTrafficManagerId := uuid.Parse(trafficManagerId)
+	if errTrafficManagerId != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid traffic_manager_id"})
+		return
+	}
+
+	var lot models.Lot
+	if err := LotController.Db.First(&lot, "id = ?", lotIdUUID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Lot not found"})
+		return
+	}
+
+	var trafficManager models.User
+	if err := LotController.Db.First(&trafficManager, "id = ? AND role = ?", trafficManagerIdUUID, "traffic_manager").Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Traffic Manager not found"})
+		return
+	}
+
+	var tractors []models.Tractor
+	if err := LotController.Db.Preload("EndCheckpoint").Preload("StartCheckpoint").Preload("CurrentCheckpoint").Preload("TrafficManager").Where("traffic_manager_id = ?", trafficManagerIdUUID).Find(&tractors).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to retrieve tractors"})
+		return
+	}
+
+	var compatibleTractors []models.Tractor
+	for _, tractor := range tractors {
+		if LotController.checkCompatibility(lot, tractor) {
+			compatibleTractors = append(compatibleTractors, tractor)
+		}
+	}
+
+	c.JSON(http.StatusOK, compatibleTractors)
+}
+
+// checkCompatibility : Check if a lot is compatible with a tractor
+func (LotController *LotController) checkCompatibility(lot models.Lot, tractor models.Tractor) bool {
+	if lot.Volume > (tractor.MaxVolume - tractor.CurrentVolume) {
+		return false
+	}
+
+	if lot.ResourceType != tractor.ResourceType {
+		return false
+	}
+
+	return true
+}
