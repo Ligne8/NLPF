@@ -17,12 +17,12 @@ type LotController struct {
 //
 //	@Summary      List accounts
 //	@Description  get accounts
-//	@Tags         accounts
+//	@Tags         lots
 //	@Accept       json
 //	@Produce      json
 //	@Param        q    query     string  false  "name search by q"  Format(email)
-//	@Success      200  {array}   model.Account
-//	@Failure      500  {object}  httputil.HTTPError
+//	@Success      200  {array}  models.Lot
+//	@Failure      500  {object}  error
 //	@Router       /accounts [get]
 func (LotController *LotController) CreateLot(c *gin.Context) {
 	var requestBody struct {
@@ -198,4 +198,43 @@ func (LotController *LotController) AssociateToTrafficManager(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, lot)
+}
+
+// ListLotsByTrafficManager Get all lots associated with a traffic manager
+//
+//	@Summary      Get all lots associated with a traffic manager
+//	@Tags         lots
+//	@Accept       json
+//	@Produce      json
+//	@Param        traffic_manager_id  path  string  true  "Traffic Manager ID"
+//	@Success      200  {array}  models.Lot
+//	@Failure      400  {object}  error
+//	@Failure      404  {object}  error
+//	@Failure      500  {object}  error
+//	@Router       /lots/traffic_manager/{traffic_manager_id} [get]
+func (LotController *LotController) ListLotsByTrafficManager(c *gin.Context) {
+	var lots []models.Lot
+	var lotModel models.Lot
+	trafficManagerId := c.Param("traffic_manager_id")
+	ownerIdUUID, errIdUUID := uuid.Parse(trafficManagerId)
+
+	if errIdUUID != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid traffic_manager_id"})
+		return
+	}
+
+	var trafficManager models.User
+	if err := LotController.Db.First(&trafficManager, "id = ? AND role = ?", ownerIdUUID, "traffic_manager").Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Traffic Manager not found"})
+		return
+	}
+
+	lots, err := lotModel.GetLotsByTrafficManager(LotController.Db, ownerIdUUID)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, lots)
 }
