@@ -13,16 +13,15 @@ type UserController struct {
 	Db *gorm.DB
 }
 
-// GetUsers Retrieve users
+// GetUsers : Get users
 //
-//		@Summary      List users
-//		@Description  get all users
-//		@Tags         users
-//		@Accept       json
-//		@Produce      json
-//		@Success      200  {array}   models.User
-//	 	@Failure   	  500 "Unable to retrieve users"
-//		@Router       /users [get]
+// @Summary      Get all users
+// @Tags         users
+// @Accept       json
+// @Produce      json
+// @Success      200  {array}   models.User
+// @Failure      500  "Unable to retrieve users"
+// @Router       /users [get]
 func (UserController *UserController) GetUsers(c *gin.Context) {
 	var user models.User
 	users, err := user.GetAllUsers(UserController.Db)
@@ -33,17 +32,16 @@ func (UserController *UserController) GetUsers(c *gin.Context) {
 	c.JSON(http.StatusOK, users)
 }
 
-// GetUser Retrieve user
-//
-//		@Summary      user
-//		@Description  get a user by id
-//		@Tags         users
-//		@Accept       json
-//		@Produce      json
-//		@Success      200 {object} models.User
-//	 	@Failure   	  500 "Unable to retrieve user"
-//		@Failure   	  400 "Invalid userId"
-//		@Router       /user/:id [get]
+// GetUser : Get user
+// @Summary      Get user by id
+// @Tags         users
+// @Accept       json
+// @Produce      json
+// @Param        id  path  string  true  "User ID"
+// @Success      200  {object}   models.User
+// @Failure      500  "Unable to retrieve user"
+// @Failure      400  "Invalid request"
+// @Router       /user/{id} [get]
 func (UserController *UserController) GetUser(c *gin.Context) {
 	var user models.User
 	id := c.Param("id")
@@ -62,18 +60,16 @@ func (UserController *UserController) GetUser(c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
-// CreateUser Retrieve user
-//
-//		@Summary      user
-//		@Description  create a user
-//		@Tags         users
-//		@Accept       json
-//		@Produce      json
-//		@Param        user  body      models.User  true  "User"
-//		@Success      200 {object} models.User
-//	 	@Failure   	  500 "Unable to retrieve user"
-//		@Failure   	  400 "Invalid request"
-//		@Router       /user [post]
+// CreateUser : Create a user
+// @Summary      Create user
+// @Tags         users
+// @Accept       json
+// @Produce      json
+// @Param        user  body  models.User  true  "User"
+// @Success      200  {object}   models.User
+// @Failure      500  "Unable to create user"
+// @Failure      400  "Invalid request"
+// @Router       /user [post]
 func (UserController *UserController) CreateUser(c *gin.Context) {
 	var user models.User
 	if err := c.ShouldBindJSON(&user); err != nil {
@@ -87,18 +83,17 @@ func (UserController *UserController) CreateUser(c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
-// UpdateUser Retrieve user
-//
-//		@Summary      user
-//		@Description  updates a user
-//		@Tags         users
-//		@Accept       json
-//		@Produce      json
-//		@Param        user  body models.User  true  "User"
-//		@Success      200 {object} models.User
-//	 	@Failure   	  500 "Unable to retrieve user"
-//		@Failure   	  400 "Invalid request"
-//		@Router       /user/:id [patch]
+// UpdateUser : Update a user
+// @Summary      Update user by id
+// @Tags         users
+// @Accept       json
+// @Produce      json
+// @Param        id  path  string  true  "User ID"
+// @Param        user  body  models.User  true  "User"
+// @Success      200  {object}   models.User
+// @Failure      500  "Unable to update user"
+// @Failure      400  "Invalid request"
+// @Router       /user/{id} [put]
 func (UserController *UserController) UpdateUser(c *gin.Context) {
 	var user models.User
 	id := c.Param("id")
@@ -125,17 +120,16 @@ func (UserController *UserController) UpdateUser(c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
-// DeleteUser Retrieve user
-//
-//		@Summary      user
-//		@Description  deletes a user
-//		@Tags         users
-//		@Accept       json
-//		@Produce      json
-//		@Success      200 {object} models.User
-//	 	@Failure   	  500 "Unable to retrieve user or unable to delete user"
-//		@Failure   	  400 "Invalid request"
-//		@Router       /user/:id [delete]
+// DeleteUser : Detele a user
+// @Summary      Delete user by id
+// @Tags         users
+// @Accept       json
+// @Produce      json
+// @Param        id  path  string  true  "User ID"
+// @Success      200  {object}   models.User
+// @Failure      500  "Unable to delete user"
+// @Failure      400  "Invalid request"
+// @Router       /user/{id} [delete]
 func (UserController *UserController) DeleteUser(c *gin.Context) {
 	var user models.User
 	id := c.Param("id")
@@ -156,8 +150,15 @@ func (UserController *UserController) DeleteUser(c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
-
-func (UserController *UserController) GetTrafficManager(c *gin.Context) {
+// GetTrafficManagers : Get traffic managers
+// @Summary      Get traffic managers
+// @Tags         users
+// @Accept       json
+// @Produce      json
+// @Success      200  {array}   models.User
+// @Failure      500  "Unable to retrieve traffic managers"
+// @Router 	 	 /users/traffic_managers [get]
+func (UserController *UserController) GetTrafficManagers(c *gin.Context) {
 	var user models.User
 	role := models.RoleTrafficManager
 	users, err := user.FindByRole(UserController.Db, role)
