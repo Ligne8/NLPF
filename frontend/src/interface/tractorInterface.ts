@@ -3,6 +3,7 @@ export type Tractor = {
   resource_type: string;
   max_units: number;
   current_units: number;
+  name?: string;
 
   current_checkpoint_id?: string;
   // TODO: add current_checkpoint

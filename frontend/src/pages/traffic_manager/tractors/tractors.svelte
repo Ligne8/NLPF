@@ -139,7 +139,7 @@
         <table class="table-auto w-full border-collapse border border-gray-300">
             <thead>
             <tr class="bg-gray-100">
-                <th class="border p-2 text-center">Name</th>
+                <th class="border p-2 text-center max-w-16">Name</th>
                 <th class="border p-2 text-center max-w-16">Status</th>
                 <th class="border p-2 text-center max-w-16">Loading <span class="font-normal">(in m³)</span></th>
                 <th class="border p-2 text-center max-w-16">Location</th>
@@ -152,7 +152,7 @@
                 <tr class={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
 
                     <!-- Column 1 -->
-                    <td class="border p-2 text-center">{row.id.slice(0, 5)}</td>
+                    <td class="border p-2 text-center max-w-11">{row.name}</td>
 
                     <!-- Column 2 -->
                     <td class="border p-2 text-center max-w-16">
