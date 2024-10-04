@@ -97,11 +97,11 @@ func (lot *Lot) GetLotsByState(db *gorm.DB, state State) ([]Lot, error) {
 }
 
 func (lot *Lot) GetLotsByTrafficManager(db *gorm.DB, trafficManagerId uuid.UUID) ([]Lot, error) {
-	var lots []Lot
-	if err := db.Preload("EndCheckpoint").Preload("StartCheckpoint").Preload("Tractor").Where("traffic_manager_id = ?", trafficManagerId).Find(&lots).Error; err != nil {
-		return nil, err
-	}
-	return lots, nil
+    var lots []Lot
+    if err := db.Preload("EndCheckpoint").Preload("StartCheckpoint").Preload("CurrentCheckpoint").Preload("Tractor").Where("traffic_manager_id = ?", trafficManagerId).Find(&lots).Error; err != nil {
+        return nil, err
+    }
+    return lots, nil
 }
 
 func (lot *Lot) GetLotsByTrader(db *gorm.DB, traderId uuid.UUID) ([]Lot, error) {

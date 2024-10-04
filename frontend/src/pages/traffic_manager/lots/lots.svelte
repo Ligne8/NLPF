@@ -1,10 +1,16 @@
 <script lang="ts">
     import Navbar from '@components/Navbar.svelte';
     import TrafficManagerNavbar from '@components/TrafficManagerNavbar.svelte';
+    import { userId, userRole } from "@stores/store";
+    import { onMount } from "svelte";
+    import axios from "axios";
+    import type { Lot } from 'src/interface/lotInterface';
 
     // Variables
     let title: string = 'Lot management';
     let subtitle: string = 'Track the status of your lots in real time.';
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+    let lots: Lot[] = [];
     let selectedStatus: string = 'all';
     let sortOption: string = 'none';
 
@@ -26,19 +32,26 @@
         }
     }
 
-    // Example data
-    const tableData = [
-        { state: 'in_transit', volume: 16, currentCheckpoint: 'Paris', startCheckpoint: 'Lyon', endCheckpoint: 'Montpellier', tractor: ['tractor 1'] },
-        { state: 'on_market', volume: 3, currentCheckpoint: 'Lyon', startCheckpoint: 'Lyon', endCheckpoint: 'Paris', tractor: ['tractor 4'] },
-        { state: 'pending', volume: 4, currentCheckpoint: 'Marseille', startCheckpoint: 'Marseille', endCheckpoint: 'Montpellier', tractor: ['tractor 2', 'tractor 3', 'tractor 4'] },
-        { state: 'archived', volume: 8, currentCheckpoint: 'Montpellier', startCheckpoint: 'Paris', endCheckpoint: 'Marseille', tractor: ['tractor 3'] },
-        { state: 'available', volume: 4, currentCheckpoint: 'Lyon', startCheckpoint: 'Marseille', endCheckpoint: 'Montpellier', tractor: ['tractor 2'] },
-        { state: 'available', volume: 2, currentCheckpoint: 'Montpellier', startCheckpoint: 'Lyon', endCheckpoint: 'Lyon', tractor: ['tractor 3'] }
-    ];
+    // Fetch table info
+    async function fetchTableInfo() {
+        if($userRole !== "traffic_manager") {
+            return;
+        }
+        await axios.get(`${API_BASE_URL}/lots/traffic_manager/${$userId}`)
+            .then((response) => {
+                lots = response.data;
+            }).catch((error) => {
+                console.error('Error fetching tractors:', error.response);
+            });
+    }
+
+    onMount(() => {
+        fetchTableInfo();
+    });
 
     // Update data depending on filters
     $: sortedData = (() => {
-        let data = selectedStatus === 'all' ? tableData : tableData.filter(lot => lot.state === selectedStatus);
+        let data = selectedStatus === 'all' ? lots : lots.filter(lot => lot.state === selectedStatus);
 
         switch (sortOption) {
             case 'volume_asc':
@@ -46,9 +59,9 @@
             case 'volume_desc':
                 return data.sort((a, b) => b.volume - a.volume);
             case 'location_asc':
-                return data.sort((a, b) => a.currentCheckpoint.localeCompare(b.currentCheckpoint));
+                return data.sort((a, b) => a.current_checkpoint.name.localeCompare(b.current_checkpoint.name));
             case 'location_desc':
-                return data.sort((a, b) => b.currentCheckpoint.localeCompare(a.currentCheckpoint));
+                return data.sort((a, b) => b.current_checkpoint.name.localeCompare(a.current_checkpoint.name));
             default:
                 return data;
         }
@@ -125,25 +138,21 @@
                     <td class="border p-2 text-center">{row.volume}</td>
 
                     <!-- Column 3 -->
-                    <td class="border p-2 text-center">{row.currentCheckpoint}</td>
+                    <td class="border p-2 text-center">{row.current_checkpoint.name}</td>
 
                     <!-- Column 4 -->
                     <td class="border p-2 text-center">
-                        {row.startCheckpoint} / {row.endCheckpoint}
+                        {row.start_checkpoint.name} / {row.end_checkpoint.name}
                     </td>
 
                     <!-- Column 5 -->
                     <td class="border p-2 text-center">
-                        {#if row.state === 'pending'}
-                            <select class="border border-gray-300 rounded px-2 py-1 mx-auto w-4/5">
-                                {#each row.tractor as tractorOption}
-                                    <option>{tractorOption}</option>
-                                {/each}
-                            </select>
+                        {#if row.tractor }
+                            <span class="px-2 py-1 mx-auto w-4/5 block">
+                                {row.tractor.name}
+                            </span>
                         {:else}
-                                <span class="px-2 py-1 mx-auto w-4/5 block">
-                                    {row.tractor[0]}
-                                </span>
+                            <span class="px-2 py-1 mx-auto w-4/5 block text-gray-500">None</span>
                         {/if}
                     </td>
 

@@ -158,7 +158,7 @@
             owner_id: $userId
         };
 
-        selectedType = '';
+        selectedType = types[0];
         volume = '';
         maxPrice = '';
         selectedDeparture = checkpoints[0]; // Valeur par défaut
@@ -349,10 +349,14 @@
                             </div>
                         {:else if row.state === 'available'}
                             <div class="flex flex-wrap justify-center space-x-2">
-                                <button on:click={()=>{assignToTrafficManager(row.id, row.trafficManager)}} class="bg-green-200 text-green-800 px-4 py-2 flex items-center font-bold hover:bg-green-300 transition-colors rounded-md">
-                                    <i class="fas fa-truck mr-2"></i>
-                                    Assign
-                                </button>
+                                {#if row.trafficManager}
+                                    <button class="bg-green-200 text-green-800 px-4 py-2 flex items-center font-bold hover:bg-green-300 transition-colors rounded-md"
+                                            on:click={()=>{assignToTrafficManager(row.id, row.trafficManager)}}
+                                    >
+                                        <i class="fas fa-truck mr-2"></i>
+                                        Assign
+                                    </button>
+                                {/if}
                                 <button class="bg-blue-200 text-blue-800 px-4 py-2 flex items-center font-bold hover:bg-blue-300 transition-colors rounded-md">
                                     <i class="fas fa-plus mr-2"></i>
                                     Stock exchange
