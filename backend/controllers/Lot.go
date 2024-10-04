@@ -301,7 +301,7 @@ func (LotController *LotController) ListLotsByTrafficManager(c *gin.Context) {
 // ListCompatibleTractorsForLot : Get all compatible tractors for a lot
 //
 // @Summary      Get all compatible tractors for a lot
-// @Tags         tractors
+// @Tags         lots
 // @Accept       json
 // @Produce      json
 // @Param        lot_id  path  string  true  "Lot Id"
@@ -312,7 +312,7 @@ func (LotController *LotController) ListLotsByTrafficManager(c *gin.Context) {
 // @Failure      404  "Lot not found"
 // @Failure      404  "Traffic Manager not found"
 // @Failure      500  "Unable to retrieve tractors"
-// @Router       /tractors/compatible/{traffic_manager_id}/{lot_id} [get]
+// @Router       /lots/tractors/compatible/{traffic_manager_id}/{lot_id} [get]
 func (LotController *LotController) ListCompatibleTractorsForLot(c *gin.Context) {
 	lotId := c.Param("lot_id")
 	trafficManagerId := c.Param("traffic_manager_id")
