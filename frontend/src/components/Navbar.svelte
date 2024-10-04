@@ -114,7 +114,7 @@
                 {#if hasAccess('Tractors')}
                     <li>
                         <a href="/tractors" on:click={() => switchTab('Tractors')} class="{$currentTab === 'Tractors' ? 'font-bold text-blue-400' : 'hover:text-blue-400 transition-colors duration-300'}">
-                            Tracteurs
+                            Tractors
                         </a>
                     </li>
                 {/if}
@@ -135,7 +135,7 @@
                 {#if hasAccess('StockExchange')}
                     <li>
                         <a href="/stock-exchange" on:click={() => switchTab('StockExchange')} class="{$currentTab === 'StockExchange' ? 'font-bold text-blue-400' : 'hover:text-blue-400 transition-colors duration-300'}">
-                            Bourse
+                            Stock exchange
                         </a>
                     </li>
                 {/if}

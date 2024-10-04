@@ -26,7 +26,6 @@
     }
 
 
-
     onMount(() => {
         fetchCheckpoints();
         fetchRoutes();
@@ -244,7 +243,7 @@
                             class="bg-blue-500 text-white font-bold rounded px-6 py-3 hover:bg-blue-600 transition-colors"
                     >
                         <i class="fas fa-check mr-2"></i>
-                        Valider la route
+                        Validate
                     </button>
                 </div>
             {/if}
