@@ -12,4 +12,9 @@ export default defineConfig({
       '@assets': path.resolve(__dirname, './src/assets'),
     },
   },
+  server: {
+    watch: {
+        usePolling: true
+    }
+}
 });
