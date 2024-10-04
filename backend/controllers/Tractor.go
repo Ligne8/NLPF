@@ -15,6 +15,25 @@ type TractorController struct {
 
 //var tractorModel = models.Tractor{}
 
+// CreateTractor : Create a new tractor
+//
+// @Summary      Create a new tractor
+// @Tags         tractors
+// @Accept       json
+// @Produce      json
+// @Param        name                body  string  true  "Name"
+// @Param        resource_type        body  string  true  "Resource Type"
+// @Param        volume               body  float64 true  "Volume"
+// @Param        start_checkpoint_id   body  string  true  "Start Checkpoint Id"
+// @Param        end_checkpoint_id     body  string  true  "End Checkpoint Id"
+// @Param        owner_id             body  string  true  "Owner Id"
+// @Param        current_checkpoint_id body  string  false "Current Checkpoint Id"
+// @Param        state                body  string  true  "State"
+// @Param        min_price_by_km      body  float64 true  "Min Price By Km"
+// @Success      201  {object}  models.Tractor
+// @Failure      400  "Invalid request payload"
+// @Failure      500  "Unable to create tractor"
+// @Router       /tractors [post]
 func (TractorController *TractorController) CreateTractor(c *gin.Context) {
 	var requestBody struct {
 		Name                string              `json:"name" binding:"required"`
@@ -65,6 +84,15 @@ func (TractorController *TractorController) CreateTractor(c *gin.Context) {
 	c.JSON(http.StatusCreated, TractorModel)
 }
 
+// GoToNextCheckpoint : Update the current checkpoint of the tractors
+//
+// @Summary      Update the current checkpoint of the tractors
+// @Tags         tractors
+// @Accept       json
+// @Produce      json
+// @Success      200  {array}  models.Tractor
+// @Failure      500  "Unable to fetch tractors"
+// @Router       /tractors/next_checkpoint [put]
 func (TractorController *TractorController) GoToNextCheckpoint(c *gin.Context) {
 	var tractors []models.Tractor
 	if err := TractorController.Db.Find(&tractors).Error; err != nil {
@@ -83,6 +111,17 @@ func (TractorController *TractorController) GoToNextCheckpoint(c *gin.Context) {
 	c.JSON(http.StatusOK, tractors)
 }
 
+// ListTractorsByOwner : List all tractors by owner id
+//
+// @Summary      List all tractors by owner id
+// @Tags         tractors
+// @Accept       json
+// @Produce      json
+// @Param        owner_id  path  string  true  "Owner Id"
+// @Success      200  {array}  models.Tractor
+// @Failure      400  "Invalid owner_id"
+// @Failure      500  "Unable to retrieve tractors"
+// @Router       /tractors/owner/{owner_id} [get]
 func (TractorController *TractorController) ListTractorsByOwner(c *gin.Context) {
 	var tractors []models.Tractor
 	var tractorModel models.Tractor
@@ -104,6 +143,17 @@ func (TractorController *TractorController) ListTractorsByOwner(c *gin.Context) 
 	c.JSON(http.StatusOK, tractors)
 }
 
+// ListTractorsByTrafficManagerId : List all tractors by traffic manager id
+//
+// @Summary      List all tractors by traffic manager id
+// @Tags         tractors
+// @Accept       json
+// @Produce      json
+// @Param        traffic_manager_id  path  string  true  "Traffic Manager Id"
+// @Success      200  {array}  models.Tractor
+// @Failure      400  "Invalid owner_id"
+// @Failure      500  "Unable to retrieve tractors"
+// @Router       /tractors/traffic_manager/{traffic_manager_id} [get]
 func (TractorController *TractorController) ListTractorsByTrafficManagerId(c *gin.Context) {
 	var tractors []models.Tractor
 	var tractorModel models.Tractor
@@ -125,6 +175,17 @@ func (TractorController *TractorController) ListTractorsByTrafficManagerId(c *gi
 	c.JSON(http.StatusOK, tractors)
 }
 
+// ListTractorsByState : List all tractors by state
+//
+// @Summary      List all tractors by state
+// @Tags         tractors
+// @Accept       json
+// @Produce      json
+// @Param        state  path  string  true  "State"
+// @Success      200  {array}  models.Tractor
+// @Failure      400  "Invalid state"
+// @Failure      500  "Unable to retrieve tractors"
+// @Router       /tractors/state/{state} [get]
 func (TractorController *TractorController) ListTractorsByState(c *gin.Context) {
 	var tractors []models.Tractor
 	var tractorModel models.Tractor
@@ -140,6 +201,17 @@ func (TractorController *TractorController) ListTractorsByState(c *gin.Context) 
 	c.JSON(http.StatusOK, tractors)
 }
 
+// ListTractorsByRouteId : List all tractors by route id
+//
+// @Summary      List all tractors by route id
+// @Tags         tractors
+// @Accept       json
+// @Produce      json
+// @Param        route_id  path  string  true  "Route Id"
+// @Success      200  {array}  models.Tractor
+// @Failure      400  "Invalid route_id"
+// @Failure      500  "Unable to retrieve tractors"
+// @Router       /tractors/route/{route_id} [get]
 func (TractorController *TractorController) ListTractorsByRouteId(c *gin.Context) {
 	var tractors []models.Tractor
 	var tractorModel models.Tractor
@@ -161,6 +233,21 @@ func (TractorController *TractorController) ListTractorsByRouteId(c *gin.Context
 	c.JSON(http.StatusOK, tractors)
 }
 
+// AssociateToTrafficManager : Associate a tractor to a traffic manager
+//
+// @Summary      Associate a tractor to a traffic manager
+// @Tags         tractors
+// @Accept       json
+// @Produce      json
+// @Param        tractor_id  body  string  true  "Tractor Id"
+// @Param        traffic_manager_id  body  string  true  "Traffic Manager Id"
+// @Success      200  {object}  models.Tractor
+// @Failure      400  "Invalid tractor_id"
+// @Failure      400  "Invalid traffic_manager_id"
+// @Failure      404  "Tractor not found"
+// @Failure      500  "Unable to update traffic_manager"
+// @Failure      500  "Unable to update state"
+// @Router       /tractors/associate [put]
 func (TractorController *TractorController) AssociateToTrafficManager(c *gin.Context) {
 	var requestBody struct {
 		TractorId        string `json:"tractor_id" binding:"required"`
@@ -202,10 +289,22 @@ func (TractorController *TractorController) AssociateToTrafficManager(c *gin.Con
 	c.JSON(http.StatusOK, tractor)
 }
 
-// UpdateTractorState: Update the state of a tractor
+// UpdateTractorState : Update the state of a tractor
+//
+// @Summary      Update the state of a tractor
+// @Tags         tractors
+// @Accept       json
+// @Produce      json
+// @Param        id     body  string  true  "Id"
+// @Param        state  body  string  true  "State"
+// @Success      200  {object}  models.Tractor
+// @Failure      400  "Invalid request payload"
+// @Failure      404  "Tractor not found"
+// @Failure      500  "Unable to update tractor"
+// @Router       /tractors/state [put]
 func (TractorController *TractorController) UpdateTractorState(c *gin.Context) {
 	var requestBody struct {
-		Id    string    `json:"id" binding:"required"`
+		Id    string       `json:"id" binding:"required"`
 		State models.State `json:"state" binding:"required"`
 	}
 	if err := c.ShouldBindJSON(&requestBody); err != nil {
@@ -225,7 +324,6 @@ func (TractorController *TractorController) UpdateTractorState(c *gin.Context) {
 		return
 	}
 	tractor.State = requestBody.State
-	
 
 	if err := TractorController.Db.Save(&tractor).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -233,14 +331,27 @@ func (TractorController *TractorController) UpdateTractorState(c *gin.Context) {
 	}
 	if requestBody.State == models.StateInTransit {
 		var lot models.Lot
-		lot.UpdateStateByTractorId(TractorController.Db, tractorIdUUID, models.StateInTransit);
+		lot.UpdateStateByTractorId(TractorController.Db, tractorIdUUID, models.StateInTransit)
 	} else if requestBody.State == models.StatePending {
 		var lot models.Lot
-		lot.UpdateStateByTractorId(TractorController.Db, tractorIdUUID, models.StatePending);
+		lot.UpdateStateByTractorId(TractorController.Db, tractorIdUUID, models.StatePending)
 	}
 	c.JSON(http.StatusOK, tractor)
 }
 
+// BindRoute : Bind a route to a tractor
+//
+// @Summary      Bind a route to a tractor
+// @Tags         tractors
+// @Accept       json
+// @Produce      json
+// @Param        tractor_id  body  string  true  "Tractor Id"
+// @Param        route_id    body  string  true  "Route Id"
+// @Success      200  {object}  models.Tractor
+// @Failure      400  "Invalid request payload"
+// @Failure      404  "Tractor not found"
+// @Failure      500  "Unable to update tractor"
+// @Router       /tractors/bind_route [put]
 func (TractorController *TractorController) BindRoute(c *gin.Context) {
 	var requestBody struct {
 		TractorId string `json:"tractor_id" binding:"required"`
@@ -279,7 +390,19 @@ func (TractorController *TractorController) BindRoute(c *gin.Context) {
 	c.JSON(http.StatusOK, tractor)
 }
 
-func (TractorController *TractorController) UnbindeRoute(c *gin.Context) {
+// UnbindRoute : Unbind a route from a tractor
+//
+// @Summary      Unbind a route from a tractor
+// @Tags         tractors
+// @Accept       json
+// @Produce      json
+// @Param        tractor_id  body  string  true  "Tractor Id"
+// @Success      200  {object}  models.Tractor
+// @Failure      400  "Invalid request payload"
+// @Failure      404  "Tractor not found"
+// @Failure      500  "Unable to update tractor"
+// @Router       /tractors/unbind_route [put]
+func (TractorController *TractorController) UnbindRoute(c *gin.Context) {
 	var requestBody struct {
 		TractorId string `json:"tractor_id" binding:"required"`
 	}
