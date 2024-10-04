@@ -65,9 +65,9 @@
             case 'pending':
                 return { color: 'bg-yellow-200 text-yellow-800', text: '◉ Pending' };
             case 'in_transit':
-                return { color: 'bg-orange-200 text-orange-800', text: '◉ On the way' };
+                return { color: 'bg-orange-200 text-orange-800', text: '◉ In transit' };
             case 'on_market':
-                return { color: 'bg-blue-200 text-blue-800', text: '◉ On the stock exchange' };
+                return { color: 'bg-blue-200 text-blue-800', text: '◉ On market' };
             case 'at_trader':
                 return { color: 'bg-purple-200 text-purple-800', text: '◉ At trader' };
             case 'archive':
@@ -282,13 +282,13 @@
                 <option value="all">All</option>
                 <option value="available">Available</option>
                 <option value="pending">Pending</option>
-                <option value="in_transit">On the way</option>
-                <option value="on_market">On the stock exchange</option>
+                <option value="in_transit">In transit</option>
+                <option value="on_market">On market</option>
                 <option value="at_trader">At trader</option>
                 <option value="archive">Archived</option>
             </select>
 
-            <!-- Sort by volume and location -->
+            <!-- Sort by name, volume and location -->
             <select bind:value={sortOption} class="border border-gray-300 rounded px-2 py-1">
                 <option value="none" disabled selected>Sort by</option>
                 <option value="name_asc">Name (A-Z)</option>

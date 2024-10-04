@@ -59,9 +59,9 @@
             case 'pending':
                 return { color: 'bg-yellow-200 text-yellow-800', text: '◉ Pending' };
             case 'in_transit':
-                return { color: 'bg-orange-200 text-orange-800', text: '◉ On the way' };
+                return { color: 'bg-orange-200 text-orange-800', text: '◉ In transit' };
             case 'on_market':
-                return { color: 'bg-blue-200 text-blue-800', text: '◉ On the stock exchange' };
+                return { color: 'bg-blue-200 text-blue-800', text: '◉ On market' };
             case 'archived':
                 return { color: 'bg-gray-200 text-gray-800', text: '◉ Archived' };
             default:
@@ -252,8 +252,8 @@
                 <option value="all">All</option>
                 <option value="available">Available</option>
                 <option value="pending">Pending</option>
-                <option value="on_the_way">On the way</option>
-                <option value="on_the_stock_exchange">On the stock exchange</option>
+                <option value="in_transit">In transit</option>
+                <option value="on_market">On market</option>
                 <option value="archived">Archived</option>
             </select>
 
