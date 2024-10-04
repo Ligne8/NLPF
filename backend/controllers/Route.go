@@ -78,15 +78,6 @@ func (RouteController *RouteController) GetRouteStringByTrafficManagerId(c *gin.
 }
 
 // GetRouteByTrafficManagerId : Get route by traffic manager id
-//
-// @Summary      Get route by traffic manager id
-// @Tags         routes
-// @Accept       json
-// @Produce      json
-// @Param        traffic_manager_id  path  string  true  "Traffic Manager Id"
-// @Success      200  {array}   models.Route
-// @Failure      400  "Unable to retrieve routes"
-// @Router       /routes/traffic_manager/{traffic_manager_id} [get]
 func (RouteController *RouteController) GetRouteByTrafficManagerId(c *gin.Context) {
 	var routeModel models.Route
 	var routes []models.Route
