@@ -225,10 +225,18 @@ func (TractorController *TractorController) UpdateTractorState(c *gin.Context) {
 		return
 	}
 	tractor.State = requestBody.State
+	
 
 	if err := TractorController.Db.Save(&tractor).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
+	}
+	if requestBody.State == models.StateInTransit {
+		var lot models.Lot
+		lot.UpdateStateByTractorId(TractorController.Db, tractorIdUUID, models.StateInTransit);
+	} else if requestBody.State == models.StatePending {
+		var lot models.Lot
+		lot.UpdateStateByTractorId(TractorController.Db, tractorIdUUID, models.StatePending);
 	}
 	c.JSON(http.StatusOK, tractor)
 }
