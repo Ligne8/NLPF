@@ -116,7 +116,7 @@
             const response = await fetch(`${API_BASE_URL}/tractors/owner/${$userId}`);
             if (response.ok){
                 const data = await response.json();
-                console.log('Tractors:', data);
+
                 tableData = data.map((tractor: any) => ({
                     id: tractor.id,
                     name: tractor.name,
@@ -127,7 +127,6 @@
                     endCheckpoint: tractor.end_checkpoint.name,
                     trafficManager: tractor.traffic_manager
                 }));
-                console.log('Table data:', tableData);  
             } else {
                 console.error('Failed to fetch tractors:', response.status);
             }

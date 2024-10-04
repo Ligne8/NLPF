@@ -127,7 +127,7 @@
     // Update data depending on filters
     $: sortedData = (() => {
         let data = selectedStatus === 'all' ? tractors : tractors.filter(tractor => tractor.state === selectedStatus);
-        console.log("aaaaa", data)
+
         switch (sortOption) {
             case 'name_asc':
                 return data.sort((a, b) => a.name.localeCompare(b.name));
