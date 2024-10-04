@@ -59,17 +59,17 @@
     function getStateInfo(state: string): { color: string; text: string } {
         switch (state) {
             case 'available':
-                return { color: 'bg-green-200 text-green-800', text: '◉ Disponible' };
+                return { color: 'bg-green-200 text-green-800', text: '◉ Available' };
             case 'pending':
-                return { color: 'bg-amber-200 text-green-800', text: '◉ En attente' };
+                return { color: 'bg-yellow-200 text-yellow-800', text: '◉ Pending' };
             case 'in_transit':
-                return { color: 'bg-orange-200 text-orange-800', text: '◉ En route' };
+                return { color: 'bg-orange-200 text-orange-800', text: '◉ On the way' };
             case 'on_market':
-                return { color: 'bg-yellow-200 text-yellow-800', text: '◉ En bourse' };
+                return { color: 'bg-blue-200 text-blue-800', text: '◉ On the stock exchange' };
             case 'at_trader':
-                return { color: 'bg-blue-200 text-blue-800', text: '◉ Chez le négociant' };
+                return { color: 'bg-purple-200 text-purple-800', text: '◉ At trader' };
             case 'archive':
-                return { color: 'bg-gray-200 text-gray-800', text: '◉ Archivé' };
+                return { color: 'bg-gray-200 text-gray-800', text: '◉ Archived' };
             default:
                 return { color: 'bg-gray-200 text-gray-800', text: '🛇 Unknown' };
         }
@@ -330,22 +330,22 @@
                             <div class="flex flex-wrap justify-center space-x-2">
                                 <button class="bg-red-200 text-red-600 px-4 py-2 flex items-center font-bold hover:bg-red-300 transition-colors rounded-md">
                                     <i class="fas fa-hand mr-2"></i>
-                                    Arrêter
+                                    Stop
                                 </button>
                             </div>
                         {:else if row.state === 'available'}
                             <div class="flex flex-wrap justify-center space-x-2">
                                 <button on:click={()=>{assignToTrafficManager(row.id, row.trafficManager)}} class="bg-green-200 text-green-800 px-4 py-2 flex items-center font-bold hover:bg-green-300 transition-colors rounded-md">
                                     <i class="fas fa-truck mr-2"></i>
-                                    Attribuer au TM 
+                                    Assign 
                                 </button>
                                 <button class="bg-blue-200 text-blue-800 px-4 py-2 flex items-center font-bold hover:bg-blue-300 transition-colors rounded-md">
                                     <i class="fas fa-plus mr-2"></i>
-                                    Bourse
+                                    Stock exchange
                                 </button>
                                 <button class="bg-gray-800 text-white px-4 py-2 flex items-center font-bold hover:bg-black transition-colors rounded-md">
                                     <i class="fas fa-right-from-bracket mr-2"></i>
-                                    Retirer
+                                    Remove
                                 </button>
                             </div>
                         {:else}
@@ -382,7 +382,7 @@
 
                 <!-- Name -->
                 <div class="mb-2">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Nom :</label>
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Name :</label>
                     <input type="text" class="w-full border border-gray-300 p-2 rounded" placeholder="Entrez le nom du tracteur" bind:value={name} required>
                 </div>
 
@@ -422,7 +422,7 @@
                 
                 <!-- Departure -->
                 <div class="mb-2">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Départ :</label>
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Departure :</label>
                     <select class="w-full border border-gray-300 p-2 rounded" bind:value={selectedDeparture}>
                         {#each checkpoints as checkpoint}
                             {#if checkpoint.id !== selectedArrival.id}
@@ -434,7 +434,7 @@
 
                 <!-- Arrival -->
                 <div class="mb-2">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Arrivé :</label>
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Arrival :</label>
                     <select class="w-full border border-gray-300 p-2 rounded" bind:value={selectedArrival}>
                         {#each checkpoints as checkpoint}
                             {#if checkpoint.id !== selectedDeparture.id}

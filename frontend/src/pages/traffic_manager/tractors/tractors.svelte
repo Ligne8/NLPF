@@ -188,14 +188,14 @@
                             <div class="flex flex-wrap justify-center space-x-2">
                                 <button on:click={()=>(stopTractor(row))} class="bg-red-200 text-red-600 px-4 py-2 flex items-center font-bold hover:bg-red-300 transition-colors rounded-md">
                                     <i class="fas fa-hand mr-2"></i>
-                                    Arrêter
+                                    Stop
                                 </button>
                             </div>
                         {:else if row.state === 'pending'}
                             <div class="flex flex-wrap justify-center space-x-2  space-y-2">
                                 <button on:click={()=>{startTractor(row)}} class="bg-green-200 text-green-800 px-4 py-2 flex items-center font-bold hover:bg-green-300 transition-colors rounded-md">
                                     <i class="fas fa-truck mr-2"></i>
-                                    Démarrer
+                                    Start
                                 </button>
                                 <button class="bg-blue-200 text-blue-800 px-4 py-2 flex items-center font-bold hover:bg-blue-300 transition-colors rounded-md">
                                     <i class="fas fa-plus mr-2"></i>
