@@ -42,6 +42,8 @@
     let selectedArrival: Checkpoint;
     let tableData: TractorTable[] = [];
     let trafficManagers: TrafficManager[] = [];
+    let selectedStatus: string = 'all';
+    let sortOption: string = 'none';
 
 
     const fetchAllData = async () => {
@@ -233,6 +235,29 @@
             alert('Error assigning tractor to traffic manager');
         });
     }
+
+    // Update data depending on filters
+    $: sortedData = (() => {
+        let data = selectedStatus === 'all' ? tableData : tableData.filter(tractor => tractor.state === selectedStatus);
+
+        switch (sortOption) {
+            case 'name_asc':
+                return data.sort((a, b) => a.name.localeCompare(b.name));
+            case 'name_desc':
+                return data.sort((a, b) => b.name.localeCompare(a.name));
+            case 'volume_asc':
+                return data.sort((a, b) => a.volume - b.volume);
+            case 'volume_desc':
+                return data.sort((a, b) => b.volume - a.volume);
+            case 'location_asc':
+                return data.sort((a, b) => a.currentCheckpoint.localeCompare(b.currentCheckpoint));
+            case 'location_desc':
+                return data.sort((a, b) => b.currentCheckpoint.localeCompare(a.currentCheckpoint));
+            default:
+                return data;
+        }
+    })();
+
 </script>
 
 
@@ -241,31 +266,58 @@
 
 <main class="p-10 pt-40">
 
+    <!-- Title and subtitle -->
+    <div class="mb-2">
+        <h1 class="text-4xl font-bold mb-2">{title}</h1>
+        <h2 class="text-2xl text-gray-600">{subtitle}</h2>
+    </div>
+
     <section class="flex justify-between items-center mb-4">
 
-        <!-- Title and subtitle -->
-        <div>
-            <h1 class="text-4xl font-bold mb-2">{title}</h1>
-            <h2 class="text-2xl text-gray-600">{subtitle}</h2>
+        <div class="flex justify-between items-center self-end">
+
+            <!-- Filter by status -->
+            <select bind:value={selectedStatus} class="mr-2 border border-gray-300 rounded px-2 py-1">
+                <option value="all" disabled selected>Filter by status</option>
+                <option value="all">All</option>
+                <option value="available">Available</option>
+                <option value="pending">Pending</option>
+                <option value="in_transit">On the way</option>
+                <option value="on_market">On the stock exchange</option>
+                <option value="at_trader">At trader</option>
+                <option value="archive">Archived</option>
+            </select>
+
+            <!-- Sort by volume and location -->
+            <select bind:value={sortOption} class="border border-gray-300 rounded px-2 py-1">
+                <option value="none" disabled selected>Sort by</option>
+                <option value="name_asc">Name (A-Z)</option>
+                <option value="name_desc">Name (Z-A)</option>
+                <option value="volume_asc">Volume (Ascending)</option>
+                <option value="volume_desc">Volume (Descending)</option>
+                <option value="location_asc">Location (A-Z)</option>
+                <option value="location_desc">Location (Z-A)</option>
+            </select>
+
         </div>
 
-        <div class="flex">
+        <div class="flex justify-between items-center self-end">
 
-        <!-- Reload button -->
-        <button class="bg-blue-500 mr-5 text-white font-bold px-4 py-2 rounded flex items-center hover:bg-blue-600 transition-colors self-end"
-                on:click={fetchAllData}
-        >
-            <i class="fas fa-rotate-right mr-2"></i>
-            Reload
-        </button>
+            <!-- Create button -->
+            <button class="bg-blue-500 text-white mr-2 font-bold px-4 py-2 rounded flex items-center hover:bg-blue-600 transition-colors self-end"
+                    on:click={openModal}
+            >
+                <i class="fas fa-plus mr-2"></i>
+                Add tractor
+            </button>
 
-        <!-- Create button -->
-        <button class="bg-blue-500 text-white font-bold px-4 py-2 rounded flex items-center hover:bg-blue-600 transition-colors self-end"
-                on:click={openModal}
-        >
-            <i class="fas fa-plus mr-2"></i>
-            Add tractor
-        </button>
+            <!-- Reload button -->
+            <button class="bg-gray-800 text-white font-bold px-4 py-2 rounded flex items-center hover:bg-gray-900 transition-colors self-end"
+                    on:click={fetchAllData}
+            >
+                <i class="fas fa-rotate-right mr-2"></i>
+                Reload
+            </button>
         </div>
 
     </section>
@@ -285,7 +337,7 @@
             </tr>
             </thead>
             <tbody>
-            {#each tableData as row, index}
+            {#each sortedData as row, index}
                 <tr class={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
 
                     <!-- Column 1 -->
