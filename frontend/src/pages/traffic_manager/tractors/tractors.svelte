@@ -283,7 +283,7 @@
                                     Stock exchange
                                 </button>
                                 {#if row.route_id == null}
-                                    <button on:click={()=>{addRoute(row)}} class="bg-blue-200 text-blue-800 px-4 py-2 flex items-center font-bold hover:bg-blue-300 transition-colors rounded-md">
+                                    <button on:click={()=>{addRoute(row)}} class="bg-blue-500 text-white px-4 py-2 flex items-center font-bold hover:bg-blue-600 transition-colors rounded-md">
                                         <i class="fas fa-plus mr-2"></i>
                                         Add route
                                     </button>

@@ -5,12 +5,14 @@
     import { onMount } from "svelte";
     import axios from "axios";
     import type { Lot } from 'src/interface/lotInterface';
+    import type { Tractor } from 'src/interface/tractorInterface';
 
     // Variables
     let title: string = 'Lot management';
     let subtitle: string = 'Track the status of your lots in real time.';
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
     let lots: Lot[] = [];
+    let compatibleTractorsMap: Map<number, Tractor[]> = new Map();
     let selectedStatus: string = 'all';
     let sortOption: string = 'none';
 
@@ -41,13 +43,37 @@
             .then((response) => {
                 lots = response.data;
             }).catch((error) => {
-                console.error('Error fetching tractors:', error.response);
+                console.error('Error fetching lots:', error.response);
             });
+    }
+
+    // Fetch table info
+    async function getCompatibleTractors(lotId: number) {
+        if ($userRole !== "traffic_manager") {
+            return;
+        }
+ 
+        try {
+            const response = await axios.get(`${API_BASE_URL}/lots/tractors/compatible/${$userId}/${lotId}`);
+            const updatedMap = new Map(compatibleTractorsMap);
+            updatedMap.set(lotId, response.data);
+            compatibleTractorsMap = updatedMap;
+        } catch (error) {
+            console.error('Error fetching compatible tractors:', error.response);
+        }
     }
 
     onMount(() => {
         fetchTableInfo();
     });
+
+    // Update compatible tractors map 
+    $: {
+        for (const lot of sortedData) {
+            if (!compatibleTractorsMap.has(lot.id))
+                getCompatibleTractors(lot.id);
+        }
+    }
 
     // Update data depending on filters
     $: sortedData = (() => {
@@ -145,14 +171,24 @@
                         {row.start_checkpoint.name} / {row.end_checkpoint.name}
                     </td>
 
-                    <!-- Column 5 -->
+                    <!-- Colonne 5 -->
                     <td class="border p-2 text-center">
                         {#if row.tractor }
                             <span class="px-2 py-1 mx-auto w-4/5 block">
                                 {row.tractor.name}
                             </span>
                         {:else}
-                            <span class="px-2 py-1 mx-auto w-4/5 block text-gray-500">None</span>
+                            {#if compatibleTractorsMap.get(row.id) && compatibleTractorsMap.get(row.id).length > 0}
+                            <div class="flex flex-wrap justify-center space-x-2">
+                                <button class="bg-green-200 text-green-800 px-4 py-2 flex items-center font-bold hover:bg-green-300 transition-colors rounded-md"
+                                        on:click={() => { /* FIXME: open modal */ }}>
+                                    <i class="fas fa-truck mr-2"></i>
+                                    Assign
+                                </button>
+                            </div>
+                            {:else}
+                                <span class="px-2 py-1 mx-auto w-4/5 block text-gray-500">None</span>
+                            {/if}
                         {/if}
                     </td>
 
