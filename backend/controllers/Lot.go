@@ -369,3 +369,62 @@ func (LotController *LotController) checkCompatibility(lot models.Lot, tractor m
 
 	return true
 }
+
+// AssignTractorToLot : Assign a tractor to a lot
+//
+// @Summary      Assign a tractor to a lot
+// @Tags         lots
+// @Accept       json
+// @Produce      json
+// @Param        lot_id  body  string  true  "Lot Id"
+// @Param        tractor_id  body  string  true  "Tractor Id"
+// @Success      200  {object}  models.Lot
+// @Failure      400  "Invalid request payload"
+// @Failure      404  "Lot not found"
+// @Failure      404  "Tractor not found"
+// @Failure      500  "Unable to assign tractor to lot"
+// @Router       /lots/assign [put]
+func (LotController *LotController) AssignTractorToLot(c *gin.Context) {
+	var requestBody struct {
+		LotId     uuid.UUID `json:"lot_id" binding:"required"`
+		TractorId uuid.UUID `json:"tractor_id" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&requestBody); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Get the Lot
+	var lot models.Lot
+	if err := LotController.Db.First(&lot, "id = ?", requestBody.LotId).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Lot not found"})
+		return
+	}
+
+	// Get the tractor
+	var tractor models.Tractor
+	if err := LotController.Db.First(&tractor, "id = ?", requestBody.TractorId).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Tractor not found"})
+		return
+	}
+
+	if !LotController.checkCompatibility(lot, tractor) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Lot is not compatible with the tractor"})
+		return
+	}
+
+	//Preload the necessary fields
+	if err := LotController.Db.Preload("EndCheckpoint").Preload("StartCheckpoint").Preload("CurrentCheckpoint").Preload("TrafficManager").First(&lot, "id = ?", requestBody.LotId).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	// Assign the tractor to the lot
+	lot.TractorId = &requestBody.TractorId
+	if err := LotController.Db.Save(&lot).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, lot)
+}
