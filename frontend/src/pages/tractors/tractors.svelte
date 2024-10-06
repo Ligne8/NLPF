@@ -235,6 +235,19 @@
         });
     }
 
+    // Function to delete a tractor
+    const deleteTractor = (tractorId: string) => {
+        fetch(`${API_BASE_URL}/tractors/${tractorId}`, {
+            method: 'DELETE',
+        }).then(response => {
+            fetchTractors();
+            alert('Tractor deleted successfully');
+        }).catch(error => {
+            console.error('Error deleting tractor:', error);
+            alert('Error deleting tractor');
+        });
+    }
+
     // Update data depending on filters
     $: sortedData = (() => {
         let data = selectedStatus === 'all' ? tableData : tableData.filter(tractor => tractor.state === selectedStatus);
@@ -394,7 +407,7 @@
                                     <i class="fas fa-plus mr-2"></i>
                                     Stock exchange
                                 </button>
-                                <button class="bg-gray-800 text-white px-4 py-2 flex items-center font-bold hover:bg-black transition-colors rounded-md">
+                                <button on:click={()=> {deleteTractor(row.id)}} class="bg-gray-800 text-white px-4 py-2 flex items-center font-bold hover:bg-black transition-colors rounded-md">
                                     <i class="fas fa-right-from-bracket mr-2"></i>
                                     Remove
                                 </button>
