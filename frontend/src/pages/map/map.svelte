@@ -79,13 +79,14 @@
                             <i class="fa fa-box"></i>
                         </div>`,
                 });
-                L.marker([elt.current_checkpoint.latitude, elt.current_checkpoint.longitude], {icon})
+                const marker = L.marker([elt.current_checkpoint.latitude, elt.current_checkpoint.longitude], {icon})
                     .addTo(map)
                     .bindPopup(`<p style="font-weight: bold; color: gray; text-align: center">${elt.name}<br>
                                     <span style="font-weight: normal;">
                                         ${elt.current_checkpoint.name} (${elt.current_checkpoint.country})
                                     </span>
                                 </p>`);
+                animateMarker(marker);
             }
 
             // Routes and tractors
@@ -244,6 +245,19 @@
         // Initial load of markers
         updateMarkers();
     });
+
+    // Function to animate marker
+    function animateMarker(marker) {
+        const iconElement = marker.getElement().querySelector('.fa');
+        let scale = 1;
+        let direction = 1;
+        setInterval(() => {
+            scale += 0.05 * direction;
+            if (scale >= 1.2) direction = -1;
+            if (scale <= 0.7) direction = 1;
+            iconElement.style.transform = `scale(${scale})`;
+        }, 50);
+    }
 
 </script>
 
