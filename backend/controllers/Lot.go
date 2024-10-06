@@ -259,6 +259,42 @@ func (LotController *LotController) AssociateToTrafficManager(c *gin.Context) {
 	c.JSON(http.StatusOK, lot)
 }
 
+// DeleteLot : Delete a lot
+// @Summary      Delete a lot with the lot id
+// @Tags         lots
+// @Accept       json
+// @Produce      json
+// @Param        lot_id  path  string  true  "Lot Id"
+// @Success      200  "Lot deleted successfully"
+// @Failure      400  "Invalid lot_id"
+// @Failure      404  "Lot not found"
+// @Failure      500  "Unable to delete lot"
+// @Router       /lots/{lot_id} [delete]
+func (LotController *LotController) DeleteLot(c *gin.Context) {
+	lotId := c.Param("lot_id")
+	lotIdUUID, errIdUUID := uuid.Parse(lotId)
+
+	if errIdUUID != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid lot_id"})
+		return
+	}
+
+	var lot models.Lot
+	lot, err := lot.FindById(LotController.Db, lotIdUUID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Lot not found"})
+		return
+	}
+
+	if err := LotController.Db.Delete(&lot).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Lot '" + lotId + "' deleted successfully"})
+}
+
+
 // ListLotsByTrafficManager Get all lots associated with a traffic manager
 //
 //	@Summary      Get all lots associated with a traffic manager

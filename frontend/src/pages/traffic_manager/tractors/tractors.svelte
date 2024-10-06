@@ -118,9 +118,11 @@
     }
 
     // Function to filter routes by current checkpoint
-    function getMatchingRoutes(currentCheckpointName: string): Route[] {
+    function getMatchingRoutes(currentCheckpointName: string, endCheckointName: string): Route[] {
         return routes.filter(route => {
             return route.route_path.split(' ')[0].toLocaleLowerCase() === currentCheckpointName.toLocaleLowerCase();
+        }).filter(route =>{
+          return route.route_path.split(' ')[route.route_path.split(' ').length-1].toLocaleLowerCase() === endCheckointName.toLocaleLowerCase();
         });
     }
 
@@ -218,6 +220,7 @@
                 <th class="border p-2 text-center max-w-16">Status</th>
                 <th class="border p-2 text-center max-w-16">Loading <span class="font-normal">(in m³)</span></th>
                 <th class="border p-2 text-center max-w-16">Location</th>
+                <th class="border p-2 text-center max-w-16">Departure / Arrival</th>
                 <th class="border p-2 text-center">Route</th>
                 <th class="border p-2 text-center w-60">Actions</th>
             </tr>
@@ -243,11 +246,14 @@
                     <td class="border p-2 text-center">{row.current_checkpoint.name}</td>
 
                     <!-- Column 5 -->
+                    <td class="border p-2 text-center">{row.start_checkpoint.name} / {row.end_checkpoint.name}</td>
+
+                    <!-- Column 6 -->
                     <td class="border p-2 text-center max-w-16">
                         {#if row.state === 'pending' && row.route_id == null}
-                            {#if routesLoaded && getMatchingRoutes(row.current_checkpoint.name).length > 0}
+                            {#if routesLoaded && getMatchingRoutes(row.current_checkpoint.name, row.end_checkpoint.name).length > 0}
                                 <select bind:value={row.selected_route} class="border border-gray-300 rounded px-2 py-1 mx-auto w-4/5">
-                                    {#each getMatchingRoutes(row.current_checkpoint.name) as routeOption}
+                                    {#each getMatchingRoutes(row.current_checkpoint.name, row.end_checkpoint.name) as routeOption}
                                         <option value={routeOption}>{routeOption.route_path}</option>
                                     {/each}
                                 </select>
@@ -288,7 +294,7 @@
                                         Add route
                                     </button>
                                 {:else}
-                                    <button on:click={()=>{removeRoute(row)}} class="bg-red-200 text-red-800 px-4 py-2 flex items-center font-bold hover:bg-red-300 transition-colors rounded-md">
+                                    <button on:click={()=>{removeRoute(row)}} class="bg-red-200 text-red-600 px-4 py-2 flex items-center font-bold hover:bg-red-300 transition-colors rounded-md">
                                         <i class="fas fa-eraser mr-2"></i>
                                         Remove route
                                     </button>
