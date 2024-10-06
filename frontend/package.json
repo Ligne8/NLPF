@@ -29,6 +29,7 @@
     "@fortawesome/free-solid-svg-icons": "^6.6.0",
     "@fortawesome/svelte-fontawesome": "^0.2.2",
     "axios": "^1.7.7",
+    "leaflet": "^1.9.4",
     "svelte-fa": "^4.0.3",
     "svelte-routing": "^2.13.0",
     "svelte-spa-router": "^4.0.1"

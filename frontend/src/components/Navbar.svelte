@@ -7,10 +7,10 @@
 
     // Role permissions
     const rolePermissions: Record<UserRole, string[]> = {
-        admin: ['Lots', 'Tractors', 'TrafficManager', 'Trader', 'StockExchange'],
-        traffic_manager: ['TrafficManager'],
+        admin: ['Lots', 'Tractors', 'TrafficManager', 'Trader', 'StockExchange', 'Map'],
+        traffic_manager: ['TrafficManager', 'Map'],
         trader: ['Trader', 'StockExchange'],
-        client: ['Lots', 'Tractors', 'StockExchange']
+        client: ['Lots', 'Tractors', 'StockExchange', 'Map']
     };
 
     // State for simulation date
@@ -62,6 +62,8 @@
             currentTab.set('Trader');
         else if (path.startsWith('/stock-exchange'))
             currentTab.set('StockExchange');
+        else if (path.startsWith('/map'))
+            currentTab.set('Map');
         else
             currentTab.set(''); // Reset if on root or unknown path
 
@@ -139,6 +141,13 @@
                         </a>
                     </li>
                 {/if}
+                {#if hasAccess('Map')}
+                    <li>
+                        <a href="/map" on:click={() => switchTab('Map')} class="{$currentTab === 'Map' ? 'font-bold text-blue-400' : 'hover:text-blue-400 transition-colors duration-300'}">
+                            Map
+                        </a>
+                    </li>
+                {/if}
             </ul>
         </div>
 
@@ -149,7 +158,7 @@
                     Simulation date : <span class="font-bold text-blue-400">{simulationDate}</span>
                 </div>
             {:else}
-                <div class="text-lg font-normal text-red-500">
+                <div class="text-lg font-normal text-red-600">
                     No date found
                 </div>
             {/if}

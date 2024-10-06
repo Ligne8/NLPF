@@ -18,6 +18,7 @@
     import NotFound from '@pages/404.svelte'
     import './app.css';
     import '@fortawesome/fontawesome-free/css/all.css';
+    import Map from "@pages/map/map.svelte";
     export let url = "";
 </script>
 
@@ -38,5 +39,6 @@
         <Route path="/stock-exchange" component={StockExchange} />
         <Route path="/stock-exchange/lots" component={StockExchangeLots} />
         <Route path="/stock-exchange/tractors" component={StockExchangeTractors} />
+        <Route path="/map" component={Map} />
     </div>
 </Router>
