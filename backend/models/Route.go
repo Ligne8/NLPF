@@ -96,3 +96,11 @@ func (routeCheckpoint *RouteCheckpoint) IsNextCheckpoint(db *gorm.DB, route Rout
 	}
 	return true
 }
+
+func (Route *Route) GetRouteCheckpoint(db *gorm.DB, routeId uuid.UUID) ([]RouteCheckpoint, error) {
+	var routeCheckpoints []RouteCheckpoint
+	if err := db.Find(&routeCheckpoints, "route_id = ?", routeId).Error; err != nil {
+		return nil, err
+	}
+	return routeCheckpoints, nil
+}

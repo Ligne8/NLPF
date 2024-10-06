@@ -28,6 +28,8 @@ type Transaction struct {
 	Checkpoint       *Checkpoint      `json:"checkpoint" gorm:"foreignKey:CheckpointId"`
 	TrafficManager   *User            `json:"traffic_manager" gorm:"foreignKey:TrafficManagerId"`
 	TrafficManagerId *uuid.UUID       `json:"traffic_manager_id" gorm:"not null"` // Foreign key for Traffic Manager (User)
+	RouteCheckpoint	*RouteCheckpoint `json:"route_checkpoint" gorm:"foreignKey:RouteCheckpointId"`
+	RouteCheckpointId *uuid.UUID      `json:"route_checkpoint_id" gorm:"not null"` // Foreign key for RouteCheckpoint
 }
 
 func (transaction *Transaction) BeforeCreate(tx *gorm.DB) (err error) {
@@ -38,6 +40,14 @@ func (transaction *Transaction) BeforeCreate(tx *gorm.DB) (err error) {
 func (transaction *Transaction) FindByRouteId(db *gorm.DB, routeId uuid.UUID) ([]Transaction, error) {
 	var transactions []Transaction
 	if err := db.Preload("Lot").Preload("Tractor").Preload("Route").Preload("Checkpoint").Find(&transactions, "route_id = ?", routeId).Error; err != nil {
+		return nil, err
+	}
+	return transactions, nil
+}
+
+func (transaction *Transaction) FindByRouteIdAndCheckpointId(db *gorm.DB, routeId uuid.UUID, checkpointId uuid.UUID) ([]Transaction, error) {
+	var transactions []Transaction
+	if err := db.Preload("Lot").Preload("Tractor").Preload("Route").Preload("Checkpoint").Find(&transactions, "route_id = ? AND checkpoint_id = ?", routeId, checkpointId).Error; err != nil {
 		return nil, err
 	}
 	return transactions, nil

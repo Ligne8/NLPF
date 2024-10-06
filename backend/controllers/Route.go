@@ -127,3 +127,4 @@ func (RouteController *RouteController) CreateRoute(c *gin.Context) {
 	}
 	c.Status(http.StatusCreated)
 }
+

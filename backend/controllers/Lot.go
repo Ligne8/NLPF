@@ -359,16 +359,28 @@ func (LotController *LotController) ListCompatibleTractorsForLot(c *gin.Context)
 
 // checkCompatibility : Check if a lot is compatible with a tractor
 func (LotController *LotController) checkCompatibility(lot models.Lot, tractor models.Tractor) bool {
-	if lot.Volume > (tractor.MaxVolume - tractor.CurrentVolume) {
+	if (tractor.RouteId == nil){
 		return false
 	}
-
 	if lot.ResourceType != tractor.ResourceType {
 		return false
 	}
 
 	return true
 }
+
+func (LotController *LotController) checkTractorCheckpointCompatibility(lot models.Lot, tractor models.Tractor) bool {
+	var currentRouteCheckpoint models.RouteCheckpoint
+	if err := currentRouteCheckpoint.GetRouteCheckpoint(LotController.Db, *tractor.RouteId, *tractor.CurrentCheckpointId); err != nil {
+		return false
+	}
+	if lot.ResourceType != tractor.ResourceType {
+		return false
+	}
+
+	return true
+}
+
 
 // AssignTractorToLot : Assign a tractor to a lot
 //
