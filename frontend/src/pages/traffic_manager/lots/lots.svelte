@@ -13,6 +13,8 @@
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
     let lots: Lot[] = [];
     let compatibleTractorsMap: Map<number, Tractor[]> = new Map();
+    let isModalOpen = false;
+    let selectedLotId: number = null;
     let selectedStatus: string = 'all';
     let sortOption: string = 'none';
 
@@ -27,11 +29,24 @@
                 return { color: 'bg-orange-200 text-orange-800', text: '◉ In transit' };
             case 'on_market':
                 return { color: 'bg-blue-200 text-blue-800', text: '◉ On market' };
+            case 'at_trader':
+                return { color: 'bg-purple-200 text-purple-800', text: '◉ At trader' };
             case 'archived':
                 return { color: 'bg-gray-200 text-gray-800', text: '◉ Archived' };
             default:
                 return { color: 'bg-gray-200 text-gray-800', text: '🛇 Unknown' };
         }
+    }
+
+    // Function to open modal
+    function openModal(lotId: number) {
+        selectedLotId = lotId;
+        isModalOpen = true;
+    }
+
+    // Function to close modal
+    function closeModal() {
+        isModalOpen = false;
     }
 
     // Fetch table info
@@ -179,13 +194,13 @@
                             </span>
                         {:else}
                             {#if compatibleTractorsMap.get(row.id) && compatibleTractorsMap.get(row.id).length > 0}
-                            <div class="flex flex-wrap justify-center space-x-2">
-                                <button class="bg-green-200 text-green-800 px-4 py-2 flex items-center font-bold hover:bg-green-300 transition-colors rounded-md"
-                                        on:click={() => { /* FIXME: open modal */ }}>
-                                    <i class="fas fa-truck mr-2"></i>
-                                    Assign
-                                </button>
-                            </div>
+                                <div class="flex flex-wrap justify-center space-x-2">
+                                    <button class="bg-green-200 text-green-800 px-4 py-2 flex items-center font-bold hover:bg-green-300 transition-colors rounded-md"
+                                        on:click={() => openModal(row.id)}>
+                                        <i class="fas fa-truck mr-2"></i>
+                                        Assign
+                                    </button>
+                                </div>
                             {:else}
                                 <span class="px-2 py-1 mx-auto w-4/5 block text-gray-500">None</span>
                             {/if}
@@ -211,3 +226,83 @@
         </table>
     </div>
 </main>
+
+<!-- svelte-ignore a11y-no-static-element-interactions -->
+<!-- svelte-ignore a11y-no-static-element-interactions -->
+<!-- svelte-ignore a11y-click-events-have-key-events -->
+<!-- svelte-ignore a11y-label-has-associated-control -->
+
+{#if isModalOpen}
+
+    <div class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50" on:click={closeModal}>
+
+        <div class="bg-white p-6 rounded-lg shadow-lg w-4/5" on:click|stopPropagation>
+
+            <!-- Close Button -->
+            <button class="absolute top-2 right-2 text-gray-500 hover:text-gray-800" on:click={closeModal}>
+                &times;
+            </button>
+
+            <!-- Modal Title -->
+            <h2 class="text-2xl font-bold mb-6">Assign a tractor</h2>
+
+            <table class="table-auto w-full border-collapse border border-gray-300">
+                <thead>
+                <tr class="bg-gray-100">
+                    <th class="border p-2 text-center">Name</th>
+                    <th class="border p-2 text-center">Status <span class="font-normal">(in m³)</span></th>
+                    <th class="border p-2 text-center">Loading</th>
+                    <th class="border p-2 text-center">Location</th>
+                    <th class="border p-2 text-center">Route</th>
+                    <th class="border p-2 text-center">Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                    {#each compatibleTractorsMap.get(selectedLotId) as tractor}
+                        <tr>
+ 
+                            <!-- Column 1 -->
+                            <td class="border p-2 text-center max-w-11">{tractor.name}</td>
+
+                            <!-- Column 2 -->
+                            <td class="border p-2 text-center max-w-16">
+                                    <span class={`px-2 py-1 rounded ${getStatusInfo(tractor.state).color}`}>
+                                        {getStatusInfo(tractor.state).text}
+                                    </span>
+                            </td>
+
+                            <!-- Column 3 -->
+                            <td class="border p-2 text-center max-w-16 ">{tractor.current_units}/{tractor.max_units}</td>
+
+                            <!-- Column 4 -->
+                            <td class="border p-2 text-center">{tractor.current_checkpoint.name}</td>
+
+                            <!-- Column 5 -->
+                            <td class="border p-2 text-center">
+                                {#if tractor.route}
+                                    {tractor.route.name}
+                                {:else}
+                                    <span class="px-2 py-1 mx-auto w-4/5 block text-gray-500">None</span>
+                                {/if}
+                            </td>
+
+                            <!-- Column 6 -->
+                            <td class="border p-2 text-center">
+                                <div class="flex flex-wrap justify-center space-x-2">
+                                    <button class="bg-gray-200 text-gray-600 px-4 py-2 flex items-center font-bold hover:bg-green-200 hover:text-green-800 transition-colors rounded-md"
+                                        on:click={() => {}}
+                                    >
+                                        <i class="fas fa-hand-pointer mr-2 icon-default"></i>
+                                        <i class="fas fa-check mr-2 icon-hover hidden"></i>
+                                        Select
+                                    </button>
+                                </div>
+                            </td>
+
+                        </tr>
+                    {/each}
+                </tbody>                
+            </table>
+        </div>
+    </div>
+{/if}
