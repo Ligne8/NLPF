@@ -457,7 +457,7 @@ func (TractorController *TractorController) DeleteTractor(c *gin.Context) {
 	var tractor models.Tractor
 	tractor, err := tractor.FindById(TractorController.Db, tractorIdUUID)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Tractor not found"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Tractor not found"})
 		return
 	}
 
