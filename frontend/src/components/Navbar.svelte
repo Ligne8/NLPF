@@ -5,6 +5,9 @@
     import type { UserRole } from '@stores/store.js';
     import axios from 'axios';
 
+    // Variables
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
     // Role permissions
     const rolePermissions: Record<UserRole, string[]> = {
         admin: ['Lots', 'Tractors', 'TrafficManager', 'Trader', 'StockExchange', 'Map'],
@@ -20,7 +23,7 @@
     // Fetch simulation date from the backend
     async function fetchSimulationDate() {
         try {
-            const response = await axios.get('http://localhost:8080/api/v1/simulations/date');
+            const response = await axios.get(`${API_BASE_URL}/simulations/date`);
             simulationDate = response.data.simulation_date; // Date retrieval in YYYY-MM-DD format
         } catch (err) {
             error = 'Error retrieving simulation date';
@@ -30,7 +33,7 @@
 
     async function updateSimulationDate() {
         try {
-            await axios.patch('http://localhost:8080/api/v1/simulations/date', {});
+            await axios.patch(`${API_BASE_URL}/simulations/date`, {});
             await fetchSimulationDate(); // Re-fetch the date after updating
         } catch (err) {
             error = 'Error updating simulation date';

@@ -4,6 +4,8 @@
     import '@fortawesome/fontawesome-free/css/all.css';
     import L from 'leaflet';
     import Navbar from "@components/Navbar.svelte";
+    import axios from "axios";
+    import { userRole, userId } from '@stores/store.js';
 
     // Enum for marker types
     enum MarkerType {
@@ -15,10 +17,11 @@
     // Variables
     let map;
     let mapContainer;
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
     // Function to initialize the map with a minimalist style
     function initializeMap() {
-        map = L.map(mapContainer).setView([48.8566, 2.3522], 5);
+        map = L.map(mapContainer).setView([44.9068, 3.9598], 5);
 
         // Minimalist tile layer (CartoDB Positron)
         L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
@@ -26,54 +29,103 @@
         }).addTo(map);
     }
 
-    // Add markers with FontAwesome icons
-    function addMarkers(data) {
-
-        // Clean up existing markers before adding new ones
+    // Clean up existing markers 
+    function cleanMarkers() {
         map.eachLayer((layer) => {
             if (layer instanceof L.Marker) {
                 map.removeLayer(layer);
             }
         });
+    }
+
+    // Add markers with FontAwesome icons
+    function addMarkers(data) {
 
         // Loop through data to add markers dynamically
-        data.forEach(point => {
+        data.forEach(elt => {
 
-            if (point.type == MarkerType.CHECKPOINT)
+            // Checkpoints
+            if (elt.type == MarkerType.CHECKPOINT)
             {
                 let icon = L.divIcon({
-                    className: `fa fa-2x text-red-500`,
-                    iconSize: [32, 32],
-                    iconAnchor: [16, 16],
+                    className: `fa fa-xl text-red-500`,
+                    iconSize: [16, 16],
+                    iconAnchor: [8, 8],
                     html: `<div style="text-align: center;">
                             <i class="fa fa-location-pin"></i>
                         </div>`,
                 });
-                L.marker([point.lat, point.lon], {icon})
+                L.marker([elt.latitude, elt.longitude], {icon})
                     .addTo(map)
-                    .bindPopup(`<span style="font-weight: bold; color: gray;">${point.name}</span>`);
+                    .bindPopup(`<p style="font-weight: bold; color: gray;">${elt.name}
+                                    <span style="font-weight: normal;">(${elt.country})</span>
+                                </p>`);
+            }
+
+            // Tractors
+            if (elt.type == MarkerType.TRACTOR)
+            {
+                let icon = L.divIcon({
+                    className: `fa fa-3x text-gray-800`,
+                    iconSize: [32, 32],
+                    iconAnchor: [16, 16],
+                    html: `<div style="text-align: center;">
+                            <i class="fa fa-truck"></i>
+                        </div>`,
+                });
+                L.marker([elt.current_checkpoint.latitude, elt.current_checkpoint.longitude], {icon})
+                    .addTo(map)
+                    .bindPopup(`<p style="font-weight: bold; color: gray; text-align: center">${elt.name}<br>
+                                    <span style="font-weight: normal;">
+                                        ${elt.current_checkpoint.name} (${elt.current_checkpoint.country})
+                                    </span>
+                                </p>`);
             }
         });
     }
 
-    // Simulate API call to fetch data for current map bounds
-    async function fetchDynamicData() {
-        const dummyData = [
-            {
-                name: 'Checkpoint 1', type: MarkerType.CHECKPOINT, lat: 48.8566, lon: 2.3522
-            }
-        ];
+    // Fetch all checkpoints
+    async function fetchCheckpoints() {
+        try {
+            const response = await axios.get(`${API_BASE_URL}/checkpoints`);
+            const checkpoints = response.data.map(point => ({
+                ...point,
+                type: MarkerType.CHECKPOINT
+            }));
+            return checkpoints;
+        } catch (err) {
+            console.error(err);
+        }
+    }
 
-        // Simulate API delay
-        return new Promise(resolve => {
-            setTimeout(() => resolve(dummyData), 1000);
-        });
+    // Fetch tractors depending on user ID
+    async function fetchTractors() {
+        let route: string = "";
+        if ($userRole === "traffic_manager")
+            route = `${API_BASE_URL}/tractors/trafficManager/${$userId}`
+        else if ($userRole === "client")
+            route = `${API_BASE_URL}/tractors/owner/${$userId}`
+        else
+            return;
+        try {
+            const response = await axios.get(route);
+            const tractors = response.data.map(tractor => ({
+                ...tractor,
+                type: MarkerType.TRACTOR
+            }));
+            return tractors;
+        } catch (err) {
+            console.error(err);
+        }
     }
 
     // Update markers based on the current map bounds
     async function updateMarkers() {
-        const data = await fetchDynamicData();
-        addMarkers(data);
+        cleanMarkers();
+        const checkpoints = await fetchCheckpoints();
+        const tractors = await fetchTractors();
+        addMarkers(checkpoints);
+        addMarkers(tractors);
     }
 
     // Initialize the map when the component is mounted
