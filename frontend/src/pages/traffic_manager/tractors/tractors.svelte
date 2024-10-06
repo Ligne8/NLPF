@@ -119,7 +119,6 @@
 
     // Function to filter routes by current checkpoint
     function getMatchingRoutes(currentCheckpointName: string, endCheckointName: string): Route[] {
-      console.log(endCheckointName)
         return routes.filter(route => {
             return route.route_path.split(' ')[0].toLocaleLowerCase() === currentCheckpointName.toLocaleLowerCase();
         }).filter(route =>{
@@ -290,12 +289,12 @@
                                     Stock exchange
                                 </button>
                                 {#if row.route_id == null}
-                                    <button on:click={()=>{addRoute(row)}} class="bg-blue-200 text-blue-800 px-4 py-2 flex items-center font-bold hover:bg-blue-300 transition-colors rounded-md">
+                                    <button on:click={()=>{addRoute(row)}} class="bg-blue-500 text-white px-4 py-2 flex items-center font-bold hover:bg-blue-600 transition-colors rounded-md">
                                         <i class="fas fa-plus mr-2"></i>
                                         Add route
                                     </button>
                                 {:else}
-                                    <button on:click={()=>{removeRoute(row)}} class="bg-red-200 text-red-800 px-4 py-2 flex items-center font-bold hover:bg-red-300 transition-colors rounded-md">
+                                    <button on:click={()=>{removeRoute(row)}} class="bg-red-200 text-red-600 px-4 py-2 flex items-center font-bold hover:bg-red-300 transition-colors rounded-md">
                                         <i class="fas fa-eraser mr-2"></i>
                                         Remove route
                                     </button>
