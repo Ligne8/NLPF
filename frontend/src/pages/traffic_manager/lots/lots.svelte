@@ -306,3 +306,17 @@
         </div>
     </div>
 {/if}
+
+<style>
+    button:hover .icon-default {
+        display: none;
+    }
+
+    button:hover .icon-hover {
+        display: inline-block;
+    }
+
+    .icon-hover {
+        display: none;
+    }
+</style>
