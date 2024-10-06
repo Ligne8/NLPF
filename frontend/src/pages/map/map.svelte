@@ -3,6 +3,7 @@
     import 'leaflet/dist/leaflet.css';
     import '@fortawesome/fontawesome-free/css/all.css';
     import L from 'leaflet';
+    import 'leaflet-arrowheads';
     import Navbar from "@components/Navbar.svelte";
     import axios from "axios";
     import { userRole, userId } from '@stores/store.js';
@@ -39,10 +40,11 @@
     }
 
     // Add markers with FontAwesome icons
-    function addMarkers(data) {
+    async function addMarkers(data) {
 
         // Loop through data to add markers dynamically
-        data.forEach(elt => {
+        for (const elt of data)
+        {
 
             // Checkpoints
             if (elt.type == MarkerType.CHECKPOINT)
@@ -67,12 +69,19 @@
             {
                 if (elt.route !== null)
                 {
-                    // Trace the line between start_checkpoint and end_checkpoint
-                    const startCoords = [elt.start_checkpoint.latitude, elt.start_checkpoint.longitude];
-                    const endCoords = [elt.end_checkpoint.latitude, elt.end_checkpoint.longitude];
-
-                    // Create the polyline
-                    const polyline = L.polyline([startCoords, endCoords], { color: 'blue', weight: 3 }).addTo(map);
+                    const checkpoints = await getCheckpointsByRouteID(elt.route_id);
+                    let coords = [];
+                    for (const c of checkpoints)
+                    {
+                        coords.push([c.checkpoint.latitude, c.checkpoint.longitude]);
+                    }
+                    const polyline = L.polyline(coords, { color: 'blue', weight: 2 }).addTo(map);
+                    polyline.arrowheads({
+                        size: '15px',
+                        frequency: 'allvertices',
+                        fill: true,
+                        color: 'blue'
+                    });
                 }
 
                 let icon = L.divIcon({
@@ -91,7 +100,7 @@
                                     </span>
                                 </p>`);
             }
-        });
+        }
     }
 
     // Fetch all checkpoints
@@ -124,6 +133,16 @@
                 type: MarkerType.TRACTOR
             }));
             return tractors;
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    // Get checkpoints of the route by ID
+    async function getCheckpointsByRouteID(routeId: number) {
+        try {
+            const response = await axios.get(`${API_BASE_URL}/routes/${routeId}/checkpoints`);
+            return response.data;
         } catch (err) {
             console.error(err);
         }
