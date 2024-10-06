@@ -19,6 +19,10 @@
     let map;
     let mapContainer;
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+    let showCheckpoints = true;
+    let showLots = true;
+    let showTractors = true;
+    let showRoutes = true;
 
     // Function to initialize the map with a minimalist style
     function initializeMap() {
@@ -30,10 +34,10 @@
         }).addTo(map);
     }
 
-    // Clean up existing markers 
+    // Clean up existing markers and polylines
     function cleanMarkers() {
         map.eachLayer((layer) => {
-            if (layer instanceof L.Marker) {
+            if (layer instanceof L.Marker || layer instanceof L.Polyline) {
                 map.removeLayer(layer);
             }
         });
@@ -47,10 +51,10 @@
         {
 
             // Checkpoints
-            if (elt.type == MarkerType.CHECKPOINT)
+            if (elt.type == MarkerType.CHECKPOINT && showCheckpoints)
             {
                 let icon = L.divIcon({
-                    className: `fa fa-xl text-red-500`,
+                    className: `fa fa-xl text-purple-500`,
                     iconSize: [16, 16],
                     iconAnchor: [8, 8],
                     html: `<div style="text-align: center;">
@@ -64,10 +68,31 @@
                                 </p>`);
             }
 
-            // Tractors
-            if (elt.type == MarkerType.TRACTOR)
+            // Lots
+            else if (elt.type == MarkerType.LOT && showLots)
             {
-                if (elt.route !== null)
+                let icon = L.divIcon({
+                    className: `fa fa-3x text-yellow-500`,
+                    iconSize: [32, 32],
+                    iconAnchor: [16, 16],
+                    html: `<div style="text-align: center;">
+                            <i class="fa fa-box"></i>
+                        </div>`,
+                });
+                L.marker([elt.current_checkpoint.latitude, elt.current_checkpoint.longitude], {icon})
+                    .addTo(map)
+                    .bindPopup(`<p style="font-weight: bold; color: gray; text-align: center">${elt.name}<br>
+                                    <span style="font-weight: normal;">
+                                        ${elt.current_checkpoint.name} (${elt.current_checkpoint.country})
+                                    </span>
+                                </p>`);
+            }
+
+            // Routes and tractors
+            else if (elt.type == MarkerType.TRACTOR)
+            {
+                // Routes
+                if (elt.route !== null && showRoutes)
                 {
                     const checkpoints = await getCheckpointsByRouteID(elt.route_id);
                     let coords = [];
@@ -84,21 +109,25 @@
                     });
                 }
 
-                let icon = L.divIcon({
-                    className: `fa fa-3x text-gray-800`,
-                    iconSize: [32, 32],
-                    iconAnchor: [16, 16],
-                    html: `<div style="text-align: center;">
-                            <i class="fa fa-truck"></i>
-                        </div>`,
-                });
-                L.marker([elt.current_checkpoint.latitude, elt.current_checkpoint.longitude], {icon})
-                    .addTo(map)
-                    .bindPopup(`<p style="font-weight: bold; color: gray; text-align: center">${elt.name}<br>
-                                    <span style="font-weight: normal;">
-                                        ${elt.current_checkpoint.name} (${elt.current_checkpoint.country})
-                                    </span>
-                                </p>`);
+                // Tractors
+                if (showTractors)
+                {
+                    let icon = L.divIcon({
+                        className: `fa fa-3x text-gray-800`,
+                        iconSize: [32, 32],
+                        iconAnchor: [16, 16],
+                        html: `<div style="text-align: center;">
+                                <i class="fa fa-truck"></i>
+                            </div>`,
+                    });
+                    L.marker([elt.current_checkpoint.latitude, elt.current_checkpoint.longitude], {icon})
+                        .addTo(map)
+                        .bindPopup(`<p style="font-weight: bold; color: gray; text-align: center">${elt.name}<br>
+                                        <span style="font-weight: normal;">
+                                            ${elt.current_checkpoint.name} (${elt.current_checkpoint.country})
+                                        </span>
+                                    </p>`);
+                }
             }
         }
     }
@@ -112,6 +141,27 @@
                 type: MarkerType.CHECKPOINT
             }));
             return checkpoints;
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    // Fetch lots depending on user ID
+    async function fetchLots() {
+        let route: string = "";
+        if ($userRole === "traffic_manager")
+            route = `${API_BASE_URL}/tractors/traffic_manager/${$userId}`
+        else if ($userRole === "client")
+            route = `${API_BASE_URL}/tractors/owner/${$userId}`
+        else
+            return;
+        try {
+            const response = await axios.get(route);
+            const lots = response.data.map(lot => ({
+                ...lot,
+                type: MarkerType.LOT
+            }));
+            return lots;
         } catch (err) {
             console.error(err);
         }
@@ -152,9 +202,35 @@
     async function updateMarkers() {
         cleanMarkers();
         const checkpoints = await fetchCheckpoints();
+        const lots = await fetchLots();
         const tractors = await fetchTractors();
         addMarkers(checkpoints);
+        addMarkers(lots);
         addMarkers(tractors);
+    }
+
+    // Toggle show checkpoints state
+    function toggleCheckpoints() {
+        showCheckpoints = !showCheckpoints;
+        updateMarkers();
+    }
+
+    // Toggle show lots state
+    function toggleLots() {
+        showLots = !showLots;
+        updateMarkers();
+    }
+
+    // Toggle show tractors state
+    function toggleTractors() {
+        showTractors = !showTractors;
+        updateMarkers();
+    }
+
+    // Toggle show tractors state
+    function toggleRoutes() {
+        showRoutes = !showRoutes;
+        updateMarkers();
     }
 
     // Initialize the map when the component is mounted
@@ -179,6 +255,34 @@
 
 <!-- Map container -->
 <div id="map" bind:this={mapContainer}></div>
+
+<!-- Layer Controls -->
+<div class="absolute bottom-5 right-5 bg-white border border-gray-300 p-3 rounded shadow-lg z-100 flex flex-col space-y-2">
+    <button 
+        class={`text-white py-2 px-4 rounded hover:opacity-80 transition ${showCheckpoints ? 'bg-purple-500' : 'bg-red-500'}`}
+        on:click={toggleCheckpoints}>
+        <i class={`fa ${showCheckpoints ? 'fa-eye' : 'fa-eye-slash'} mr-2`}></i>
+        Checkpoints
+    </button>
+    <button 
+        class={`text-white py-2 px-4 rounded hover:opacity-80 transition ${showLots ? 'bg-yellow-500' : 'bg-red-500'}`}
+        on:click={toggleLots}>
+        <i class={`fa ${showLots ? 'fa-eye' : 'fa-eye-slash'} mr-2`}></i>
+        Lots
+    </button>
+    <button 
+        class={`text-white py-2 px-4 rounded hover:opacity-80 transition ${showTractors ? 'bg-gray-800' : 'bg-red-500'}`}
+        on:click={toggleTractors}>
+        <i class={`fa ${showTractors ? 'fa-eye' : 'fa-eye-slash'} mr-2`}></i>
+        Tractors
+    </button>
+    <button 
+        class={`text-white py-2 px-4 rounded hover:opacity-80 transition ${showRoutes ? 'bg-blue-500' : 'bg-red-500'}`}
+        on:click={toggleRoutes}>
+        <i class={`fa ${showRoutes ? 'fa-eye' : 'fa-eye-slash'} mr-2`}></i>
+        Routes
+    </button>
+</div>
 
 
 <style>
