@@ -65,6 +65,16 @@
             // Tractors
             if (elt.type == MarkerType.TRACTOR)
             {
+                if (elt.route !== null)
+                {
+                    // Trace the line between start_checkpoint and end_checkpoint
+                    const startCoords = [elt.start_checkpoint.latitude, elt.start_checkpoint.longitude];
+                    const endCoords = [elt.end_checkpoint.latitude, elt.end_checkpoint.longitude];
+
+                    // Create the polyline
+                    const polyline = L.polyline([startCoords, endCoords], { color: 'blue', weight: 3 }).addTo(map);
+                }
+
                 let icon = L.divIcon({
                     className: `fa fa-3x text-gray-800`,
                     iconSize: [32, 32],
