@@ -282,7 +282,7 @@ func (LotController *LotController) DeleteLot(c *gin.Context) {
 	var lot models.Lot
 	lot, err := lot.FindById(LotController.Db, lotIdUUID)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Lot not found"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Lot not found"})
 		return
 	}
 
