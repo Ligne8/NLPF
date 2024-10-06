@@ -18,7 +18,7 @@ func RoutesRoute(r *gin.Engine, db *gorm.DB) *gin.Engine {
 		v1.POST("", RouteController.CreateRoute)
 		v1.GET("", RouteController.GetAllRoutes)
 		v1.GET("/traffic_manager/parsed/:traffic_manager_id", RouteController.GetRouteStringByTrafficManagerId)
-
+		v1.GET("/:route_id/checkpoints", RouteController.GetCheckpointsByRouteId)
 	}
 	return r
 }
