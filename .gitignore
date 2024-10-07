@@ -6,3 +6,4 @@ api.sql
 node_modules/
 package-lock.json
 docs/
+NLPF.iml

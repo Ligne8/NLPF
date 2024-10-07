@@ -82,7 +82,7 @@ func (lot *Lot) GetAllLots(db *gorm.DB) ([]Lot, error) {
 
 func (lot *Lot) FindById(db *gorm.DB, lotId uuid.UUID) (Lot, error) {
 	var foundLot Lot
-	if err := db.Preload("EndCheckpoint").Preload("StartCheckpoint").Preload("Tractor").First(&foundLot, "id = ?", lotId).Error; err != nil {
+	if err := db.First(&foundLot, "id = ?", lotId).Error; err != nil {
 		return Lot{}, err
 	}
 	return foundLot, nil
@@ -98,7 +98,7 @@ func (lot *Lot) GetLotsByState(db *gorm.DB, state State) ([]Lot, error) {
 
 func (lot *Lot) GetLotsByTrafficManager(db *gorm.DB, trafficManagerId uuid.UUID) ([]Lot, error) {
 	var lots []Lot
-	if err := db.Preload("EndCheckpoint").Preload("StartCheckpoint").Preload("Tractor").Where("traffic_manager_id = ?", trafficManagerId).Find(&lots).Error; err != nil {
+	if err := db.Preload("EndCheckpoint").Preload("StartCheckpoint").Preload("CurrentCheckpoint").Preload("Tractor").Where("traffic_manager_id = ?", trafficManagerId).Find(&lots).Error; err != nil {
 		return nil, err
 	}
 	return lots, nil
@@ -121,7 +121,7 @@ func (lot *Lot) GetLotsByOwner(db *gorm.DB, ownerId uuid.UUID) ([]Lot, error) {
 }
 
 func (lot *Lot) AssociateTraficManager(db *gorm.DB, trafficManagerId uuid.UUID) error {
-	return db.Model(&lot).Update("traffic_manager_id", trafficManagerId).Error
+	return db.Model(&lot).Preload("StartCheckpoint").Preload("EndCheckpoint").Preload("CurrentCheckpoint").Update("traffic_manager_id", trafficManagerId).Error
 }
 
 func (lot *Lot) GetLotsByTractor(db *gorm.DB, tractorId uuid.UUID) ([]Lot, error) {
