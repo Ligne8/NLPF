@@ -28,16 +28,44 @@ type Transaction struct {
 	Checkpoint       *Checkpoint      `json:"checkpoint" gorm:"foreignKey:CheckpointId"`
 	TrafficManager   *User            `json:"traffic_manager" gorm:"foreignKey:TrafficManagerId"`
 	TrafficManagerId *uuid.UUID       `json:"traffic_manager_id" gorm:"not null"` // Foreign key for Traffic Manager (User)
+	RouteCheckpoint	*RouteCheckpoint `json:"route_checkpoint" gorm:"foreignKey:RouteCheckpointId"`
+	RouteCheckpointId *uuid.UUID      `json:"route_checkpoint_id" gorm:"not null"` // Foreign key for RouteCheckpoint
 }
 
 func (transaction *Transaction) BeforeCreate(tx *gorm.DB) (err error) {
 	transaction.Id = uuid.New()
-	return
+	var simulation Simulation
+	if err := tx.First(&simulation).Error; err != nil {
+		return err
+	}
+	transaction.CreateAt = simulation.SimulationDate
+	return;
+}
+
+func (transaction *Transaction) CreateTransaction(db *gorm.DB, transactionType TransactionState, lotId uuid.UUID, tractorId uuid.UUID, routeId uuid.UUID, checkpointID uuid.UUID, traficManagerId uuid.UUID, routeCheckpointId uuid.UUID) error {
+	var t = Transaction{
+		TransactionType: transactionType,
+		LotId:           &lotId,
+		TractorId:       &tractorId,
+		RouteId:         &routeId,
+		CheckpointId:    &checkpointID,
+		TrafficManagerId: &traficManagerId,
+		RouteCheckpointId: &routeCheckpointId,
+	}
+	return db.Save(&t).Error
 }
 
 func (transaction *Transaction) FindByRouteId(db *gorm.DB, routeId uuid.UUID) ([]Transaction, error) {
 	var transactions []Transaction
 	if err := db.Preload("Lot").Preload("Tractor").Preload("Route").Preload("Checkpoint").Find(&transactions, "route_id = ?", routeId).Error; err != nil {
+		return nil, err
+	}
+	return transactions, nil
+}
+
+func (transaction *Transaction) FindByRouteIdAndCheckpointId(db *gorm.DB, routeId uuid.UUID, checkpointId uuid.UUID, tractor_id uuid.UUID) ([]Transaction, error) {
+	var transactions []Transaction
+	if err := db.Preload("Lot").Preload("Tractor").Preload("Route").Preload("Checkpoint").Find(&transactions, "route_id = ? AND checkpoint_id = ? AND tractor_id = ?", routeId, checkpointId, tractor_id).Error; err != nil {
 		return nil, err
 	}
 	return transactions, nil
