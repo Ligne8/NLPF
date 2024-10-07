@@ -158,6 +158,7 @@
             <tr class="bg-gray-100">
                 <th class="border p-2 text-center">Status</th>
                 <th class="border p-2 text-center">Volume <span class="font-normal">(in m³)</span></th>
+                <th class="border p-2 text-center">type</th>
                 <th class="border p-2 text-center">Location</th>
                 <th class="border p-2 text-center">Departure / Arrival</th>
                 <th class="border p-2 text-center">Tractor</th>
@@ -179,14 +180,17 @@
                     <td class="border p-2 text-center">{row.volume}</td>
 
                     <!-- Column 3 -->
-                    <td class="border p-2 text-center">{row.current_checkpoint.name}</td>
+                    <td class="border p-2 text-center">{row.resource_type}</td>
 
                     <!-- Column 4 -->
+                    <td class="border p-2 text-center">{row.current_checkpoint.name}</td>
+
+                    <!-- Column 5 -->
                     <td class="border p-2 text-center">
                         {row.start_checkpoint.name} / {row.end_checkpoint.name}
                     </td>
 
-                    <!-- Colonne 5 -->
+                    <!-- Colonne 6 -->
                     <td class="border p-2 text-center">
                         {#if row.tractor }
                             <span class="px-2 py-1 mx-auto w-4/5 block">

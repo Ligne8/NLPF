@@ -166,10 +166,10 @@ func (tractor *Tractor) GetVolumeAtCheckpoint(db *gorm.DB, checkpointId uuid.UUI
 	if err := currentRouteCheckpoint.GetRouteCheckpoint(db, *tractor.RouteId, currentCheckpointId); err != nil {
 		return 0, err;
 	}
-	// je filtre les checkpoints pour ne garder que ceux après le checkpoint actuel
+	// je filtre les checkpoints pour ne garder que ceux avant le checkpoint actuel
 	var filteredRouteCheckpoints []RouteCheckpoint
 	for _, checkpoint := range allRouteCheckpoints {
-		if checkpoint.Position >= currentRouteCheckpoint.Position {
+		if checkpoint.Position <= currentRouteCheckpoint.Position {
 			filteredRouteCheckpoints = append(filteredRouteCheckpoints, checkpoint)
 		}
 	}

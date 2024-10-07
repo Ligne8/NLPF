@@ -366,18 +366,31 @@ func (LotController *LotController) checkCompatibility(lot models.Lot, tractor m
 		return false
 	}
 
-	return true
+	return LotController.checkTractorCheckpointCompatibility(lot, tractor)
 }
 
 func (LotController *LotController) checkTractorCheckpointCompatibility(lot models.Lot, tractor models.Tractor) bool {
 	var currentRouteCheckpoint models.RouteCheckpoint
+	var lotRouteCheckpoint models.RouteCheckpoint;
 	if err := currentRouteCheckpoint.GetRouteCheckpoint(LotController.Db, *tractor.RouteId, *tractor.CurrentCheckpointId); err != nil {
 		return false
 	}
 	if lot.ResourceType != tractor.ResourceType {
 		return false
 	}
-
+	if err := lotRouteCheckpoint.GetRouteCheckpoint(LotController.Db, *tractor.RouteId, *lot.CurrentCheckpointId); err != nil {
+		return false
+	}
+	if (currentRouteCheckpoint.Position < lotRouteCheckpoint.Position){
+		return false
+	}
+	volumAtCheckpoint, err := tractor.GetVolumeAtCheckpoint(LotController.Db, *lot.StartCheckpointId);
+	if err != nil {
+		return false
+	}
+	if (volumAtCheckpoint < lot.Volume){
+		return false
+	}
 	return true
 }
 
