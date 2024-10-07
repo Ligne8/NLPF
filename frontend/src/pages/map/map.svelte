@@ -49,6 +49,7 @@
         // Loop through data to add markers dynamically
         for (const elt of data)
         {
+            let marker = null;
 
             // Checkpoints
             if (elt.type == MarkerType.CHECKPOINT && showCheckpoints)
@@ -79,14 +80,13 @@
                             <i class="fa fa-box"></i>
                         </div>`,
                 });
-                const marker = L.marker([elt.current_checkpoint.latitude, elt.current_checkpoint.longitude], {icon})
+                marker = L.marker([elt.current_checkpoint.latitude, elt.current_checkpoint.longitude], {icon})
                     .addTo(map)
                     .bindPopup(`<p style="font-weight: bold; color: gray; text-align: center">${elt.name}<br>
                                     <span style="font-weight: normal;">
                                         ${elt.current_checkpoint.name} (${elt.current_checkpoint.country})
                                     </span>
                                 </p>`);
-                animateMarker(marker);
             }
 
             // Routes and tractors
@@ -121,7 +121,7 @@
                                 <i class="fa fa-truck"></i>
                             </div>`,
                     });
-                    L.marker([elt.current_checkpoint.latitude, elt.current_checkpoint.longitude], {icon})
+                    marker = L.marker([elt.current_checkpoint.latitude, elt.current_checkpoint.longitude], {icon})
                         .addTo(map)
                         .bindPopup(`<p style="font-weight: bold; color: gray; text-align: center">${elt.name}<br>
                                         <span style="font-weight: normal;">
@@ -130,6 +130,10 @@
                                     </p>`);
                 }
             }
+
+            // Animation
+            if (marker && elt.state === 'available')
+                animateMarker(marker);
         }
     }
 
@@ -151,9 +155,9 @@
     async function fetchLots() {
         let route: string = "";
         if ($userRole === "traffic_manager")
-            route = `${API_BASE_URL}/tractors/traffic_manager/${$userId}`
+            route = `${API_BASE_URL}/lots/traffic_manager/${$userId}`
         else if ($userRole === "client")
-            route = `${API_BASE_URL}/tractors/owner/${$userId}`
+            route = `${API_BASE_URL}/lots/owner/${$userId}`
         else
             return;
         try {
