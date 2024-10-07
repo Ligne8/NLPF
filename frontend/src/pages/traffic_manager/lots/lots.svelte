@@ -78,6 +78,28 @@
         }
     }
 
+    // Assign tractor to lot
+    async function assignTractor(lotId: number, tractorId: number) {
+        try {
+            await axios.put(`${API_BASE_URL}/lots/assign/tractor`, {
+                lot_id: lotId,
+                tractor_id: tractorId
+            });
+            const updatedTractors = compatibleTractorsMap.get(lotId)?.filter(tractor => tractor.id !== tractorId) || [];
+            const updatedMap = new Map(compatibleTractorsMap);
+            if (updatedTractors.length === 0)
+                updatedMap.delete(lotId);
+            else
+                updatedMap.set(lotId, updatedTractors);
+            compatibleTractorsMap = updatedMap;
+            if (!updatedTractors.length)
+                closeModal();
+            await fetchTableInfo();
+        } catch (error) {
+            console.error('Error assigning tractor:', error.response);
+        }
+    }
+
     onMount(() => {
         fetchTableInfo();
     });
@@ -290,7 +312,7 @@
                             <td class="border p-2 text-center">
                                 <div class="flex flex-wrap justify-center space-x-2">
                                     <button class="bg-gray-200 text-gray-600 px-4 py-2 flex items-center font-bold hover:bg-green-200 hover:text-green-800 transition-colors rounded-md"
-                                        on:click={() => {}}
+                                        on:click={() => {assignTractor(selectedLotId, tractor.id)}}
                                     >
                                         <i class="fas fa-hand-pointer mr-2 icon-default"></i>
                                         <i class="fas fa-check mr-2 icon-hover hidden"></i>
