@@ -96,6 +96,14 @@ func (tractor *Tractor) GetByOwnerId(db *gorm.DB, ownerId uuid.UUID) ([]Tractor,
 	return tractors, nil
 }
 
+func (tractor *Tractor) GetTractorsByTrader(db *gorm.DB, traderId uuid.UUID) ([]Tractor, error) {
+	var tractors []Tractor
+	if err := db.Preload("EndCheckpoint").Preload("StartCheckpoint").Where("trader_id = ?", traderId).Find(&tractors).Error; err != nil {
+		return nil, err
+	}
+	return tractors, nil
+}
+
 func (tractor *Tractor) GetByTrafficManagerId(db *gorm.DB, trafficManagerId uuid.UUID) ([]Tractor, error) {
 	var tractors []Tractor
 	if err := db.Preload("Route").Preload("StartCheckpoint").Preload("EndCheckpoint").Preload("CurrentCheckpoint").Where("traffic_manager_id = ?", trafficManagerId).Find(&tractors).Error; err != nil {
