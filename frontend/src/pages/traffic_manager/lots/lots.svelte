@@ -67,7 +67,7 @@
         if ($userRole !== "traffic_manager") {
             return;
         }
- 
+
         try {
             const response = await axios.get(`${API_BASE_URL}/lots/tractors/compatible/${$userId}/${lotId}`);
             const updatedMap = new Map(compatibleTractorsMap);
@@ -113,7 +113,7 @@
         fetchTableInfo();
     });
 
-    // Update compatible tractors map 
+    // Update compatible tractors map
     $: {
         for (const lot of sortedData) {
             if (!compatibleTractorsMap.has(lot.id))
@@ -202,7 +202,7 @@
             <tr class="bg-gray-100">
                 <th class="border p-2 text-center">Status</th>
                 <th class="border p-2 text-center">Volume <span class="font-normal">(in m³)</span></th>
-                <th class="border p-2 text-center">type</th>
+                <th class="border p-2 text-center">Type</th>
                 <th class="border p-2 text-center">Location</th>
                 <th class="border p-2 text-center">Departure / Arrival</th>
                 <th class="border p-2 text-center">Tractor</th>
@@ -258,7 +258,7 @@
                     <!-- Column 6 -->
                     <td class="border p-2 text-center">
                         {#if row.state === 'pending'}
-                            <div class="flex flex-wrap justify-center space-x-2">
+                            <div class="flex flex-wrap justify-center space-x-2 space-y-2">
                                 <button class="bg-blue-200 text-blue-800 px-4 py-2 flex items-center font-bold hover:bg-blue-300 transition-colors rounded-md"
                                 on:click={() => assignLotToTrader(row.id)} >
                                     <i class="fas fa-plus mr-2"></i>

@@ -121,7 +121,7 @@ func (lot *Lot) GetLotsByOwner(db *gorm.DB, ownerId uuid.UUID) ([]Lot, error) {
 }
 
 func (lot *Lot) AssociateTraficManager(db *gorm.DB, trafficManagerId uuid.UUID) error {
-	return db.Model(&lot).Update("traffic_manager_id", trafficManagerId).Error
+	return db.Model(&lot).Preload("StartCheckpoint").Preload("EndCheckpoint").Preload("CurrentCheckpoint").Update("traffic_manager_id", trafficManagerId).Error
 }
 
 func (lot *Lot) GetLotsByTractor(db *gorm.DB, tractorId uuid.UUID) ([]Lot, error) {

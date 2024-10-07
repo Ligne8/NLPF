@@ -67,20 +67,18 @@
         }
         await axios.get(`${API_BASE_URL}/tractors/trafficManager/${$userId}`)
             .then((response) => {
-                tractors = response.data;
+                tractors = response.data.map(tractor => ({
+                    ...tractor,
+                    selected_route: '',
+                }));
             }).catch((error) => {
                 console.error('Error fetching tractors:', error.response);
             });
     }
 
     const addRoute = async (t: Tractor)=>{
-      if (t.selected_route == null){
-        alert("Please select a route first")
-        return
-      }
       axios.post(`${API_BASE_URL}/tractors/route`, {tractor_id: t.id ,route_id: t.selected_route.id})
         .then((response) => {
-          fetchTableInfo()
           fetchTableInfo()
         }).catch((error) => {
           console.error('Error adding route:', error.response);
@@ -157,7 +155,7 @@
             case 'location_desc':
                 return data.sort((a, b) => b.current_checkpoint.name.localeCompare(a.current_checkpoint.name));
             default:
-                return data;
+                return data.sort((a, b) => a.name.localeCompare(b.name));
         }
     })();
 
@@ -239,17 +237,17 @@
                 <tr class={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
 
                     <!-- Column 1 -->
-                    <td class="border p-2 text-center max-w-11">{row.name}</td>
+                    <td class="border p-2 text-center">{row.name}</td>
 
                     <!-- Column 2 -->
-                    <td class="border p-2 text-center max-w-16">
+                    <td class="border p-2 text-center max-w-32">
                             <span class={`px-2 py-1 rounded ${getStateInfo(row.state).color}`}>
                                 {getStateInfo(row.state).text}
                             </span>
                     </td>
 
                     <!-- Column 3 -->
-                    <td class="border p-2 text-center max-w-16 ">{row.current_units}/{row.max_units}</td>
+                    <td class="border p-2 text-center">{row.current_units}/{row.max_units}</td>
 
                     <!-- Column 4 -->
                     <td class="border p-2 text-center">{row.current_checkpoint.name}</td>
@@ -258,18 +256,19 @@
                     <td class="border p-2 text-center">{row.start_checkpoint.name} / {row.end_checkpoint.name}</td>
 
                     <!-- Column 6 -->
-                    <td class="border p-2 text-center max-w-16">
+                    <td class="border p-2 text-center max-w-28">
                         {#if row.state === 'pending' && row.route_id == null}
                             {#if routesLoaded && getMatchingRoutes(row.current_checkpoint.name, row.end_checkpoint.name).length > 0}
-                                <select bind:value={row.selected_route} class="border border-gray-300 rounded px-2 py-1 mx-auto w-4/5">
+                                <select bind:value={row.selected_route}
+                                        class="border border-gray-300 rounded px-2 py-1 mx-auto w-4/5"
+                                        on:change={() => addRoute(row)}>
+                                    <option value="" disabled selected>Select a route</option>
                                     {#each getMatchingRoutes(row.current_checkpoint.name, row.end_checkpoint.name) as routeOption}
                                         <option value={routeOption}>{routeOption.route_path}</option>
                                     {/each}
                                 </select>
                             {:else if routesLoaded}
                                 <span class="px-2 py-1 mx-auto w-4/5 block text-gray-500">None</span>
-                            {:else}
-                                <span class="px-2 py-1 mx-auto w-4/5 block text-gray-500">Loading routes...</span>
                             {/if}
                         {:else}
                             <span class="px-2 py-1 mx-auto w-4/5 block">
@@ -281,14 +280,14 @@
                     <!-- Column 6 -->
                     <td class="border p-2 text-center">
                         {#if row.state === 'in_transit'}
-                            <div class="flex flex-wrap justify-center space-x-2">
+                            <div class="flex flex-wrap justify-center space-x-2 space-y-2">
                                 <button on:click={()=>(stopTractor(row))} class="bg-red-200 text-red-600 px-4 py-2 flex items-center font-bold hover:bg-red-300 transition-colors rounded-md">
                                     <i class="fas fa-hand mr-2"></i>
                                     Stop
                                 </button>
                             </div>
                         {:else if row.state === 'pending'}
-                            <div class="flex flex-wrap justify-center space-x-2  space-y-2">
+                            <div class="flex flex-wrap justify-center space-x-2 space-y-2">
                                 <button on:click={()=>{startTractor(row)}} class="bg-green-200 text-green-800 px-4 py-2 flex items-center font-bold hover:bg-green-300 transition-colors rounded-md">
                                     <i class="fas fa-truck mr-2"></i>
                                     Start
@@ -298,12 +297,7 @@
                                     <i class="fas fa-plus mr-2"></i>
                                     Stock exchange
                                 </button>
-                                {#if row.route_id == null}
-                                    <button on:click={()=>{addRoute(row)}} class="bg-blue-500 text-white px-4 py-2 flex items-center font-bold hover:bg-blue-600 transition-colors rounded-md">
-                                        <i class="fas fa-plus mr-2"></i>
-                                        Add route
-                                    </button>
-                                {:else}
+                                {#if row.route_id !== null}
                                     <button on:click={()=>{removeRoute(row)}} class="bg-red-200 text-red-600 px-4 py-2 flex items-center font-bold hover:bg-red-300 transition-colors rounded-md">
                                         <i class="fas fa-eraser mr-2"></i>
                                         Remove route

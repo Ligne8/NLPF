@@ -245,14 +245,10 @@ func (LotController *LotController) AssociateToTrafficManager(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Lot not found"})
 		return
 	}
-	if err := lot.AssociateTraficManager(LotController.Db, trafficManagerIdUUID); err != nil {
+	lot.TrafficManagerId = &trafficManagerIdUUID
+	lot.State = models.StatePending
+	if err := lot.Save(LotController.Db); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error updating traffic_manager": err.Error()})
-		return
-
-	}
-
-	if err := lot.UpdateState(LotController.Db, models.StatePending); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error updating state": err.Error()})
 		return
 	}
 
@@ -400,6 +396,9 @@ func (LotController *LotController) checkCompatibility(lot models.Lot, tractor m
 	if lot.ResourceType != tractor.ResourceType {
 		return false
 	}
+	if tractor.State != models.StatePending {
+		return false
+	}
 
 	return LotController.checkTractorCheckpointCompatibility(lot, tractor)
 }
@@ -423,9 +422,10 @@ func (LotController *LotController) checkTractorCheckpointCompatibility(lot mode
 	if err != nil {
 		return false
 	}
-	var remainingVolume = tractor.MaxVolume - volumAtCheckpoint;
+	var remainingVolume = tractor.MaxVolume - volumAtCheckpoint
 	return remainingVolume >= lot.Volume
 }
+
 // AssignTractorToLot : Assign a tractor to a lot
 // @Summary      Assign a tractor to a lot
 // @Tags         lots
@@ -472,8 +472,8 @@ func (LotController *LotController) AssignTractorToLot(c *gin.Context) {
 	var transactionIn models.Transaction
 	var transactionOut models.Transaction
 
-	var routeCheckpointStart models.RouteCheckpoint;
-	var routeCheckpointEnd models.RouteCheckpoint;
+	var routeCheckpointStart models.RouteCheckpoint
+	var routeCheckpointEnd models.RouteCheckpoint
 	if err := routeCheckpointStart.GetRouteCheckpoint(LotController.Db, *tractor.RouteId, *lot.StartCheckpointId); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -482,7 +482,6 @@ func (LotController *LotController) AssignTractorToLot(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-
 
 	if err := transactionIn.CreateTransaction(LotController.Db, models.TransactionState(models.TransactionStateIn), lot.Id, tractor.Id, *tractor.RouteId, *lot.CurrentCheckpointId, *lot.TrafficManagerId, routeCheckpointStart.Id); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
