@@ -81,7 +81,7 @@
                 <th class="border p-2 text-center">Current price<br><span class="font-normal">(in €/km)</span></th>
                 {#if $userRole === "client"}
                     <th class="border p-2 text-center">Actions</th>
-                {/if}
+                {/if}    
             </tr>
         </thead>
         <tbody>
