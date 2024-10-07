@@ -228,17 +228,17 @@
                 <tr class={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
 
                     <!-- Column 1 -->
-                    <td class="border p-2 text-center max-w-11">{row.name}</td>
+                    <td class="border p-2 text-center">{row.name}</td>
 
                     <!-- Column 2 -->
-                    <td class="border p-2 text-center max-w-16">
+                    <td class="border p-2 text-center max-w-32">
                             <span class={`px-2 py-1 rounded ${getStateInfo(row.state).color}`}>
                                 {getStateInfo(row.state).text}
                             </span>
                     </td>
 
                     <!-- Column 3 -->
-                    <td class="border p-2 text-center max-w-16 ">{row.current_units}/{row.max_units}</td>
+                    <td class="border p-2 text-center">{row.current_units}/{row.max_units}</td>
 
                     <!-- Column 4 -->
                     <td class="border p-2 text-center">{row.current_checkpoint.name}</td>
@@ -247,7 +247,7 @@
                     <td class="border p-2 text-center">{row.start_checkpoint.name} / {row.end_checkpoint.name}</td>
 
                     <!-- Column 6 -->
-                    <td class="border p-2 text-center max-w-16">
+                    <td class="border p-2 text-center max-w-28">
                         {#if row.state === 'pending' && row.route_id == null}
                             {#if routesLoaded && getMatchingRoutes(row.current_checkpoint.name, row.end_checkpoint.name).length > 0}
                                 <select bind:value={row.selected_route}
