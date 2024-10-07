@@ -15,7 +15,6 @@ func SeedUsers(db *gorm.DB) {
 		log.Fatalf("db is nil")
 	}
 	users := []models.User{
-		{Id: uuid.New(), Username: "admin", Password: "test", Role: models.Role("admin")},
 		{Id: uuid.New(), Username: "tm", Password: "test", Role: models.Role("traffic_manager")},
 		{Id: uuid.New(), Username: "client", Password: "test", Role: models.Role("client")},
 		{Id: uuid.New(), Username: "trader", Password: "test", Role: models.Role("trader")},
