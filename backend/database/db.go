@@ -11,7 +11,7 @@ import (
 var DB *gorm.DB
 
 func InitDb() *gorm.DB {
-	dsn := "host=localhost user=ligne8 password=secret dbname=tms_db port=5432 sslmode=disable TimeZone=Europe/Paris"
+	dsn := "host=localhost user=ligne8 password=secret dbname=tms_db port=5435 sslmode=disable TimeZone=Europe/Paris"
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatal("Failed to connect to the database:", err)
@@ -22,8 +22,17 @@ func InitDb() *gorm.DB {
 	if err != nil {
 		log.Fatal("Failed to migrate the database:", err)
 	}
-
 	DB = db
+	SeedDB(db)
 	log.Println("Database connection established successfully.")
 	return db
+}
+
+func SeedDB(db *gorm.DB) {
+	checkpoints := models.CreateCheckpoints(db)
+	log.Println(checkpoints)
+	users := SeedUsers(db)
+	SeedTractors(db, checkpoints, users)
+	// SeedLots(DB)
+	// SeedRoutes(DB)
 }
