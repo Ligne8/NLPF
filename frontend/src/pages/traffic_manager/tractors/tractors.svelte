@@ -80,7 +80,6 @@
       axios.post(`${API_BASE_URL}/tractors/route`, {tractor_id: t.id ,route_id: t.selected_route.id})
         .then((response) => {
           fetchTableInfo()
-          fetchTableInfo()
         }).catch((error) => {
           console.error('Error adding route:', error.response);
         });
@@ -147,7 +146,7 @@
             case 'location_desc':
                 return data.sort((a, b) => b.current_checkpoint.name.localeCompare(a.current_checkpoint.name));
             default:
-                return data;
+                return data.sort((a, b) => a.name.localeCompare(b.name));
         }
     })();
 
