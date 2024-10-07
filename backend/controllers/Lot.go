@@ -583,3 +583,42 @@ func (LotController *LotController) AssignTraderToLot(c *gin.Context) {
 
 	c.JSON(http.StatusOK, lot)
 }
+
+// GetAllLotTraderId : Get all lots with trader id
+//
+// @Summary      Get all lots with trader id
+// @Tags         lots
+// @Accept       json
+// @Produce      json
+// @Param        trader_id  path  string  true  "Trader Id"
+// @Success      200  {array}  models.Lot
+// @Failure      400  "Invalid trader_id"
+// @Failure      404  "Trader not found"
+// @Failure      500  "Unable to retrieve lots"
+// @Router       /lots/trader/{trader_id} [get]
+func (LotController *LotController) GetAllLotTraderId(c *gin.Context) {
+	var lots []models.Lot
+	var lotModel models.Lot
+	traderId := c.Param("trader_id")
+	traderIdUUID, errIdUUID := uuid.Parse(traderId)
+
+	if errIdUUID != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid trader_id"})
+		return
+	}
+
+	var trader models.User
+	if err := LotController.Db.First(&trader, "id = ? AND role = ?", traderIdUUID, "trader").Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Trader not found"})
+		return
+	}
+
+	lots, err := lotModel.GetLotsByTrader(LotController.Db, traderIdUUID)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, lots)
+}
