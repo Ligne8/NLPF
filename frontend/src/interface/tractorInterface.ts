@@ -4,6 +4,8 @@ export type Tractor = {
   max_units: number;
   current_units: number;
   name?: string;
+  end_checkpoint?: any;
+  start_checkpoint?: any;
 
   current_checkpoint_id?: string;
   // TODO: add current_checkpoint

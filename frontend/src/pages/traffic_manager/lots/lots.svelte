@@ -78,6 +78,38 @@
         }
     }
 
+    // Assign tractor to lot
+    async function assignTractor(lotId: number, tractorId: number) {
+        try {
+            await axios.put(`${API_BASE_URL}/lots/assign/tractor`, {
+                lot_id: lotId,
+                tractor_id: tractorId
+            });
+            const updatedTractors = compatibleTractorsMap.get(lotId)?.filter(tractor => tractor.id !== tractorId) || [];
+            const updatedMap = new Map(compatibleTractorsMap);
+            if (updatedTractors.length === 0)
+                updatedMap.delete(lotId);
+            else
+                updatedMap.set(lotId, updatedTractors);
+            compatibleTractorsMap = updatedMap;
+            if (!updatedTractors.length)
+                closeModal();
+            await fetchTableInfo();
+        } catch (error) {
+            console.error('Error assigning tractor:', error.response);
+        }
+    }
+
+    async function assignLotToTrader(lotId: string) {
+        try {
+            const response = await axios.put(`${API_BASE_URL}/lots/assign/${lotId}/trader`);
+            console.log(response);
+            await fetchTableInfo();
+        } catch (error) {
+            console.error('Error assigning lot to trader:', error.response);
+        }
+    }
+
     onMount(() => {
         fetchTableInfo();
     });
@@ -228,7 +260,8 @@
                     <td class="border p-2 text-center">
                         {#if row.state === 'pending'}
                             <div class="flex flex-wrap justify-center space-x-2">
-                                <button class="bg-blue-200 text-blue-800 px-4 py-2 flex items-center font-bold hover:bg-blue-300 transition-colors rounded-md">
+                                <button class="bg-blue-200 text-blue-800 px-4 py-2 flex items-center font-bold hover:bg-blue-300 transition-colors rounded-md"
+                                on:click={() => assignLotToTrader(row.id)} >
                                     <i class="fas fa-plus mr-2"></i>
                                     Stock exchange
                                 </button>

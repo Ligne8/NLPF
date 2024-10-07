@@ -218,7 +218,7 @@ func (LotController *LotController) UpdateLotState(c *gin.Context) {
 // @Failure      404  "Lot not found"
 // @Failure      500  "Unable to update traffic_manager"
 // @Failure      500  "Unable to update state"
-// @Router       /lots/associate [put]
+// @Router       /lots/traffic_manager [post]
 func (LotController *LotController) AssociateToTrafficManager(c *gin.Context) {
 	var requestBody struct {
 		LotId            string `json:"lot_id" binding:"required"`
@@ -257,6 +257,41 @@ func (LotController *LotController) AssociateToTrafficManager(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, lot)
+}
+
+// DeleteLot : Delete a lot
+// @Summary      Delete a lot with the lot id
+// @Tags         lots
+// @Accept       json
+// @Produce      json
+// @Param        lot_id  path  string  true  "Lot Id"
+// @Success      200  "Lot deleted successfully"
+// @Failure      400  "Invalid lot_id"
+// @Failure      404  "Lot not found"
+// @Failure      500  "Unable to delete lot"
+// @Router       /lots/{lot_id} [delete]
+func (LotController *LotController) DeleteLot(c *gin.Context) {
+	lotId := c.Param("lot_id")
+	lotIdUUID, errIdUUID := uuid.Parse(lotId)
+
+	if errIdUUID != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid lot_id"})
+		return
+	}
+
+	var lot models.Lot
+	lot, err := lot.FindById(LotController.Db, lotIdUUID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Lot not found"})
+		return
+	}
+
+	if err := LotController.Db.Delete(&lot).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Lot '" + lotId + "' deleted successfully"})
 }
 
 // ListLotsByTrafficManager Get all lots associated with a traffic manager
@@ -391,7 +426,6 @@ func (LotController *LotController) checkTractorCheckpointCompatibility(lot mode
 	var remainingVolume = tractor.MaxVolume - volumAtCheckpoint;
 	return remainingVolume >= lot.Volume
 }
-
 // AssignTractorToLot : Assign a tractor to a lot
 // @Summary      Assign a tractor to a lot
 // @Tags         lots
@@ -462,6 +496,88 @@ func (LotController *LotController) AssignTractorToLot(c *gin.Context) {
 	lot.TractorId = &tractor.Id
 	lot.State = models.StateInTransit
 	if err := lot.Save(LotController.Db); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, lot)
+}
+
+func (LotController *LotController) GetAvailableTrader(c *gin.Context) (models.User, error) {
+	var user models.User
+	traders, err := user.FindByRole(LotController.Db, models.RoleTrader)
+	if err != nil {
+		return models.User{}, err
+	}
+
+	var lots []models.Lot
+	if err := LotController.Db.Where("state = ?", models.StateAtTrader).Find(&lots).Error; err != nil {
+		return models.User{}, err
+	}
+
+	traderCounts := make(map[uuid.UUID]int)
+	for _, lot := range lots {
+		if lot.TraderId != nil {
+			traderCounts[*lot.TraderId]++
+		}
+	}
+
+	var selectedTrader models.User
+	minCount := len(lots)
+
+	for _, trader := range traders {
+		count := traderCounts[trader.Id]
+		if count <= minCount {
+			minCount = count
+			selectedTrader = trader
+		}
+	}
+
+	return selectedTrader, nil
+}
+
+// AssignTraderToLot : Assign a trader to a lot
+//
+// @Summary      Assign a trader to a lot
+// @Tags         lots
+// @Accept       json
+// @Produce      json
+// @Param        lot_id  body  string  true  "Lot Id"
+// @Param        trader_id  body  string  true  "Trader Id"
+// @Success      200  {object}  models.Lot
+// @Failure      400  "Invalid request payload"
+// @Failure      404  "Lot not found"
+// @Failure      404  "Trader not found"
+// @Failure      500  "Unable to assign trader to lot"
+// @Router       /lots/assign/{lot_id}/trader [put]
+func (LotController *LotController) AssignTraderToLot(c *gin.Context) {
+	lotId := c.Param("lot_id")
+	lotIdUUID, errIdUUID := uuid.Parse(lotId)
+	if errIdUUID != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid lot_id"})
+		return
+	}
+
+	var lot models.Lot
+	if err := LotController.Db.First(&lot, "id = ?", lotIdUUID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Lot not found"})
+		return
+	}
+
+	trader, err := LotController.GetAvailableTrader(c)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	lot.TraderId = &trader.Id
+	if err := LotController.Db.Save(&lot).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	lot.State = models.StateAtTrader
+	if err := LotController.Db.Save(&lot).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

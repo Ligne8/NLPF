@@ -64,6 +64,8 @@
                 return { color: 'bg-blue-200 text-blue-800', text: '◉ On market' };
             case 'archived':
                 return { color: 'bg-gray-200 text-gray-800', text: '◉ Archived' };
+            case 'at_trader':
+                return { color: 'bg-purple-200 text-purple-800', text: '◉ At trader' };
             default:
                 return { color: 'bg-gray-200 text-gray-800', text: '🛇 Unknown' };
         }
@@ -207,6 +209,19 @@
       }).catch(error => {
           console.error('Error assigning lot to traffic manager:', error);
           alert('Erreur lors de l\'attribution du lot');
+      });
+    }
+
+    // Fucntion to delete a lot
+    const deleteLot = (lotId: string) => {
+      fetch(`${API_BASE_URL}/lots/${lotId}`, {
+          method: 'DELETE'
+      }).then(response => {
+          fetchLots();
+          alert('Lot supprimé avec succès');
+      }).catch(error => {
+          console.error('Error deleting lot:', error);
+          alert('Erreur lors de la suppression du lot');
       });
     }
 
@@ -354,7 +369,7 @@
                                     <i class="fas fa-plus mr-2"></i>
                                     Stock exchange
                                 </button>
-                                <button class="bg-gray-800 text-white px-4 py-2 flex items-center font-bold hover:bg-black transition-colors rounded-md">
+                                <button on:click={()=>{deleteLot(row.id)}} class="bg-gray-800 text-white px-4 py-2 flex items-center font-bold hover:bg-black transition-colors rounded-md">
                                     <i class="fas fa-right-from-bracket mr-2"></i>
                                     Retirer
                                 </button>

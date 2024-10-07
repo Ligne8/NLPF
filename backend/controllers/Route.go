@@ -128,3 +128,30 @@ func (RouteController *RouteController) CreateRoute(c *gin.Context) {
 	c.Status(http.StatusCreated)
 }
 
+// GetCheckpointsByRouteId : Get checkpoints by route id
+//
+// @Summary      Get checkpoints by route id
+// @Tags         routes
+// @Accept       json
+// @Produce      json
+// @Param        route_id  path  string  true  "Route ID"
+// @Success      200  {array}   models.RouteCheckpoint
+// @Failure      400  "Unable to retrieve checkpoints"
+// @Router       /routes/{route_id}/checkpoints [get]
+func (RouteController *RouteController) GetCheckpointsByRouteId(c *gin.Context) {
+	routeId := c.Param("route_id")
+	routeIdUUID, err := uuid.Parse(routeId)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid route ID"})
+		return
+	}
+
+	var routeCheckpointModel models.RouteCheckpoint
+	checkpoints, err := routeCheckpointModel.GetRouteCheckpointsByRouteId(RouteController.Db, routeIdUUID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, checkpoints)
+}
