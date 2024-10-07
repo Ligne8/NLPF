@@ -101,12 +101,12 @@
                     {
                         coords.push([c.checkpoint.latitude, c.checkpoint.longitude]);
                     }
-                    const polyline = L.polyline(coords, { color: 'blue', weight: 2 }).addTo(map);
+                    const polyline = L.polyline(coords, { color: '#3b82f6', weight: 2 }).addTo(map);
                     polyline.arrowheads({
                         size: '15px',
                         frequency: 'allvertices',
                         fill: true,
-                        color: 'blue'
+                        color: '#3b82f6'
                     });
                 }
 
