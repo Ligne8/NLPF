@@ -8,9 +8,9 @@
 
     // Example data
     const tableData = [
-        { id: 1, expirationDate: 1695564000000, type: 'Bulk', volume: 500, maxPrice: 2.5, currentPrice: 3.2 },
+        { id: 1, expirationDate: null, type: 'Bulk', volume: 500, maxPrice: 2.5, currentPrice: 3.2 },
         { id: 2, expirationDate: 1698242400000, type: 'Liquid', volume: 800, maxPrice: 1.8, currentPrice: 2.1 },
-        { id: 3, expirationDate: 1700834400000, type: 'Solid', volume: 300, maxPrice: 3.0, currentPrice: 3.5 }
+        { id: 3, expirationDate: null, type: 'Solid', volume: 300, maxPrice: 3.0, currentPrice: 3.5 }
     ];
 
     // Function to format timestamp into DD/MM/YYYY
@@ -56,7 +56,13 @@
                         <td class="border p-2 text-center">{row.id}</td>
                         
                         <!-- Column 2 -->
-                        <td class="border p-2 text-center">{formatDate(row.expirationDate)}</td>
+                        <td class="border p-2 text-center">
+                            {#if !row.expirationDate}
+                                <input type="date" bind:value={row.expirationDate} class="border p-1 text-center"/>
+                            {:else}
+                                {formatDate(row.expirationDate)}
+                            {/if}
+                        </td>
 
                         <!-- Column 3 -->
                         <td class="border p-2 text-center">{row.type}</td>
@@ -73,10 +79,14 @@
                         <!-- Column 7 -->
                         <td class="border p-2 text-center">
                             <div class="flex flex-wrap justify-center space-x-2 space-y-2">
-                                <button class="bg-blue-200 text-blue-800 px-4 py-2 flex items-center font-bold hover:bg-blue-300 transition-colors rounded-md">
-                                    <i class="fas fa-plus mr-2"></i>
-                                    Offer
-                                </button>
+                                {#if row.expirationDate}
+                                    <button class="bg-blue-200 text-blue-800 px-4 py-2 flex items-center font-bold hover:bg-blue-300 transition-colors rounded-md">
+                                        <i class="fas fa-plus mr-2"></i>
+                                        Offer
+                                    </button>
+                                {:else}
+                                    <span class="text-gray-500">-</span>
+                                {/if}
                             </div>
                         </td>
 
