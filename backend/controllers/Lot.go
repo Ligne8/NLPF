@@ -377,7 +377,7 @@ func (LotController *LotController) ListCompatibleTractorsForLot(c *gin.Context)
 	}
 
 	var tractors []models.Tractor
-	if err := LotController.Db.Preload("EndCheckpoint").Preload("StartCheckpoint").Preload("CurrentCheckpoint").Preload("TrafficManager").Where("traffic_manager_id = ?", trafficManagerIdUUID).Find(&tractors).Error; err != nil {
+	if err := LotController.Db.Preload("EndCheckpoint").Preload("Route").Preload("StartCheckpoint").Preload("CurrentCheckpoint").Preload("TrafficManager").Where("traffic_manager_id = ?", trafficManagerIdUUID).Find(&tractors).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to retrieve tractors"})
 		return
 	}
@@ -394,19 +394,39 @@ func (LotController *LotController) ListCompatibleTractorsForLot(c *gin.Context)
 
 // checkCompatibility : Check if a lot is compatible with a tractor
 func (LotController *LotController) checkCompatibility(lot models.Lot, tractor models.Tractor) bool {
-	if lot.Volume > (tractor.MaxVolume - tractor.CurrentVolume) {
+	if tractor.RouteId == nil {
 		return false
 	}
-
 	if lot.ResourceType != tractor.ResourceType {
 		return false
 	}
 
-	return true
+	return LotController.checkTractorCheckpointCompatibility(lot, tractor)
 }
 
+func (LotController *LotController) checkTractorCheckpointCompatibility(lot models.Lot, tractor models.Tractor) bool {
+	var currentRouteCheckpoint models.RouteCheckpoint
+	var lotRouteCheckpoint models.RouteCheckpoint
+	if err := currentRouteCheckpoint.GetRouteCheckpoint(LotController.Db, *tractor.RouteId, *tractor.CurrentCheckpointId); err != nil {
+		return false
+	}
+	if lot.ResourceType != tractor.ResourceType {
+		return false
+	}
+	if err := lotRouteCheckpoint.GetRouteCheckpoint(LotController.Db, *tractor.RouteId, *lot.CurrentCheckpointId); err != nil {
+		return false
+	}
+	if currentRouteCheckpoint.Position > lotRouteCheckpoint.Position {
+		return false
+	}
+	volumAtCheckpoint, err := tractor.GetVolumeAtCheckpoint(LotController.Db, *lot.StartCheckpointId)
+	if err != nil {
+		return false
+	}
+	var remainingVolume = tractor.MaxVolume - volumAtCheckpoint;
+	return remainingVolume >= lot.Volume
+}
 // AssignTractorToLot : Assign a tractor to a lot
-//
 // @Summary      Assign a tractor to a lot
 // @Tags         lots
 // @Accept       json
@@ -418,7 +438,7 @@ func (LotController *LotController) checkCompatibility(lot models.Lot, tractor m
 // @Failure      404  "Lot not found"
 // @Failure      404  "Tractor not found"
 // @Failure      500  "Unable to assign tractor to lot"
-// @Router       /lots/assign/tractor [put]
+// @Router       /lots/assign [put]
 func (LotController *LotController) AssignTractorToLot(c *gin.Context) {
 	var requestBody struct {
 		LotId     uuid.UUID `json:"lot_id" binding:"required"`
@@ -440,7 +460,7 @@ func (LotController *LotController) AssignTractorToLot(c *gin.Context) {
 	// Get the tractor
 	var tractor models.Tractor
 	if err := LotController.Db.First(&tractor, "id = ?", requestBody.TractorId).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Tractor not found"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Tractor not found"})
 		return
 	}
 
@@ -449,14 +469,33 @@ func (LotController *LotController) AssignTractorToLot(c *gin.Context) {
 		return
 	}
 
-	//Preload the necessary fields
-	if err := LotController.Db.First(&lot, "id = ?", requestBody.LotId).Error; err != nil {
+	var transactionIn models.Transaction
+	var transactionOut models.Transaction
+
+	var routeCheckpointStart models.RouteCheckpoint;
+	var routeCheckpointEnd models.RouteCheckpoint;
+	if err := routeCheckpointStart.GetRouteCheckpoint(LotController.Db, *tractor.RouteId, *lot.StartCheckpointId); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	// Assign the tractor to the lot
-	lot.TractorId = &requestBody.TractorId
-	if err := LotController.Db.Preload("EndCheckpoint").Preload("StartCheckpoint").Preload("CurrentCheckpoint").Preload("TrafficManager").Save(&lot).Error; err != nil {
+	if err := routeCheckpointEnd.GetRouteCheckpoint(LotController.Db, *tractor.RouteId, *lot.EndCheckpointId); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+
+	if err := transactionIn.CreateTransaction(LotController.Db, models.TransactionState(models.TransactionStateIn), lot.Id, tractor.Id, *tractor.RouteId, *lot.CurrentCheckpointId, *lot.TrafficManagerId, routeCheckpointStart.Id); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	if err := transactionOut.CreateTransaction(LotController.Db, models.TransactionState(models.TransactionStateOut), lot.Id, tractor.Id, *tractor.RouteId, *lot.EndCheckpointId, *lot.TrafficManagerId, routeCheckpointEnd.Id); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	lot.TractorId = &tractor.Id
+	lot.State = models.StateInTransit
+	if err := lot.Save(LotController.Db); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

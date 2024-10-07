@@ -140,6 +140,19 @@
         }
     })();
 
+    const assignLotToTractor = async (lotId: number, tractorId: number) => {
+        try {
+            await axios.post(`${API_BASE_URL}/lots/tractors/assign`, {
+              lot_id : lotId,
+              tractor_id : tractorId
+            });
+            closeModal();
+            fetchTableInfo();
+        } catch (error: any) {
+            console.error('Error assigning lot to tractor:', error.response);
+        }
+    };
+
 </script>
 
 
@@ -190,6 +203,7 @@
             <tr class="bg-gray-100">
                 <th class="border p-2 text-center">Status</th>
                 <th class="border p-2 text-center">Volume <span class="font-normal">(in m³)</span></th>
+                <th class="border p-2 text-center">type</th>
                 <th class="border p-2 text-center">Location</th>
                 <th class="border p-2 text-center">Departure / Arrival</th>
                 <th class="border p-2 text-center">Tractor</th>
@@ -211,14 +225,17 @@
                     <td class="border p-2 text-center">{row.volume}</td>
 
                     <!-- Column 3 -->
-                    <td class="border p-2 text-center">{row.current_checkpoint.name}</td>
+                    <td class="border p-2 text-center">{row.resource_type}</td>
 
                     <!-- Column 4 -->
+                    <td class="border p-2 text-center">{row.current_checkpoint.name}</td>
+
+                    <!-- Column 5 -->
                     <td class="border p-2 text-center">
                         {row.start_checkpoint.name} / {row.end_checkpoint.name}
                     </td>
 
-                    <!-- Colonne 5 -->
+                    <!-- Colonne 6 -->
                     <td class="border p-2 text-center">
                         {#if row.tractor }
                             <span class="px-2 py-1 mx-auto w-4/5 block">
@@ -284,7 +301,6 @@
                 <tr class="bg-gray-100">
                     <th class="border p-2 text-center">Name</th>
                     <th class="border p-2 text-center">Status <span class="font-normal">(in m³)</span></th>
-                    <th class="border p-2 text-center">Loading</th>
                     <th class="border p-2 text-center">Location</th>
                     <th class="border p-2 text-center">Route</th>
                     <th class="border p-2 text-center">Actions</th>
@@ -304,8 +320,6 @@
                                     </span>
                             </td>
 
-                            <!-- Column 3 -->
-                            <td class="border p-2 text-center max-w-16 ">{tractor.current_units}/{tractor.max_units}</td>
 
                             <!-- Column 4 -->
                             <td class="border p-2 text-center">{tractor.current_checkpoint.name}</td>
@@ -323,7 +337,7 @@
                             <td class="border p-2 text-center">
                                 <div class="flex flex-wrap justify-center space-x-2">
                                     <button class="bg-gray-200 text-gray-600 px-4 py-2 flex items-center font-bold hover:bg-green-200 hover:text-green-800 transition-colors rounded-md"
-                                        on:click={() => {assignTractor(selectedLotId, tractor.id)}}
+                                        on:click={() => { assignLotToTractor(selectedLotId, tractor.id) }}
                                     >
                                         <i class="fas fa-hand-pointer mr-2 icon-default"></i>
                                         <i class="fas fa-check mr-2 icon-hover hidden"></i>
