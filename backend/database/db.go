@@ -29,10 +29,8 @@ func InitDb() *gorm.DB {
 }
 
 func SeedDB(db *gorm.DB) {
-	checkpoints := models.CreateCheckpoints(db)
-	log.Println(checkpoints)
-	users := SeedUsers(db)
-	SeedTractors(db, checkpoints, users)
-	// SeedLots(DB)
-	// SeedRoutes(DB)
+	models.CreateCheckpoints(db)
+	SeedUsers(db)
+	SeedTractors(db)
+	SeedLots(DB)
 }
