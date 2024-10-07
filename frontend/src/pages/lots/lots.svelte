@@ -352,16 +352,17 @@
                         {/if}
                     </td>
 
+                    <!-- Column 7 -->
                     <td class="border p-2 text-center">
                         {#if row.state === 'in_transit'}
-                            <div class="flex flex-wrap justify-center space-x-2">
+                            <div class="flex flex-wrap justify-center space-x-2 space-y-2">
                                 <button class="bg-red-200 text-red-600 px-4 py-2 flex items-center font-bold hover:bg-red-300 transition-colors rounded-md">
                                     <i class="fas fa-hand mr-2"></i>
                                     Stop
                                 </button>
                             </div>
                         {:else if row.state === 'available'}
-                            <div class="flex flex-wrap justify-center space-x-2">
+                            <div class="flex flex-wrap justify-center space-x-2 space-y-2">
                                 <button on:click={()=>{assignToTrafficManager(row.id, row.trafficManager)}} class="bg-green-200 text-green-800 px-4 py-2 flex items-center font-bold hover:bg-green-300 transition-colors rounded-md">
                                     <i class="fas fa-truck mr-2"></i>
                                     Assign

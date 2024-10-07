@@ -150,7 +150,7 @@
                     <!-- Column 6 -->
                     <td class="border p-2 text-center">
                         {#if row.state === 'pending'}
-                            <div class="flex flex-wrap justify-center space-x-2">
+                            <div class="flex flex-wrap justify-center space-x-2 space-y-2">
                                 <button class="bg-blue-200 text-blue-800 px-4 py-2 flex items-center font-bold hover:bg-blue-300 transition-colors rounded-md">
                                     <i class="fas fa-plus mr-2"></i>
                                     Stock exchange
