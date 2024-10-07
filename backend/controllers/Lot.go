@@ -450,13 +450,62 @@ func (LotController *LotController) AssignTractorToLot(c *gin.Context) {
 	}
 
 	//Preload the necessary fields
-	if err := LotController.Db.Preload("EndCheckpoint").Preload("StartCheckpoint").Preload("CurrentCheckpoint").Preload("TrafficManager").First(&lot, "id = ?", requestBody.LotId).Error; err != nil {
+	if err := LotController.Db.First(&lot, "id = ?", requestBody.LotId).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	// Assign the tractor to the lot
 	lot.TractorId = &requestBody.TractorId
-	if err := LotController.Db.Save(&lot).Error; err != nil {
+	if err := LotController.Db.Preload("EndCheckpoint").Preload("StartCheckpoint").Preload("CurrentCheckpoint").Preload("TrafficManager").Save(&lot).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, lot)
+}
+
+// AssignTraderToLot : Assign a trader to a lot
+//
+// @Summary      Assign a trader to a lot
+// @Tags         lots
+// @Accept       json
+// @Produce      json
+// @Param        lot_id  body  string  true  "Lot Id"
+// @Param        trader_id  body  string  true  "Trader Id"
+// @Success      200  {object}  models.Lot
+// @Failure      400  "Invalid request payload"
+// @Failure      404  "Lot not found"
+// @Failure      404  "Trader not found"
+// @Failure      500  "Unable to assign trader to lot"
+// @Router       /lots/assign/trader [put]
+func (LotController *LotController) AssignTraderToLot(c *gin.Context) {
+	var requestBody struct {
+		LotId    uuid.UUID `json:"lot_id" binding:"required"`
+		TraderId uuid.UUID `json:"trader_id" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&requestBody); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Get the Lot
+	var lot models.Lot
+	if err := LotController.Db.First(&lot, "id = ?", requestBody.LotId).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Lot not found"})
+		return
+	}
+
+	// Get the trader
+	var trader models.User
+	if err := LotController.Db.First(&trader, "id = ? AND role = ?", requestBody.TraderId, "trader").Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Trader not found"})
+		return
+	}
+
+	lot.TraderId = &requestBody.TraderId
+	lot.State = models.StateAtTrader
+	if err := LotController.Db.Preload("StartCheckpoint").Preload("EndCheckpoint").Preload("CurrentCheckpoint").Preload("TrafficManager").Preload("Trader").First(&lot, "id = ?", requestBody.LotId).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
