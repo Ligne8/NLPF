@@ -1,9 +1,10 @@
 package models
 
 import (
+	"log"
+
 	"github.com/google/uuid"
 	"gorm.io/gorm"
-	"log"
 )
 
 // Country represents a country
