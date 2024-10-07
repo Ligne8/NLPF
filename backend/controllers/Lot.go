@@ -218,7 +218,7 @@ func (LotController *LotController) UpdateLotState(c *gin.Context) {
 // @Failure      404  "Lot not found"
 // @Failure      500  "Unable to update traffic_manager"
 // @Failure      500  "Unable to update state"
-// @Router       /lots/associate [put]
+// @Router       /lots/traffic_manager [post]
 func (LotController *LotController) AssociateToTrafficManager(c *gin.Context) {
 	var requestBody struct {
 		LotId            string `json:"lot_id" binding:"required"`
@@ -293,7 +293,6 @@ func (LotController *LotController) DeleteLot(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "Lot '" + lotId + "' deleted successfully"})
 }
-
 
 // ListLotsByTrafficManager Get all lots associated with a traffic manager
 //
@@ -419,7 +418,7 @@ func (LotController *LotController) checkCompatibility(lot models.Lot, tractor m
 // @Failure      404  "Lot not found"
 // @Failure      404  "Tractor not found"
 // @Failure      500  "Unable to assign tractor to lot"
-// @Router       /lots/assign [put]
+// @Router       /lots/assign/tractor [put]
 func (LotController *LotController) AssignTractorToLot(c *gin.Context) {
 	var requestBody struct {
 		LotId     uuid.UUID `json:"lot_id" binding:"required"`
