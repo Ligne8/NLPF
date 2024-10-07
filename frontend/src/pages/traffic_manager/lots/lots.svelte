@@ -215,7 +215,7 @@
                                 {row.tractor.name}
                             </span>
                         {:else}
-                            {#if compatibleTractorsMap.get(row.id) && compatibleTractorsMap.get(row.id).length > 0}
+                            {#if compatibleTractorsMap.get(row.id) && compatibleTractorsMap.get(row.id).length > 0 && row.state === 'pending'}
                                 <div class="flex flex-wrap justify-center space-x-2">
                                     <button class="bg-green-200 text-green-800 px-4 py-2 flex items-center font-bold hover:bg-green-300 transition-colors rounded-md"
                                         on:click={() => openModal(row.id)}>
