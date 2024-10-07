@@ -26,7 +26,8 @@ func TractorRoutes(r *gin.Engine, db *gorm.DB) *gin.Engine {
 		v1.GET("/next-route", TractorController.GoToNextCheckpoint)
 		v1.PATCH("/updateState", TractorController.UpdateTractorState)
 		v1.POST("/route", TractorController.BindRoute)
-		v1.DELETE("/route", TractorController.UnbindeRoute)
+		v1.DELETE("/route", TractorController.UnbindRoute)
+		v1.DELETE("/:tractor_id", TractorController.DeleteTractor)
 		//v1.PATCH(":id", LotController.PatchLot)
 		//v1.GET("", LotController.ListLots)
 	}

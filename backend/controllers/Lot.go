@@ -13,17 +13,24 @@ type LotController struct {
 	Db *gorm.DB
 }
 
-// CreateLot Create a new Lot
+// CreateLot : Create a new Lot
 //
-//	@Summary      List accounts
-//	@Description  get accounts
-//	@Tags         accounts
-//	@Accept       json
-//	@Produce      json
-//	@Param        q    query     string  false  "name search by q"  Format(email)
-//	@Success      200  {array}   model.Account
-//	@Failure      500  {object}  httputil.HTTPError
-//	@Router       /accounts [get]
+// @Summary      Create a new Lot
+// @Tags         lots
+// @Accept       json
+// @Produce      json
+// @Param        resource_type  body  string  true  "Resource Type"
+// @Param        volume  body  float64  true  "Volume"
+// @Param        start_checkpoint_id  body  string  true  "Start Checkpoint Id"
+// @Param        end_checkpoint_id  body  string  true  "End Checkpoint Id"
+// @Param        owner_id  body  string  true  "Owner Id"
+// @Param        current_checkpoint_id  body  string  false  "Current Checkpoint Id"
+// @Param        state  body  string  true  "State"
+// @Param        max_price_by_km  body  float64  true  "Max Price By Km"
+// @Success      201  {object}  models.Lot
+// @Failure      400  "Invalid request payload"
+// @Failure      500  "Unable to create lot"
+// @Router       /lots [post]
 func (LotController *LotController) CreateLot(c *gin.Context) {
 	var requestBody struct {
 		ResourceType        models.ResourceType `json:"resource_type" binding:"required"`
@@ -72,6 +79,17 @@ func (LotController *LotController) CreateLot(c *gin.Context) {
 	c.JSON(http.StatusCreated, LotModel)
 }
 
+// ListLotsByOwner : List all lots by owner
+//
+// @Summary      List all lots by owner
+// @Tags         lots
+// @Accept       json
+// @Produce      json
+// @Param        owner_id  path  string  true  "Owner Id"
+// @Success      200  {array}  models.Lot
+// @Failure      400  "Invalid owner_id"
+// @Failure      500  "Unable to retrieve lots"
+// @Router       /lots/owner/{owner_id} [get]
 func (LotController *LotController) ListLotsByOwner(c *gin.Context) {
 	var lots []models.Lot
 	var lotModel models.Lot
@@ -93,7 +111,21 @@ func (LotController *LotController) ListLotsByOwner(c *gin.Context) {
 	c.JSON(http.StatusOK, lots)
 }
 
-func (LotController *LotController) isCompatible(c *gin.Context) {
+// IsCompatible : Check if a lot is compatible with a tractor
+//
+// @Summary      Check if a lot is compatible with a tractor
+// @Tags         lots
+// @Accept       json
+// @Produce      json
+// @Param        lot_id  body  string  true  "Lot Id"
+// @Param        tractor_id  body  string  true  "Tractor Id"
+// @Success      200  "Lot is compatible with the tractor"
+// @Failure      400  "Lot exceeds tractor's capacity"
+// @Failure      400  "Lot is not the same resource type as the tractor"
+// @Failure      404  "Lot not found"
+// @Failure      404  "Tractor not found"
+// @Router       /lots/compatible [post]
+func (LotController *LotController) IsCompatible(c *gin.Context) {
 	var requestBody struct {
 		LotId     uuid.UUID `json:"lot_id" binding:"required"`
 		TractorId uuid.UUID `json:"tractor_id" binding:"required"`
@@ -131,7 +163,19 @@ func (LotController *LotController) isCompatible(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Lot is compatible with the tractor"})
 }
 
-// UpdateLotState: Update the state of a lot
+// UpdateLotState : Update the state of a lot
+//
+// @Summary      Update the state of a lot
+// @Tags         lots
+// @Accept       json
+// @Produce      json
+// @Param        lot_id  body  string  true  "Lot Id"
+// @Param        state  body  string  true  "State"
+// @Success      200  {object}  models.Lot
+// @Failure      400  "Invalid request payload"
+// @Failure      404  "Lot not found"
+// @Failure      500  "Unable to update lot state"
+// @Router       /lots/state [put]
 func (LotController *LotController) UpdateLotState(c *gin.Context) {
 	var requestBody struct {
 		LotId uuid.UUID    `json:"lot_id" binding:"required"`
@@ -160,6 +204,21 @@ func (LotController *LotController) UpdateLotState(c *gin.Context) {
 	c.JSON(http.StatusOK, lot)
 }
 
+// AssociateToTrafficManager : Associate a lot to a traffic manager
+//
+// @Summary      Associate a lot to a traffic manager
+// @Tags         lots
+// @Accept       json
+// @Produce      json
+// @Param        lot_id  body  string  true  "Lot Id"
+// @Param        traffic_manager_id  body  string  true  "Traffic Manager Id"
+// @Success      200  {object}  models.Lot
+// @Failure      400  "Invalid lot_id"
+// @Failure      400  "Invalid traffic_manager_id"
+// @Failure      404  "Lot not found"
+// @Failure      500  "Unable to update traffic_manager"
+// @Failure      500  "Unable to update state"
+// @Router       /lots/associate [put]
 func (LotController *LotController) AssociateToTrafficManager(c *gin.Context) {
 	var requestBody struct {
 		LotId            string `json:"lot_id" binding:"required"`
@@ -186,16 +245,47 @@ func (LotController *LotController) AssociateToTrafficManager(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Lot not found"})
 		return
 	}
-	if err := lot.AssociateTraficManager(LotController.Db, trafficManagerIdUUID); err != nil {
+	lot.TrafficManagerId = &trafficManagerIdUUID
+	lot.State = models.StatePending
+	if err := lot.Save(LotController.Db); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error updating traffic_manager": err.Error()})
-		return
-
-	}
-
-	if err := lot.UpdateState(LotController.Db, models.StatePending); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error updating state": err.Error()})
 		return
 	}
 
 	c.JSON(http.StatusOK, lot)
+}
+
+// DeleteLot : Delete a lot
+// @Summary      Delete a lot with the lot id
+// @Tags         lots
+// @Accept       json
+// @Produce      json
+// @Param        lot_id  path  string  true  "Lot Id"
+// @Success      200  "Lot deleted successfully"
+// @Failure      400  "Invalid lot_id"
+// @Failure      404  "Lot not found"
+// @Failure      500  "Unable to delete lot"
+// @Router       /lots/{lot_id} [delete]
+func (LotController *LotController) DeleteLot(c *gin.Context) {
+	lotId := c.Param("lot_id")
+	lotIdUUID, errIdUUID := uuid.Parse(lotId)
+
+	if errIdUUID != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid lot_id"})
+		return
+	}
+
+	var lot models.Lot
+	lot, err := lot.FindById(LotController.Db, lotIdUUID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Lot not found"})
+		return
+	}
+
+	if err := LotController.Db.Delete(&lot).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Lot '" + lotId + "' deleted successfully"})
 }

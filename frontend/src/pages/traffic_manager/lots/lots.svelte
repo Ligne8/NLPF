@@ -5,17 +5,21 @@
     // Variables
     let title: string = 'Lot management';
     let subtitle: string = 'Track the status of your lots in real time.';
+    let selectedStatus: string = 'all';
+    let sortOption: string = 'none';
 
     // Function to get tag color and text based on status
-    function getStatusInfo(status: string): { color: string; text: string } {
-        switch (status) {
-            case 'PENDING':
-                return { color: 'bg-green-200 text-green-800', text: '◉ Pending' };
-            case 'ON_THE_WAY':
-                return { color: 'bg-orange-200 text-orange-800', text: '◉ On the way' };
-            case 'ON_THE_STOCK_EXCHANGE':
-                return { color: 'bg-blue-200 text-blue-800', text: '◉ On the stock exchange' };
-            case 'ARCHIVED':
+    function getStatusInfo(state: string): { color: string; text: string } {
+        switch (state) {
+            case 'available':
+                return { color: 'bg-green-200 text-green-800', text: '◉ Available' };
+            case 'pending':
+                return { color: 'bg-yellow-200 text-yellow-800', text: '◉ Pending' };
+            case 'in_transit':
+                return { color: 'bg-orange-200 text-orange-800', text: '◉ In transit' };
+            case 'on_market':
+                return { color: 'bg-blue-200 text-blue-800', text: '◉ On market' };
+            case 'archived':
                 return { color: 'bg-gray-200 text-gray-800', text: '◉ Archived' };
             default:
                 return { color: 'bg-gray-200 text-gray-800', text: '🛇 Unknown' };
@@ -24,11 +28,32 @@
 
     // Example data
     const tableData = [
-        { name: 'Lot 1', status: 'ON_THE_WAY', volume: 16, location: 'Paris', startCheckpoint: 'Lyon', endCheckpoint: 'Montpellier', tractor: ['tractor 1'] },
-        { name: 'Lot 2', status: 'ON_THE_STOCK_EXCHANGE', volume: 3, location: 'Lyon', startCheckpoint: 'Lyon', endCheckpoint: 'Paris', tractor: ['tractor 4'] },
-        { name: 'Lot 3', status: 'PENDING', volume: 4, location: 'Marseille', startCheckpoint: 'Marseille', endCheckpoint: 'Montpellier', tractor: ['tractor 2', 'tractor 3', 'tractor 4'] },
-        { name: 'Lot 4', status: 'ARCHIVED', volume: 8, location: 'Montpellier', startCheckpoint: 'Paris', endCheckpoint: 'Montpellier', tractor: ['tractor 3'] },
+        { state: 'in_transit', volume: 16, currentCheckpoint: 'Paris', startCheckpoint: 'Lyon', endCheckpoint: 'Montpellier', tractor: ['tractor 1'] },
+        { state: 'on_market', volume: 3, currentCheckpoint: 'Lyon', startCheckpoint: 'Lyon', endCheckpoint: 'Paris', tractor: ['tractor 4'] },
+        { state: 'pending', volume: 4, currentCheckpoint: 'Marseille', startCheckpoint: 'Marseille', endCheckpoint: 'Montpellier', tractor: ['tractor 2', 'tractor 3', 'tractor 4'] },
+        { state: 'archived', volume: 8, currentCheckpoint: 'Montpellier', startCheckpoint: 'Paris', endCheckpoint: 'Marseille', tractor: ['tractor 3'] },
+        { state: 'available', volume: 4, currentCheckpoint: 'Lyon', startCheckpoint: 'Marseille', endCheckpoint: 'Montpellier', tractor: ['tractor 2'] },
+        { state: 'available', volume: 2, currentCheckpoint: 'Montpellier', startCheckpoint: 'Lyon', endCheckpoint: 'Lyon', tractor: ['tractor 3'] }
     ];
+
+    // Update data depending on filters
+    $: sortedData = (() => {
+        let data = selectedStatus === 'all' ? tableData : tableData.filter(lot => lot.state === selectedStatus);
+
+        switch (sortOption) {
+            case 'volume_asc':
+                return data.sort((a, b) => a.volume - b.volume);
+            case 'volume_desc':
+                return data.sort((a, b) => b.volume - a.volume);
+            case 'location_asc':
+                return data.sort((a, b) => a.currentCheckpoint.localeCompare(b.currentCheckpoint));
+            case 'location_desc':
+                return data.sort((a, b) => b.currentCheckpoint.localeCompare(a.currentCheckpoint));
+            default:
+                return data;
+        }
+    })();
+
 </script>
 
 
@@ -39,9 +64,37 @@
 <main class="p-10 mt-40">
 
     <!-- Title and subtitle -->
-    <section>
+    <div class="mb-2">
         <h1 class="text-4xl font-bold mb-4">{title}</h1>
-        <h2 class="text-2xl mb-8 text-gray-600">{subtitle}</h2>
+        <h2 class="text-2xl text-gray-600">{subtitle}</h2>
+    </div>
+
+    <section class="flex justify-between items-center mb-4">
+
+        <div class="flex justify-between items-center self-end">
+
+            <!-- Filter by status -->
+            <select bind:value={selectedStatus} class="mr-2 border border-gray-300 rounded px-2 py-1">
+                <option value="all" disabled selected>Filter by status</option>
+                <option value="all">All</option>
+                <option value="available">Available</option>
+                <option value="pending">Pending</option>
+                <option value="in_transit">In transit</option>
+                <option value="on_market">On market</option>
+                <option value="archived">Archived</option>
+            </select>
+
+            <!-- Sort by volume and location -->
+            <select bind:value={sortOption} class="border border-gray-300 rounded px-2 py-1">
+                <option value="none" disabled selected>Sort by</option>
+                <option value="volume_asc">Volume (Ascending)</option>
+                <option value="volume_desc">Volume (Descending)</option>
+                <option value="location_asc">Location (A-Z)</option>
+                <option value="location_desc">Location (Z-A)</option>
+            </select>
+
+        </div>
+
     </section>
 
     <!-- Table -->
@@ -49,7 +102,6 @@
         <table class="table-auto w-full border-collapse border border-gray-300">
             <thead>
             <tr class="bg-gray-100">
-                <th class="border p-2 text-center">Name</th>
                 <th class="border p-2 text-center">Status</th>
                 <th class="border p-2 text-center">Volume <span class="font-normal">(in m³)</span></th>
                 <th class="border p-2 text-center">Location</th>
@@ -59,33 +111,30 @@
             </tr>
             </thead>
             <tbody>
-            {#each tableData as row, index}
+            {#each sortedData as row, index}
                 <tr class={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
 
                     <!-- Column 1 -->
-                    <td class="border p-2 text-center">{row.name}</td>
-
-                    <!-- Column 2 -->
                     <td class="border p-2 text-center">
-                            <span class={`px-2 py-1 rounded ${getStatusInfo(row.status).color}`}>
-                                {getStatusInfo(row.status).text}
+                            <span class={`px-2 py-1 rounded ${getStatusInfo(row.state).color}`}>
+                                {getStatusInfo(row.state).text}
                             </span>
                     </td>
 
-                    <!-- Column 3 -->
+                    <!-- Column 2 -->
                     <td class="border p-2 text-center">{row.volume}</td>
 
-                    <!-- Column 4 -->
-                    <td class="border p-2 text-center">{row.location}</td>
+                    <!-- Column 3 -->
+                    <td class="border p-2 text-center">{row.currentCheckpoint}</td>
 
-                    <!-- Column 5 -->
+                    <!-- Column 4 -->
                     <td class="border p-2 text-center">
                         {row.startCheckpoint} / {row.endCheckpoint}
                     </td>
 
-                    <!-- Column 6 -->
+                    <!-- Column 5 -->
                     <td class="border p-2 text-center">
-                        {#if row.status === 'PENDING'}
+                        {#if row.state === 'pending'}
                             <select class="border border-gray-300 rounded px-2 py-1 mx-auto w-4/5">
                                 {#each row.tractor as tractorOption}
                                     <option>{tractorOption}</option>
@@ -98,9 +147,9 @@
                         {/if}
                     </td>
 
-                    <!-- Column 7 -->
+                    <!-- Column 6 -->
                     <td class="border p-2 text-center">
-                        {#if row.status === 'PENDING'}
+                        {#if row.state === 'pending'}
                             <div class="flex flex-wrap justify-center space-x-2">
                                 <button class="bg-blue-200 text-blue-800 px-4 py-2 flex items-center font-bold hover:bg-blue-300 transition-colors rounded-md">
                                     <i class="fas fa-plus mr-2"></i>

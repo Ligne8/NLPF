@@ -11,7 +11,16 @@ type SimulationController struct {
 	Db *gorm.DB
 }
 
-// GetSimulationDate Handler to get simulationDate
+// GetSimulationDate : Handler to get the simulation date
+//
+// @Summary      Get simulation date
+// @Description  get the current simulation date
+// @Tags         simulation
+// @Accept       json
+// @Produce      json
+// @Success      200  {object}   string
+// @Failure      500  "Unable to fetch simulation date"
+// @Router       /simulation/date [get]
 func (SimulationController *SimulationController) GetSimulationDate(c *gin.Context) {
 	var simulation models.Simulation
 
@@ -25,7 +34,16 @@ func (SimulationController *SimulationController) GetSimulationDate(c *gin.Conte
 	c.JSON(http.StatusOK, gin.H{"simulation_date": simulation.SimulationDate.Format("2006-01-02")})
 }
 
-// UpdateSimulationDate Handler to increment the simulation date by 1 day
+// UpdateSimulationDate : Handler to increment the simulation date by 1 day
+//
+// @Summary      Update simulation date
+// @Description  increment the simulation date by 1 day
+// @Tags         simulation
+// @Accept       json
+// @Produce      json
+// @Success      200  {object}   string
+// @Failure      500  "Unable to update simulation date"
+// @Router       /simulation/date [put]
 func (SimulationController *SimulationController) UpdateSimulationDate(c *gin.Context) {
 	var simulation models.Simulation
 

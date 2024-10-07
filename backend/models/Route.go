@@ -18,12 +18,12 @@ func (route *Route) BeforeCreate(tx *gorm.DB) (err error) {
 }
 
 type RouteCheckpoint struct {
-	Id           uuid.UUID   `json:"id" gorm:"type:uuid;primaryKey"`
+	Id           uuid.UUID  `json:"id" gorm:"type:uuid;primaryKey"`
 	RouteId      uuid.UUID  `json:"route_id" gorm:"not null"` // Foreign key for Route
 	Route        Route      `json:"route" gorm:"foreignKey:RouteId"`
 	CheckpointId uuid.UUID  `json:"checkpoint_id" gorm:"not null"` // Foreign key for Checkpoint
 	Checkpoint   Checkpoint `json:"checkpoint" gorm:"foreignKey:CheckpointId"`
-	Position     uint        `json:"position" gorm:"not null"`
+	Position     uint       `json:"position" gorm:"not null"`
 }
 
 func (route *Route) GetRoutesByTrafficManagerId(db *gorm.DB, trafficManagerId uuid.UUID) ([]Route, error) {
@@ -35,14 +35,14 @@ func (route *Route) GetRoutesByTrafficManagerId(db *gorm.DB, trafficManagerId uu
 }
 
 func (route *Route) GetRouteString(db *gorm.DB) string {
-	var routeName string;
-	db.Raw("select STRING_AGG(c.name, ' - ' order by rc.position) from route_checkpoints rc join checkpoints c on c.id = rc.checkpoint_id where rc.route_id = ?", route.Id).Scan(&routeName);
-	return routeName;
+	var routeName string
+	db.Raw("select STRING_AGG(c.name, ' - ' order by rc.position) from route_checkpoints rc join checkpoints c on c.id = rc.checkpoint_id where rc.route_id = ?", route.Id).Scan(&routeName)
+	return routeName
 }
 
 func (routeCheckpoint *RouteCheckpoint) GetRouteCheckpointsByRouteId(db *gorm.DB, routeId uuid.UUID) ([]RouteCheckpoint, error) {
 	var routeCheckpoints []RouteCheckpoint
-	if err := db.Find(&routeCheckpoints, "route_id = ?", routeId).Error; err != nil {
+	if err := db.Preload("Checkpoint").Find(&routeCheckpoints, "route_id = ?", routeId).Error; err != nil {
 		return nil, err
 	}
 	return routeCheckpoints, nil
@@ -58,7 +58,7 @@ func (route *Route) GetAllRoutes(db *gorm.DB) ([]Route, error) {
 
 func (routeCheckpoint *RouteCheckpoint) SaveRouteCheckpoint(db *gorm.DB) error {
 	return db.Save(routeCheckpoint).Error
-} 
+}
 
 func (Route *Route) CreateRoute(db *gorm.DB) error {
 	return db.Create(Route).Error

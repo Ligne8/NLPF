@@ -59,9 +59,9 @@
             case 'pending':
                 return { color: 'bg-yellow-200 text-yellow-800', text: '◉ Pending' };
             case 'in_transit':
-                return { color: 'bg-orange-200 text-orange-800', text: '◉ On the way' };
+                return { color: 'bg-orange-200 text-orange-800', text: '◉ In transit' };
             case 'on_market':
-                return { color: 'bg-blue-200 text-blue-800', text: '◉ On the stock exchange' };
+                return { color: 'bg-blue-200 text-blue-800', text: '◉ On market' };
             case 'archived':
                 return { color: 'bg-gray-200 text-gray-800', text: '◉ Archived' };
             default:
@@ -210,6 +210,19 @@
       });
     }
 
+    // Fucntion to delete a lot
+    const deleteLot = (lotId: string) => {
+      fetch(`${API_BASE_URL}/lots/${lotId}`, {
+          method: 'DELETE'
+      }).then(response => {
+          fetchLots();
+          alert('Lot supprimé avec succès');
+      }).catch(error => {
+          console.error('Error deleting lot:', error);
+          alert('Erreur lors de la suppression du lot');
+      });
+    }
+
     // Update data depending on filters
     $: sortedData = (() => {
         let data = selectedStatus === 'all' ? tableData : tableData.filter(lot => lot.state === selectedStatus);
@@ -252,8 +265,8 @@
                 <option value="all">All</option>
                 <option value="available">Available</option>
                 <option value="pending">Pending</option>
-                <option value="on_the_way">On the way</option>
-                <option value="on_the_stock_exchange">On the stock exchange</option>
+                <option value="in_transit">In transit</option>
+                <option value="on_market">On market</option>
                 <option value="archived">Archived</option>
             </select>
 
@@ -357,7 +370,7 @@
                                     <i class="fas fa-plus mr-2"></i>
                                     Stock exchange
                                 </button>
-                                <button class="bg-gray-800 text-white px-4 py-2 flex items-center font-bold hover:bg-black transition-colors rounded-md">
+                                <button on:click={()=>{deleteLot(row.id)}} class="bg-gray-800 text-white px-4 py-2 flex items-center font-bold hover:bg-black transition-colors rounded-md">
                                     <i class="fas fa-right-from-bracket mr-2"></i>
                                     Retirer
                                 </button>
