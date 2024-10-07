@@ -193,15 +193,10 @@ func (tractor *Tractor) GetVolumeAtCheckpoint(db *gorm.DB, checkpointId uuid.UUI
 				// si c'est une sortie, je soustrait le volume
 				result -= transaction.Lot.Volume;
 			}
-			// je vérifie si le checkpoint est le checkpoint demandé
-			if *transaction.CheckpointId == checkpointId {
-				// si c'est le cas, je retourne le volume
-				return result, nil;
-			}
 		}
 	} 
 	// si le checkpoint n'a pas été trouvé, je retourne une erreur
-	return 0, errors.New("Checkpoint not found");
+	return result,nil;
 }
 
 func (tractor *Tractor) ExecTransaction(db *gorm.DB) error {

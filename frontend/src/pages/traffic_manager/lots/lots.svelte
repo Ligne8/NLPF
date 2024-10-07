@@ -108,6 +108,19 @@
         }
     })();
 
+    const assignLotToTractor = async (lotId: number, tractorId: number) => {
+        try {
+            await axios.post(`${API_BASE_URL}/lots/tractors/assign`, {
+              lot_id : lotId,
+              tractor_id : tractorId
+            });
+            closeModal();
+            fetchTableInfo();
+        } catch (error: any) {
+            console.error('Error assigning lot to tractor:', error.response);
+        }
+    };
+
 </script>
 
 
@@ -294,7 +307,7 @@
                             <td class="border p-2 text-center">
                                 <div class="flex flex-wrap justify-center space-x-2">
                                     <button class="bg-gray-200 text-gray-600 px-4 py-2 flex items-center font-bold hover:bg-green-200 hover:text-green-800 transition-colors rounded-md"
-                                        on:click={() => {}}
+                                        on:click={() => { assignLotToTractor(selectedLotId, tractor.id) }}
                                     >
                                         <i class="fas fa-hand-pointer mr-2 icon-default"></i>
                                         <i class="fas fa-check mr-2 icon-hover hidden"></i>

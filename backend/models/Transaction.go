@@ -34,7 +34,25 @@ type Transaction struct {
 
 func (transaction *Transaction) BeforeCreate(tx *gorm.DB) (err error) {
 	transaction.Id = uuid.New()
-	return
+	var simulation Simulation
+	if err := tx.First(&simulation).Error; err != nil {
+		return err
+	}
+	transaction.CreateAt = simulation.SimulationDate
+	return;
+}
+
+func (transaction *Transaction) CreateTransaction(db *gorm.DB, transactionType TransactionState, lotId uuid.UUID, tractorId uuid.UUID, routeId uuid.UUID, checkpointID uuid.UUID, traficManagerId uuid.UUID, routeCheckpointId uuid.UUID) error {
+	var t = Transaction{
+		TransactionType: transactionType,
+		LotId:           &lotId,
+		TractorId:       &tractorId,
+		RouteId:         &routeId,
+		CheckpointId:    &checkpointID,
+		TrafficManagerId: &traficManagerId,
+		RouteCheckpointId: &routeCheckpointId,
+	}
+	return db.Save(&t).Error
 }
 
 func (transaction *Transaction) FindByRouteId(db *gorm.DB, routeId uuid.UUID) ([]Transaction, error) {
