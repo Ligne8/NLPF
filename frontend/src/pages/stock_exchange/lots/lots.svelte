@@ -1,6 +1,7 @@
 <script lang="ts">
     import Navbar from '@components/Navbar.svelte';
     import StockExchangeNavbar from '@components/StockExchangeNavbar.svelte';
+    import { userRole } from '@stores/store';
 
     // Variables
     let title: string = 'Lot market';
@@ -78,7 +79,9 @@
                 <th class="border p-2 text-center">Volume<br><span class="font-normal">(in m³)</span></th>
                 <th class="border p-2 text-center">Maximum price<br><span class="font-normal">(in €/km)</span></th>
                 <th class="border p-2 text-center">Current price<br><span class="font-normal">(in €/km)</span></th>
-                <th class="border p-2 text-center">Actions</th>
+                {#if $userRole === "client"}
+                    <th class="border p-2 text-center">Actions</th>
+                {/if}
             </tr>
         </thead>
         <tbody>
@@ -104,16 +107,18 @@
                     <td class="border p-2 text-center">{row.currentPrice.toFixed(2)}</td>
                     
                     <!-- Column 7 -->
-                    <td class="border p-2 text-center">
-                        <div class="flex flex-wrap justify-center space-x-2">
-                            <button class="bg-blue-200 text-blue-800 px-4 py-2 flex items-center font-bold hover:bg-blue-300 transition-colors rounded-md"
-                                on:click={() => openModal(row.currentPrice)}
-                            >
-                                <i class="fas fa-coins mr-2"></i>
-                                Bid
-                            </button>
-                        </div>
-                    </td>
+                    {#if $userRole === "client"}
+                        <td class="border p-2 text-center">
+                            <div class="flex flex-wrap justify-center space-x-2">
+                                <button class="bg-blue-200 text-blue-800 px-4 py-2 flex items-center font-bold hover:bg-blue-300 transition-colors rounded-md"
+                                    on:click={() => openModal(row.currentPrice)}
+                                >
+                                    <i class="fas fa-coins mr-2"></i>
+                                    Bid
+                                </button>
+                            </div>
+                        </td>
+                    {/if}
 
                 </tr>
             {/each}
