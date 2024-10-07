@@ -5,12 +5,15 @@
     import type { UserRole } from '@stores/store.js';
     import axios from 'axios';
 
+    // Variables
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
     // Role permissions
     const rolePermissions: Record<UserRole, string[]> = {
-        admin: ['Lots', 'Tractors', 'TrafficManager', 'Trader', 'StockExchange'],
-        traffic_manager: ['TrafficManager'],
+        admin: ['Lots', 'Tractors', 'TrafficManager', 'Trader', 'StockExchange', 'Map'],
+        traffic_manager: ['TrafficManager', 'Map'],
         trader: ['Trader', 'StockExchange'],
-        client: ['Lots', 'Tractors', 'StockExchange']
+        client: ['Lots', 'Tractors', 'StockExchange', 'Map']
     };
 
     // State for simulation date
@@ -20,7 +23,7 @@
     // Fetch simulation date from the backend
     async function fetchSimulationDate() {
         try {
-            const response = await axios.get('http://localhost:8080/api/v1/simulations/date');
+            const response = await axios.get(`${API_BASE_URL}/simulations/date`);
             simulationDate = response.data.simulation_date; // Date retrieval in YYYY-MM-DD format
         } catch (err) {
             error = 'Error retrieving simulation date';
@@ -30,7 +33,7 @@
 
     async function updateSimulationDate() {
         try {
-            await axios.patch('http://localhost:8080/api/v1/simulations/date', {});
+            await axios.patch(`${API_BASE_URL}/simulations/date`, {});
             await fetchSimulationDate(); // Re-fetch the date after updating
         } catch (err) {
             error = 'Error updating simulation date';
@@ -62,6 +65,8 @@
             currentTab.set('Trader');
         else if (path.startsWith('/stock-exchange'))
             currentTab.set('StockExchange');
+        else if (path.startsWith('/map'))
+            currentTab.set('Map');
         else
             currentTab.set(''); // Reset if on root or unknown path
 
@@ -139,6 +144,13 @@
                         </a>
                     </li>
                 {/if}
+                {#if hasAccess('Map')}
+                    <li>
+                        <a href="/map" on:click={() => switchTab('Map')} class="{$currentTab === 'Map' ? 'font-bold text-blue-400' : 'hover:text-blue-400 transition-colors duration-300'}">
+                            Map
+                        </a>
+                    </li>
+                {/if}
             </ul>
         </div>
 
@@ -149,7 +161,7 @@
                     Simulation date : <span class="font-bold text-blue-400">{simulationDate}</span>
                 </div>
             {:else}
-                <div class="text-lg font-normal text-red-500">
+                <div class="text-lg font-normal text-red-600">
                     No date found
                 </div>
             {/if}
