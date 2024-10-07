@@ -44,6 +44,13 @@ func (sec *StockExchangeController) CreateLotOffer(c *gin.Context) {
 		return
 	}
 
+	// Update the state of the lot
+	lot.State = models.StateOnMarket
+	if err := sec.Db.Save(&lot).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to update lot state"})
+		return
+	}
+
 	var simulation models.Simulation
 	if err := sec.Db.First(&simulation); err.Error != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to fetch simulation date"})
@@ -92,6 +99,12 @@ func (sec *StockExchangeController) CreateTractorOffer(c *gin.Context) {
 	var tractor models.Tractor
 	if result := sec.Db.First(&tractor, "id = ?", requestBody.TractorId); result.Error != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Tractor not found"})
+		return
+	}
+
+	tractor.State = models.StateOnMarket
+	if err := sec.Db.Save(&tractor).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to update tractor state"})
 		return
 	}
 
