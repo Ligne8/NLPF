@@ -245,14 +245,10 @@ func (LotController *LotController) AssociateToTrafficManager(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Lot not found"})
 		return
 	}
-	if err := lot.AssociateTraficManager(LotController.Db, trafficManagerIdUUID); err != nil {
+	lot.TrafficManagerId = &trafficManagerIdUUID
+	lot.State = models.StatePending
+	if err := lot.Save(LotController.Db); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error updating traffic_manager": err.Error()})
-		return
-
-	}
-
-	if err := lot.UpdateState(LotController.Db, models.StatePending); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error updating state": err.Error()})
 		return
 	}
 
