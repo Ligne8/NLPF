@@ -342,7 +342,7 @@ func (LotController *LotController) ListCompatibleTractorsForLot(c *gin.Context)
 	}
 
 	var tractors []models.Tractor
-	if err := LotController.Db.Preload("EndCheckpoint").Preload("StartCheckpoint").Preload("CurrentCheckpoint").Preload("TrafficManager").Where("traffic_manager_id = ?", trafficManagerIdUUID).Find(&tractors).Error; err != nil {
+	if err := LotController.Db.Preload("EndCheckpoint").Preload("Route").Preload("StartCheckpoint").Preload("CurrentCheckpoint").Preload("TrafficManager").Where("traffic_manager_id = ?", trafficManagerIdUUID).Find(&tractors).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to retrieve tractors"})
 		return
 	}
@@ -388,14 +388,11 @@ func (LotController *LotController) checkTractorCheckpointCompatibility(lot mode
 	if err != nil {
 		return false
 	}
-	if volumAtCheckpoint > lot.Volume {
-		return false
-	}
-	return true
+	var remainingVolume = tractor.MaxVolume - volumAtCheckpoint;
+	return remainingVolume >= lot.Volume
 }
 
 // AssignTractorToLot : Assign a tractor to a lot
-//
 // @Summary      Assign a tractor to a lot
 // @Tags         lots
 // @Accept       json

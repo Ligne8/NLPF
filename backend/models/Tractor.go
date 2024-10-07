@@ -81,7 +81,7 @@ func (tractor *Tractor) GetAllTractors(db *gorm.DB) ([]Tractor, error) {
 
 func (tractor *Tractor) FindById(db *gorm.DB, tractorId uuid.UUID) (Tractor, error) {
 	var foundTractor Tractor
-	if err := db.Preload("EndCheckpoint").Preload("StartCheckpoint").First(&foundTractor, "id = ?", tractorId).Error; err != nil {
+	if err := db.First(&foundTractor, "id = ?", tractorId).Error; err != nil {
 		return Tractor{}, err
 	}
 	return foundTractor, nil
@@ -154,7 +154,7 @@ func (tractor *Tractor) GetVolumeAtCheckpoint(db *gorm.DB, checkpointId uuid.UUI
 	}
 	var routeModel Route;
 	// je récupère le checkpoint actuel
-	var currentCheckpointId uuid.UUID = *tractor.CurrentCheckpointId;
+	var currentCheckpointId uuid.UUID = checkpointId;
 	var currentRouteCheckpoint RouteCheckpoint;
 	var allRouteCheckpoints []RouteCheckpoint;
 	// je récupère tous les checkpoints de la route du tracteur
@@ -179,7 +179,7 @@ func (tractor *Tractor) GetVolumeAtCheckpoint(db *gorm.DB, checkpointId uuid.UUI
 	for _, checkpoint := range allRouteCheckpoints {
 		var transaction []Transaction;
 		// je récupère les transactions du tracteur pour le checkpoint actuel
-		transaction, err = transactionModel.FindByRouteIdAndCheckpointId(db, *tractor.RouteId, checkpoint.CheckpointId);
+		transaction, err = transactionModel.FindByRouteIdAndCheckpointId(db, *tractor.RouteId, checkpoint.CheckpointId, tractor.Id);
 		if err != nil{
 			return 0, err;
 		}

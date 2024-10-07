@@ -268,7 +268,6 @@
                 <tr class="bg-gray-100">
                     <th class="border p-2 text-center">Name</th>
                     <th class="border p-2 text-center">Status <span class="font-normal">(in m³)</span></th>
-                    <th class="border p-2 text-center">Loading</th>
                     <th class="border p-2 text-center">Location</th>
                     <th class="border p-2 text-center">Route</th>
                     <th class="border p-2 text-center">Actions</th>
@@ -288,8 +287,6 @@
                                     </span>
                             </td>
 
-                            <!-- Column 3 -->
-                            <td class="border p-2 text-center max-w-16 ">{tractor.current_units}/{tractor.max_units}</td>
 
                             <!-- Column 4 -->
                             <td class="border p-2 text-center">{tractor.current_checkpoint.name}</td>

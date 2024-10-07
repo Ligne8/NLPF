@@ -63,9 +63,9 @@ func (transaction *Transaction) FindByRouteId(db *gorm.DB, routeId uuid.UUID) ([
 	return transactions, nil
 }
 
-func (transaction *Transaction) FindByRouteIdAndCheckpointId(db *gorm.DB, routeId uuid.UUID, checkpointId uuid.UUID) ([]Transaction, error) {
+func (transaction *Transaction) FindByRouteIdAndCheckpointId(db *gorm.DB, routeId uuid.UUID, checkpointId uuid.UUID, tractor_id uuid.UUID) ([]Transaction, error) {
 	var transactions []Transaction
-	if err := db.Preload("Lot").Preload("Tractor").Preload("Route").Preload("Checkpoint").Find(&transactions, "route_id = ? AND checkpoint_id = ?", routeId, checkpointId).Error; err != nil {
+	if err := db.Preload("Lot").Preload("Tractor").Preload("Route").Preload("Checkpoint").Find(&transactions, "route_id = ? AND checkpoint_id = ? AND tractor_id = ?", routeId, checkpointId, tractor_id).Error; err != nil {
 		return nil, err
 	}
 	return transactions, nil
