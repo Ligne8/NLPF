@@ -434,7 +434,7 @@ func (TractorController *TractorController) UnbindRoute(c *gin.Context) {
 	c.JSON(http.StatusOK, tractor)
 }
 
-// DeleteTractorByOwnerId : Delete a tractor
+// DeleteTractor : Delete a tractor
 // @Summary      Delete a tractor with the tractor id
 // @Tags         tractors
 // @Accept       json
@@ -467,4 +467,86 @@ func (TractorController *TractorController) DeleteTractor(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Tractor \"" + tractorId + "\" deleted successfully"})
+}
+
+func (TractorController *TractorController) GetAvailableTrader(c *gin.Context) (models.User, error) {
+	var user models.User
+	traders, err := user.FindByRole(TractorController.Db, models.RoleTrader)
+	if err != nil {
+		return models.User{}, err
+	}
+
+	var tractors []models.Tractor
+	if err := TractorController.Db.Where("state = ?", models.StateAtTrader).Find(&tractors).Error; err != nil {
+		return models.User{}, err
+	}
+
+	traderCounts := make(map[uuid.UUID]int)
+	for _, tractor := range tractors {
+		if tractor.TraderId != nil {
+			traderCounts[*tractor.TraderId]++
+		}
+	}
+
+	var selectedTrader models.User
+	minCount := len(tractors)
+
+	for _, trader := range traders {
+		count := traderCounts[trader.Id]
+		if count <= minCount {
+			minCount = count
+			selectedTrader = trader
+		}
+	}
+
+	return selectedTrader, nil
+}
+
+// AssignTraderToTractor : Assign a trader to a tractor
+//
+// @Summary      Assign a trader to a tractor
+// @Tags         tractors
+// @Accept       json
+// @Produce      json
+// @Param        tractor_id  body  string  true  "Tractor Id"
+// @Param        trader_id  body  string  true  "Trader Id"
+// @Success      200  {object}  models.Tractor
+// @Failure      400  "Invalid request payload"
+// @Failure      404  "Tractor not found"
+// @Failure      404  "Trader not found"
+// @Failure      500  "Unable to assign trader to tractor"
+// @Router       /tractors/assign/{tractor_id}/trader [put]
+func (TractorController *TractorController) AssignTraderToTractor(c *gin.Context) {
+	tractorId := c.Param("tractor_id")
+	tractorIdUUID, errIdUUID := uuid.Parse(tractorId)
+	if errIdUUID != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid tractor_id"})
+		return
+	}
+
+	var tractor models.Tractor
+	if err := TractorController.Db.First(&tractor, "id = ?", tractorIdUUID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Tractor not found"})
+		return
+	}
+
+	trader, err := TractorController.GetAvailableTrader(c)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	tractor.TraderId = &trader.Id
+	if err := TractorController.Db.Save(&tractor).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	tractor.State = models.StateAtTrader
+	if err := TractorController.Db.Save(&tractor).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, tractor)
 }
