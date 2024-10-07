@@ -101,13 +101,12 @@
     }
 
     async function assignLotToTrader(lotId: string) {
-        try {
-            const response = await axios.put(`${API_BASE_URL}/lots/assign/${lotId}/trader`);
-            console.log(response);
-            await fetchTableInfo();
-        } catch (error) {
-            console.error('Error assigning lot to trader:', error.response);
-        }
+         await axios.put(`${API_BASE_URL}/lots/assign/${lotId}/trader`)
+            .then((response) => {
+                fetchTableInfo();
+            }).catch((error) => {
+                console.error('Error assigning lot to trader:', error.response);
+            });
     }
 
     onMount(() => {
@@ -309,7 +308,7 @@
                 <tbody>
                     {#each compatibleTractorsMap.get(selectedLotId) as tractor}
                         <tr>
- 
+
                             <!-- Column 1 -->
                             <td class="border p-2 text-center max-w-11">{tractor.name}</td>
 
@@ -348,7 +347,7 @@
 
                         </tr>
                     {/each}
-                </tbody>                
+                </tbody>
             </table>
         </div>
     </div>
