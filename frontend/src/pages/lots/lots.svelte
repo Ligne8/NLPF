@@ -64,6 +64,8 @@
                 return { color: 'bg-blue-200 text-blue-800', text: '◉ On market' };
             case 'archived':
                 return { color: 'bg-gray-200 text-gray-800', text: '◉ Archived' };
+            case 'at_trader':
+                return { color: 'bg-purple-200 text-purple-800', text: '◉ At trader' };
             default:
                 return { color: 'bg-gray-200 text-gray-800', text: '🛇 Unknown' };
         }
@@ -158,7 +160,7 @@
             owner_id: $userId
         };
 
-        selectedType = '';
+        selectedType = types[0];
         volume = '';
         maxPrice = '';
         selectedDeparture = checkpoints[0]; // Valeur par défaut
@@ -371,9 +373,9 @@
                                     <i class="fas fa-plus mr-2"></i>
                                     Stock exchange
                                 </button>
-                                <button on:click={()=>{deleteLot(row.id)}} class="bg-red-200 text-red-600 px-4 py-2 flex items-center font-bold hover:bg-red-300 transition-colors rounded-md">
+                                <button on:click={()=>{deleteLot(row.id)}} class="bg-gray-800 text-white px-4 py-2 flex items-center font-bold hover:bg-black transition-colors rounded-md">
                                     <i class="fas fa-right-from-bracket mr-2"></i>
-                                    Remove
+                                    Retirer
                                 </button>
                             </div>
                         {:else}

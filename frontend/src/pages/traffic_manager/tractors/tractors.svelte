@@ -124,6 +124,15 @@
         });
     }
 
+    async function assignTractorToTrader(tractorId: string){
+        await axios.put(`${API_BASE_URL}/tractors/assign/${tractorId}/trader`)
+            .then((response) => {
+                fetchTableInfo();
+            }).catch((error) => {
+                console.error('Error assigning tractor to trader:', error.response);
+            });
+    }
+
     // Update data depending on filters
     $: sortedData = (() => {
         let data = selectedStatus === 'all' ? tractors : tractors.filter(tractor => tractor.state === selectedStatus);
@@ -283,7 +292,8 @@
                                     <i class="fas fa-truck mr-2"></i>
                                     Start
                                 </button>
-                                <button class="bg-blue-200 text-blue-800 px-4 py-2 flex items-center font-bold hover:bg-blue-300 transition-colors rounded-md">
+                                <button class="bg-blue-200 text-blue-800 px-4 py-2 flex items-center font-bold hover:bg-blue-300 transition-colors rounded-md"
+                                    on:click={()=> assignTractorToTrader(row.id)}>
                                     <i class="fas fa-plus mr-2"></i>
                                     Stock exchange
                                 </button>
