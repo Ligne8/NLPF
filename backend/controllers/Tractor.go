@@ -550,3 +550,39 @@ func (TractorController *TractorController) AssignTraderToTractor(c *gin.Context
 
 	c.JSON(http.StatusOK, tractor)
 }
+
+// GetAllTractorTraderId : Get all tractors trader id
+//
+// @Summary      Get all tractors trader id
+// @Tags         tractors
+// @Accept       json
+// @Produce      json
+// @Success      200  {array}  models.Tractor
+// @Failure      500  "Unable to fetch tractors"
+// @Router       /tractors/trader/{trader_id} [get]
+func (TractorController *TractorController) GetAllTractorTraderId(c *gin.Context) {
+	var tractors []models.Tractor
+	var tractorModel models.Tractor
+	traderId := c.Param("trader_id")
+	traderIdUUID, errIdUUID := uuid.Parse(traderId)
+
+	if errIdUUID != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid trader_id"})
+		return
+	}
+
+	var trader models.User
+	if err := TractorController.Db.First(&trader, "id = ? AND role = ?", traderIdUUID, "trader").Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Trader not found"})
+		return
+	}
+
+	tractors, err := tractorModel.GetTractorsByTrader(TractorController.Db, traderIdUUID)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, tractors)
+}
