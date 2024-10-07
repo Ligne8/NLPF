@@ -100,6 +100,16 @@
         }
     }
 
+    async function assignLotToTrader(lotId: string) {
+        try {
+            const response = await axios.put(`${API_BASE_URL}/lots/assign/${lotId}/trader`);
+            console.log(response);
+            await fetchTableInfo();
+        } catch (error) {
+            console.error('Error assigning lot to trader:', error.response);
+        }
+    }
+
     onMount(() => {
         fetchTableInfo();
     });
@@ -233,7 +243,8 @@
                     <td class="border p-2 text-center">
                         {#if row.state === 'pending'}
                             <div class="flex flex-wrap justify-center space-x-2">
-                                <button class="bg-blue-200 text-blue-800 px-4 py-2 flex items-center font-bold hover:bg-blue-300 transition-colors rounded-md">
+                                <button class="bg-blue-200 text-blue-800 px-4 py-2 flex items-center font-bold hover:bg-blue-300 transition-colors rounded-md"
+                                on:click={() => assignLotToTrader(row.id)} >
                                     <i class="fas fa-plus mr-2"></i>
                                     Stock exchange
                                 </button>
