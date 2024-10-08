@@ -46,7 +46,9 @@ func (transaction *Transaction) BeforeCreate(tx *gorm.DB) (err error) {
 	if err := tx.First(&simulation).Error; err != nil {
 		return err
 	}
-	transaction.CreateAt = simulation.SimulationDate
+	if transaction.CreateAt.IsZero() {
+		transaction.CreateAt = simulation.SimulationDate
+	}
 	return
 }
 

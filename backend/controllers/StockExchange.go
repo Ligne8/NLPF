@@ -1,12 +1,13 @@
 package controllers
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
-	"gorm.io/gorm"
 	"net/http"
 	"time"
 	"tms-backend/models"
+
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type StockExchangeController struct {
@@ -28,7 +29,7 @@ type StockExchangeController struct {
 // @Router /stock_exchange/lot_offers [post]
 func (sec *StockExchangeController) CreateLotOffer(c *gin.Context) {
 	var requestBody struct {
-		LimitDate time.Time `json:"limit_date" binding:"required"`
+		LimitDate string `json:"limit_date" binding:"required"`
 		LotId     uuid.UUID `json:"lot_id" binding:"required"`
 	}
 
@@ -51,20 +52,23 @@ func (sec *StockExchangeController) CreateLotOffer(c *gin.Context) {
 		return
 	}
 
-	var simulation models.Simulation
-	if err := sec.Db.First(&simulation); err.Error != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to fetch simulation date"})
+	// Create the offer
+	var offer models.Offer;
+	parsedDate, err := time.Parse(time.RFC3339, requestBody.LimitDate)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date format"})
 		return
 	}
-	// Create the offer
-	offer := models.Offer{
-		LimitDate: requestBody.LimitDate,
-		LotId:     &requestBody.LotId,
-		CreatedAt: simulation.SimulationDate,
-	}
 
-	if err := sec.Db.Create(&offer); err.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error})
+	var offerId uuid.UUID;
+	offerId, err = offer.CreateOfferLot(sec.Db, parsedDate, lot.Id);
+	if err != nil {	
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	lot.OfferId = &offerId;
+	if err := sec.Db.Save(&lot).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -86,7 +90,7 @@ func (sec *StockExchangeController) CreateLotOffer(c *gin.Context) {
 // @Router /stock_exchange/tractor_offers [post]
 func (sec *StockExchangeController) CreateTractorOffer(c *gin.Context) {
 	var requestBody struct {
-		LimitDate time.Time `json:"limit_date" binding:"required"`
+		LimitDate string `json:"limit_date" binding:"required"`
 		TractorId uuid.UUID `json:"tractor_id" binding:"required"`
 	}
 
@@ -108,20 +112,23 @@ func (sec *StockExchangeController) CreateTractorOffer(c *gin.Context) {
 		return
 	}
 
-	var simulation models.Simulation
-	if err := sec.Db.First(&simulation); err.Error != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to fetch simulation date"})
+	// Create the offer
+	var offer models.Offer;
+	parsedDate, err := time.Parse(time.RFC3339, requestBody.LimitDate)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date format"})
 		return
 	}
-	// Create the offer
-	offer := models.Offer{
-		LimitDate: requestBody.LimitDate,
-		TractorId: &requestBody.TractorId,
-		CreatedAt: simulation.SimulationDate,
-	}
 
-	if err := sec.Db.Create(&offer); err.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to create offer"})
+	var offerId uuid.UUID;
+	offerId, err = offer.CreateOfferTractor(sec.Db, parsedDate, tractor.Id);
+	if err != nil {	
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	tractor.OfferId = &offerId;
+	if err := sec.Db.Save(&tractor).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 

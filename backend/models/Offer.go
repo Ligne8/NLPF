@@ -25,7 +25,9 @@ func (offer *Offer) BeforeCreate(tx *gorm.DB) (err error) {
 	if err := tx.First(&simulation).Error; err != nil {
 		return err
 	}
-	offer.CreatedAt = simulation.SimulationDate
+	if offer.CreatedAt.IsZero() {
+		offer.CreatedAt = simulation.SimulationDate
+	}
 	return
 }
 
