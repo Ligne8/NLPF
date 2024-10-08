@@ -271,9 +271,13 @@
                                 <span class="px-2 py-1 mx-auto w-4/5 block text-gray-500">None</span>
                             {/if}
                         {:else}
-                            <span class="px-2 py-1 mx-auto w-4/5 block">
-                                {row.route.name}
-                            </span>
+                            {#if row.route}
+                                <span class="px-2 py-1 mx-auto w-4/5 block">
+                                    {row.route.name}
+                                </span>
+                            {:else}
+                                <span class="px-2 py-1 mx-auto w-4/5 block text-gray-500">None</span>
+                            {/if}
                         {/if}
                     </td>
 

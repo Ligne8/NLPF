@@ -66,7 +66,7 @@
                 return {color: 'bg-orange-200 text-orange-800', text: '◉ In transit'};
             case 'on_market':
                 return {color: 'bg-blue-200 text-blue-800', text: '◉ On market'};
-            case 'archived':
+            case 'archive':
                 return {color: 'bg-gray-200 text-gray-800', text: '◉ Archived'};
             case 'at_trader':
                 return {color: 'bg-purple-200 text-purple-800', text: '◉ At trader'};
