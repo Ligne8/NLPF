@@ -587,3 +587,63 @@ func (LotController *LotController) AssignTraderToLot(c *gin.Context) {
 
 	c.JSON(http.StatusOK, lot)
 }
+
+// GetAllLotTraderId : Get all lots with trader id
+//
+// @Summary      Get all lots with trader id
+// @Tags         lots
+// @Accept       json
+// @Produce      json
+// @Param        trader_id  path  string  true  "Trader Id"
+// @Success      200  {array}  models.Lot
+// @Failure      400  "Invalid trader_id"
+// @Failure      404  "Trader not found"
+// @Failure      500  "Unable to retrieve lots"
+// @Router       /lots/trader/{trader_id} [get]
+func (LotController *LotController) GetAllLotTraderId(c *gin.Context) {
+	var lots []models.Lot
+	traderId := c.Param("trader_id")
+	traderIdUUID, errIdUUID := uuid.Parse(traderId)
+
+	// Validate trader_id
+	if errIdUUID != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid trader_id"})
+		return
+	}
+
+	// Check if the trader exists
+	var trader models.User
+	if err := LotController.Db.First(&trader, "id = ? AND role = ?", traderIdUUID, "trader").Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Trader not found"})
+		return
+	}
+
+	// Retrieve lots for the trader with associated offers and current price from bids
+	if err := LotController.Db.Preload("StartCheckpoint").
+		Preload("EndCheckpoint").
+		Preload("Offer").
+		Where("trader_id = ?", traderIdUUID).
+		Find(&lots).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to retrieve lots", "details": err.Error()})
+		return
+	}
+
+	// For each lot, retrieve the current price from the Bid table
+	for i, lot := range lots {
+		if lot.Offer != nil {
+			var bid models.Bid
+			if err := LotController.Db.Where("offer_id = ?", lot.Offer.Id).
+				Order("created_at DESC").
+				First(&bid).Error; err == nil {
+				lots[i].CurrentPrice = bid.Bid // Set current price
+			} else {
+				lots[i].CurrentPrice = 0 // No bid found
+			}
+		} else {
+			lots[i].CurrentPrice = 0 // No offer associated
+		}
+	}
+
+	// Return the enriched lots in the JSON response
+	c.JSON(http.StatusOK, lots)
+}

@@ -39,6 +39,9 @@ type Tractor struct {
 	Trader              *User        `json:"trader" gorm:"foreignKey:TraderId"`
 	RouteId             *uuid.UUID   `json:"route_id" gorm:"type:uuid"` // Foreign key for Route
 	Route               *Route       `json:"route" gorm:"foreignKey:RouteId"`
+	OfferId             *uuid.UUID   `json:"offer_id" gorm:""`
+	Offer               *Offer       `json:"offer" gorm:"foreignKey:OfferId"`
+	CurrentPrice        float64      `json:"current_price" gorm:"-"`
 }
 
 func (tractor *Tractor) BeforeCreate(tx *gorm.DB) (err error) {
@@ -97,6 +100,14 @@ func (tractor *Tractor) FindById(db *gorm.DB, tractorId uuid.UUID) (Tractor, err
 func (tractor *Tractor) GetByOwnerId(db *gorm.DB, ownerId uuid.UUID) ([]Tractor, error) {
 	var tractors []Tractor
 	if err := db.Preload("EndCheckpoint").Preload("StartCheckpoint").Preload("CurrentCheckpoint").Preload("TrafficManager").Where("owner_id = ?", ownerId).Find(&tractors).Error; err != nil {
+		return nil, err
+	}
+	return tractors, nil
+}
+
+func (tractor *Tractor) GetTractorsByTrader(db *gorm.DB, traderId uuid.UUID) ([]Tractor, error) {
+	var tractors []Tractor
+	if err := db.Preload("EndCheckpoint").Preload("StartCheckpoint").Where("trader_id = ?", traderId).Find(&tractors).Error; err != nil {
 		return nil, err
 	}
 	return tractors, nil

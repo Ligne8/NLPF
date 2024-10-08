@@ -40,6 +40,9 @@ type Lot struct {
 	TrafficManager      *User        `json:"traffic_manager" gorm:"foreignKey:TrafficManagerId"`
 	TraderId            *uuid.UUID   `json:"trader_id" gorm:""` // Changed to pointer to allow null values
 	Trader              *User        `json:"trader" gorm:"foreignKey:TraderId"`
+	OfferId             *uuid.UUID   `json:"offer_id" gorm:""`
+	Offer               *Offer       `json:"offer" gorm:"foreignKey:OfferId"`
+	CurrentPrice        float64      `json:"current_price" gorm:"-"`
 	InTractor 					  bool         `json:"in_tractor" gorm:"not null;default:false"`
 }
 
