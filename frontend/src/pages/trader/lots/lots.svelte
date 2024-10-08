@@ -45,6 +45,7 @@
         try {
             const response = await axios.get(`${API_BASE_URL}/lots/trader/${$userId}`);
             lots = response.data;
+            console.log(lots)
         } catch (err) {
             console.error(err);
         }
@@ -156,29 +157,29 @@
                         
                         <!-- Column 2 -->
                         <td class="border p-2 text-center">
-                            {#if row.expirationDate}
-                                {formatDate(row.expirationDate)}
+                            {#if row.offer.limit_date}
+                                {formatDate(row.offer.limit_date)}
                             {:else}
                                 <span class="px-2 py-1 mx-auto w-4/5 block text-gray-500">None</span>
                             {/if}
                         </td>
 
                         <!-- Column 3 -->
-                        <td class="border p-2 text-center">{row.type}</td>
+                        <td class="border p-2 text-center">{row.resource_type}</td>
                         
                         <!-- Column 4 -->
                         <td class="border p-2 text-center">{row.volume}</td>
 
                         <!-- Column 5 -->
                         <td class="border p-2 text-center">
-                            {row.startCheckpoint} / {row.endCheckpoint}
+                            {row.start_checkpoint.name} / {row.end_checkpoint.name}
                         </td>
                         
                         <!-- Column 6 -->
-                        <td class="border p-2 text-center">{row.maxPrice.toFixed(2)}</td>
+                        <td class="border p-2 text-center">{row.max_price_by_km.toFixed(2)}</td>
                         
                         <!-- Column 7 -->
-                        <td class="border p-2 text-center">{row.currentPrice.toFixed(2)}</td>
+                        <td class="border p-2 text-center">{row.current_price.toFixed(2)}</td>
                         
                         <!-- Column 8 -->
                         <td class="border p-2 text-center">
