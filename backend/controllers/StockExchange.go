@@ -243,3 +243,36 @@ func (StockExchangeController *StockExchangeController) CreateBidLot(c *gin.Cont
 
 	c.JSON(http.StatusCreated, bid)
 }
+
+func (StockExchangeController *StockExchangeController) CreateBidTractor(c *gin.Context) {
+	var requestBody struct {
+		Bid float64 `json:"bid" binding:"required"`
+		OfferId uuid.UUID `json:"offer_id" binding:"required"`
+		Volume float64 `json:"volume" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&requestBody); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Parse the UUID of the offer ID
+	offerUUID, err := uuid.Parse(requestBody.OfferId.String())
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid offer ID format"})
+		return
+	}
+
+	var bid models.Bid;
+	bid.Bid = requestBody.Bid;
+	bid.OfferId = offerUUID;
+	bid.State = "in_progress";
+	bid.Volume = requestBody.Volume;
+
+	if err := StockExchangeController.Db.Create(&bid).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"errorrr": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, bid)
+}

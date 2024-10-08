@@ -12,7 +12,10 @@ export type Tractor = {
   // TODO: add current_checkpoint
   current_checkpoint?: any;
 
+  offer_id?: string;
+
   selected_route: any;
+  current_price: any;
 
   state: string;
   created_at: string;

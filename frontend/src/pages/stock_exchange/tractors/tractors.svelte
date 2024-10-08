@@ -14,12 +14,13 @@
     let isModalOpen = false;
     let priceValue: number = 1.0;
     let minPriceValue: number = 1.0;
-    let maxPriceValue: number = 10.0;
+    let maxPriceValue: number = 100.0;
     let volumeValue: number = 1.0;
     let minVolumeValue: number = 1.0;
-    let maxVolumeValue: number = 10.0;
+    let maxVolumeValue: number = 50.0;
     let selectedStatus: string = 'all';
     let sortOption: string = 'none';
+    let current_offer_id: number;
 
     // Function to format timestamp into DD/MM/YYYY
     const formatDate = (timestamp: number) => {
@@ -39,21 +40,37 @@
     }
 
     // Function to open tractors modal
-    function openModal(currentPrice: number, spaceAvailable: number) {
-        priceValue = currentPrice;
-        minPriceValue = currentPrice;
-        maxVolumeValue = spaceAvailable;
+    function openModal(currentPrice: any, offer_id: any, min_price_by_km: number) {
+      console.log(min_price_by_km)
+        current_offer_id = offer_id;
+        priceValue = min_price_by_km;
+        minPriceValue = min_price_by_km;
         isModalOpen = true;
     }
 
     // Function to close tractors modal
     function closeModal() {
+        current_offer_id = 0;
         isModalOpen = false;
     }
 
     // Function to bid
     function bid() {
-        closeModal();
+        console.log('Bid:', priceValue);
+        console.log('VolumeValue:', volumeValue);
+        console.log('offerId:', current_offer_id);
+        
+        const payload = {
+            offer_id: current_offer_id,
+            bid: priceValue,
+            volume: volumeValue
+        }
+        axios.post(`${API_BASE_URL}/stock_exchange/tractor/bid`, payload).then((response) => {
+          fetchTractors();
+          closeModal();
+        }).catch((error) => {
+            console.error('Error bidding:', error.response);
+        });
     }
 
     // Fetch table info
@@ -182,7 +199,7 @@
                         <td class="border p-2 text-center">
                             <div class="flex flex-wrap justify-center space-x-2 space-y-2">
                                 <button class="bg-blue-200 text-blue-800 px-4 py-2 flex items-center font-bold hover:bg-blue-300 transition-colors rounded-md"
-                                    on:click={() => openModal(row.current_price, row.current_price)}
+                                    on:click={() => openModal(row.current_price, row.offer_id, row.min_price_by_km)}
                                 >
                                     <i class="fas fa-coins mr-2"></i>
                                     Bid
