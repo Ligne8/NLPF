@@ -1,10 +1,14 @@
 <script lang="ts">
     import Navbar from '@components/Navbar.svelte';
     import TraderNavbar from '@components/TraderNavbar.svelte';
+    import { userId } from '@stores/store';
+    import axios from 'axios';
+    import { onMount } from 'svelte';
 
     // Variables
     let title: string = 'Lot offers';
     let subtitle: string = 'Create lot offers in real time.';
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
     // Example data
     const tableData = [
@@ -18,6 +22,22 @@
         const date = new Date(timestamp);
         return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
     };
+
+    // Fetch all lots of the trader
+    async function fetchLots() {
+        try {
+            const response = await axios.get(`${API_BASE_URL}/lots/trader/${userId}`);
+            console.log(response.data)
+            return response.data;
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    // Fetch all data
+    onMount(async () => {
+        await fetchLots();
+    });
 
 </script>
 
