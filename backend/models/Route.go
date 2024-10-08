@@ -13,7 +13,9 @@ type Route struct {
 }
 
 func (route *Route) BeforeCreate(tx *gorm.DB) (err error) {
-	route.Id = uuid.New()
+	if route.Id == uuid.Nil {
+		route.Id = uuid.New()
+	}
 	return
 }
 
@@ -88,6 +90,7 @@ func (routeCheckpoint *RouteCheckpoint) GetNextCheckpoint(db *gorm.DB, routeId u
 func (routeCheckpoint *RouteCheckpoint) GetRouteCheckpoint(db *gorm.DB, routeId uuid.UUID, checkpointId uuid.UUID) error {
 	return db.First(routeCheckpoint, "route_id = ? AND checkpoint_id = ?", routeId, checkpointId).Error
 }
+
 
 func (routeCheckpoint *RouteCheckpoint) IsNextCheckpoint(db *gorm.DB, route Route) bool {
 	var nextCheckpoint RouteCheckpoint

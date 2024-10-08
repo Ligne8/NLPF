@@ -71,7 +71,9 @@ type Checkpoint struct {
 }
 
 func (checkpoint *Checkpoint) BeforeCreate(tx *gorm.DB) (err error) {
-	checkpoint.Id = uuid.New()
+	if checkpoint.Id == uuid.Nil {
+		checkpoint.Id = uuid.New()
+	}
 	return nil
 }
 

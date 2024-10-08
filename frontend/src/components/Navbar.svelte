@@ -34,6 +34,7 @@
     async function updateSimulationDate() {
         try {
             await axios.patch(`${API_BASE_URL}/simulations/date`, {});
+            await axios.get(`${API_BASE_URL}/simulations/move_tractors`, {});
             await fetchSimulationDate(); // Re-fetch the date after updating
         } catch (err) {
             error = 'Error updating simulation date';
