@@ -1,9 +1,10 @@
 package routes
 
 import (
+	"tms-backend/controllers"
+
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
-	"tms-backend/controllers"
 )
 
 func StockExchangeRoute(r *gin.Engine, db *gorm.DB) *gin.Engine {
@@ -18,6 +19,7 @@ func StockExchangeRoute(r *gin.Engine, db *gorm.DB) *gin.Engine {
 
 		v1.POST("/tractor_offers", StockExchangeController.CreateTractorOffer)
 		v1.GET("/tractor_offers", StockExchangeController.GetAllTractorOnMarket)
+		v1.PUT("/return_from_market", StockExchangeController.ChangeStateToReturnFromMarket)
 	}
 	return r
 }

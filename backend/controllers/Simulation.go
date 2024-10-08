@@ -1,10 +1,11 @@
 package controllers
 
 import (
-	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 	"net/http"
 	"tms-backend/models"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 type SimulationController struct {
@@ -61,6 +62,10 @@ func (SimulationController *SimulationController) UpdateSimulationDate(c *gin.Co
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to update simulation date"})
 		return
 	}
+
+	// Update the state of the offers
+	stockExchangeController := StockExchangeController{Db: SimulationController.Db}
+	stockExchangeController.ChangeStateToReturnFromMarket(c)
 
 	// Return the new updated date
 	c.JSON(http.StatusOK, gin.H{

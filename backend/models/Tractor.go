@@ -72,6 +72,10 @@ func (tractor *Tractor) Save(db *gorm.DB) error {
 	return db.Preload("EndCheckpoint").Preload("StartCheckpoint").Save(tractor).Error
 }
 
+func (tractor *Tractor) Update(db *gorm.DB) error {
+	return db.Model(tractor).Updates(tractor).Error
+}
+
 func (tractor *Tractor) GetAllTractors(db *gorm.DB) ([]Tractor, error) {
 	var tractors []Tractor
 	if err := db.Preload("EndCheckpoint").Preload("StartCheckpoint").Find(&tractors).Error; err != nil {

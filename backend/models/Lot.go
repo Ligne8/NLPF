@@ -11,12 +11,13 @@ import (
 type State string
 
 const (
-	StateAvailable State = "available"
-	StatePending   State = "pending"
-	StateInTransit State = "in_transit"
-	StateArchive   State = "archive"
-	StateOnMarket  State = "on_market"
-	StateAtTrader  State = "at_trader"
+	StateAvailable        State = "available"
+	StatePending          State = "pending"
+	StateInTransit        State = "in_transit"
+	StateArchive          State = "archive"
+	StateOnMarket         State = "on_market"
+	StateAtTrader         State = "at_trader"
+	StateReturnFromMarket State = "return_from_market"
 )
 
 type Lot struct {
@@ -71,6 +72,10 @@ func (lot *Lot) BeforeCreate(tx *gorm.DB) (err error) {
 
 func (lot *Lot) Save(db *gorm.DB) error {
 	return db.Preload("EndCheckpoint").Preload("StartCheckpoint").Preload("Tractor").Save(lot).Error
+}
+
+func (lot *Lot) Update(db *gorm.DB) error {
+	return db.Model(lot).Updates(lot).Error
 }
 
 func (lot *Lot) GetAllLots(db *gorm.DB) ([]Lot, error) {
