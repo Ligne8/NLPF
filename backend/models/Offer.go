@@ -1,9 +1,10 @@
 package models
 
 import (
+	"time"
+
 	"github.com/google/uuid"
 	"gorm.io/gorm"
-	"time"
 )
 
 type Offer struct {
@@ -17,6 +18,32 @@ type Offer struct {
 }
 
 func (offer *Offer) BeforeCreate(tx *gorm.DB) (err error) {
-	offer.Id = uuid.New()
+	if offer.Id == uuid.Nil {
+		offer.Id = uuid.New()
+	}
+	var simulation Simulation
+	if err := tx.First(&simulation).Error; err != nil {
+		return err
+	}
+	offer.CreatedAt = simulation.SimulationDate
 	return
+}
+
+func (offer *Offer) CreateOfferLot(db *gorm.DB, limitDate time.Time, lotId uuid.UUID) (uuid.UUID,error) {
+	var o = Offer{
+		LimitDate: limitDate,
+		LotId:     &lotId,
+	}
+	if err := db.Create(&o).Error; err != nil {
+		return uuid.Nil, err
+	}
+	return o.Id, nil
+}
+
+func (offer *Offer) CreateOfferTractor(db *gorm.DB, limitDate time.Time, tractorId uuid.UUID) error {
+	var o = Offer{
+		LimitDate: limitDate,
+		TractorId: &tractorId,
+	}
+	return db.Create(&o).Error
 }

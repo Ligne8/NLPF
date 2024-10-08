@@ -529,6 +529,10 @@
     </div>
 {/if}
 
+<!-- svelte-ignore a11y-no-static-element-interactions -->
+<!-- svelte-ignore a11y-no-static-element-interactions -->
+<!-- svelte-ignore a11y-click-events-have-key-events -->
+<!-- svelte-ignore a11y-label-has-associated-control -->
 {#if isStockExchangeModalOpen}
     <div class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
          on:click={closeStockExchangeModal}>

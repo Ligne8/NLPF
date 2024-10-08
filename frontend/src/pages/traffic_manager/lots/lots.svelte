@@ -15,8 +15,20 @@
     let compatibleTractorsMap: Map<number, Tractor[]> = new Map();
     let isModalOpen = false;
     let selectedLotId: number = null;
+    let isStockExchangeModalOpen: boolean = false;
     let selectedStatus: string = 'all';
     let sortOption: string = 'none';
+    let limitDate: string = '';
+
+    const openStockExchangeModal = (lotId: number)=>{
+        selectedLotId = lotId;  
+        isStockExchangeModalOpen = true; 
+    }
+
+    const closeStockExchangeModal = ()=>{
+        isStockExchangeModalOpen = false; 
+    }
+
 
     // Function to get tag color and text based on status
     function getStatusInfo(state: string): { color: string; text: string } {
@@ -49,6 +61,19 @@
         isModalOpen = false;
     }
 
+    // Function to create a stock exchange offer for lot
+    async function createStockExchangeOffer() {
+        if (!limitDate) {
+            alert('Veuillez sélectionner une date limite.');
+            return;
+        }
+        const offerData = {
+            limit_date: new Date(limitDate).toISOString(),
+            lot_id: selectedLotId
+        };
+
+    }
+
     // Fetch table info
     async function fetchTableInfo() {
         if($userRole !== "traffic_manager") {
@@ -78,35 +103,24 @@
         }
     }
 
-    // Assign tractor to lot
-    async function assignTractor(lotId: number, tractorId: number) {
-        try {
-            await axios.put(`${API_BASE_URL}/lots/assign/tractor`, {
-                lot_id: lotId,
-                tractor_id: tractorId
-            });
-            const updatedTractors = compatibleTractorsMap.get(lotId)?.filter(tractor => tractor.id !== tractorId) || [];
-            const updatedMap = new Map(compatibleTractorsMap);
-            if (updatedTractors.length === 0)
-                updatedMap.delete(lotId);
-            else
-                updatedMap.set(lotId, updatedTractors);
-            compatibleTractorsMap = updatedMap;
-            if (!updatedTractors.length)
-                closeModal();
-            await fetchTableInfo();
-        } catch (error) {
-            console.error('Error assigning tractor:', error.response);
-        }
-    }
 
     async function assignLotToTrader(lotId: string) {
-         await axios.put(`${API_BASE_URL}/lots/assign/${lotId}/trader`)
-            .then((response) => {
-                fetchTableInfo();
-            }).catch((error) => {
-                console.error('Error assigning lot to trader:', error.response);
-            });
+
+        if (limitDate == '') {
+            alert('Veuillez sélectionner une date limite.');
+            return;
+        }
+        const offerData = {
+            limit_date: new Date(limitDate).toISOString(),
+        };
+        await axios.post(`${API_BASE_URL}/lots/assign/${lotId}/trader`, offerData)
+           .then((response) => {
+               fetchTableInfo();
+               limitDate = ''; 
+               closeStockExchangeModal();
+           }).catch((error) => {
+               console.error('Error assigning lot to trader:', error.response);
+           });
     }
 
     onMount(() => {
@@ -260,7 +274,7 @@
                         {#if row.state === 'pending'}
                             <div class="flex flex-wrap justify-center space-x-2 space-y-2">
                                 <button class="bg-blue-200 text-blue-800 px-4 py-2 flex items-center font-bold hover:bg-blue-300 transition-colors rounded-md"
-                                on:click={() => assignLotToTrader(row.id)} >
+                                on:click={openStockExchangeModal(row.id)} >
                                     <i class="fas fa-plus mr-2"></i>
                                     Stock exchange
                                 </button>
@@ -276,11 +290,12 @@
     </div>
 </main>
 
+
+
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-label-has-associated-control -->
-
 {#if isModalOpen}
 
     <div class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50" on:click={closeModal}>
@@ -366,3 +381,44 @@
         display: none;
     }
 </style>
+
+<!-- svelte-ignore a11y-no-static-element-interactions -->
+<!-- svelte-ignore a11y-no-static-element-interactions -->
+<!-- svelte-ignore a11y-click-events-have-key-events -->
+<!-- svelte-ignore a11y-label-has-associated-control -->
+{#if isStockExchangeModalOpen}
+    <div class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
+         on:click={closeStockExchangeModal}>
+        <div class="bg-white p-6 rounded-lg shadow-lg w-1/3" on:click|stopPropagation>
+            <!-- Close Button -->
+            <button class="absolute top-2 right-2 text-gray-500 hover:text-gray-800" on:click={closeStockExchangeModal}>
+                &times;
+            </button>
+
+            <!-- Modal Title -->
+            <h2 class="text-2xl font-bold mb-6">Stock Exchange</h2>
+
+            <!-- Form -->
+            <form on:submit|preventDefault={assignLotToTrader(selectedLotId)}>
+
+                <!-- Limit Date -->
+                <div class="mb-2">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Limit Date :</label>
+                    <input type="date"
+                           class="w-full border border-gray-300 p-2 rounded"
+                           bind:value={limitDate}
+                           required
+                    />
+                </div>
+
+                <!-- Submit button -->
+                <div class="flex justify-center mt-4">
+                    <button type="submit" class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600">
+                        <i class="fas fa-check"></i>
+                        <span class="font-bold">Submit</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+{/if}
