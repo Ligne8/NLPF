@@ -448,7 +448,7 @@
                                     <i class="fas fa-plus mr-2"></i>
                                     Stock exchange
                                 </button>
-                                <button on:click={()=> {deleteTractor(row.id)}} class="bg-gray-800 text-white px-4 py-2 flex items-center font-bold hover:bg-black transition-colors rounded-md">
+                                <button on:click={()=> {deleteTractor(row.id)}} class="bg-red-200 text-red-600 px-4 py-2 flex items-center font-bold hover:bg-red-300 transition-colors rounded-md">
                                     <i class="fas fa-right-from-bracket mr-2"></i>
                                     Remove
                                 </button>
