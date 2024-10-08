@@ -21,5 +21,12 @@ func (bid *Bid) BeforeCreate(tx *gorm.DB) (err error) {
 	if bid.Id == uuid.Nil {
 		bid.Id = uuid.New()
 	}
+	var simulation Simulation
+	if err := tx.First(&simulation).Error; err != nil {
+		return err
+	}
+	if bid.CreatedAt.IsZero() {
+		bid.CreatedAt = simulation.SimulationDate
+	}
 	return
 }
