@@ -51,7 +51,6 @@
 
     // Function to bid
     function bid() {
-        console.log("Form submitted!");
         closeModal();
     }
 

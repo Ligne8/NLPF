@@ -178,8 +178,6 @@
             state: 'available',
             owner_id: $userId,
         };
-        console.log('New tractor:', newTractor);
-
 
         name = '';
         selectedType = '';
