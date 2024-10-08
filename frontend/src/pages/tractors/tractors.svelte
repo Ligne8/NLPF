@@ -47,18 +47,31 @@
     let sortOption: string = 'none';
     let isStockExchangeModalOpen = false;
     let limitDate: string = '';
+    let minDate: string = '';
     let selectedTractorId: string = ''; // Utilisé pour stocker l'ID du lot pour l'offre
 
     const fetchAllData = async () => {
         await fetchTractors();
         await fetchTrafficManagers();
         await fetchCheckpoints();
+        await fetchLimitDate();
     }
 
     // Fetch all data
     onMount(async () => {
         fetchAllData();
     });
+
+    // Fetch limit date from backend
+    async function fetchLimitDate() {
+        try {
+            const response = await axios.get(`${API_BASE_URL}/simulations/date`);
+            const date = new Date(response.data.simulation_date);
+            minDate = date.toISOString().split('T')[0];
+        } catch (err) {
+            console.error('Error fetching limit date:', err);
+        }
+    }
 
     // Function to get tag color and text based on status
     function getStateInfo(state: string): { color: string; text: string } {
@@ -564,6 +577,7 @@
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-label-has-associated-control -->
+
 {#if isStockExchangeModalOpen}
     <div class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
          on:click={closeStockExchangeModal}>
@@ -583,9 +597,10 @@
                 <div class="mb-2">
                     <label class="block text-gray-700 text-sm font-bold mb-2">Limit Date :</label>
                     <input type="date"
-                           class="w-full border border-gray-300 p-2 rounded"
-                           bind:value={limitDate}
-                           required
+                        class="w-full border border-gray-300 p-2 rounded"
+                        bind:value={limitDate}
+                        min={minDate}
+                        required
                     />
                 </div>
 
