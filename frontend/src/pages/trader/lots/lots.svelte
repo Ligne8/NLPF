@@ -45,6 +45,7 @@
         try {
             const response = await axios.get(`${API_BASE_URL}/lots/trader/${$userId}`);
             lots = response.data;
+            console.log(lots);
         } catch (err) {
             console.error(err);
         }
@@ -65,9 +66,9 @@
             case 'volume_desc':
                 return data.sort((a, b) => b.volume - a.volume);
             case 'location_asc':
-                return data.sort((a, b) => a.currentCheckpoint.localeCompare(b.currentCheckpoint));
+                return data.sort((a, b) => a.current_checkpoint.localeCompare(b.current_checkpoint));
             case 'location_desc':
-                return data.sort((a, b) => b.currentCheckpoint.localeCompare(a.currentCheckpoint));
+                return data.sort((a, b) => b.current_checkpoint.localeCompare(a.current_checkpoint));
             default:
                 return data;
         }
@@ -156,7 +157,7 @@
                         
                         <!-- Column 2 -->
                         <td class="border p-2 text-center">
-                            {#if row.offer.limit_date}
+                            {#if row.offer}
                                 {formatDate(row.offer.limit_date)}
                             {:else}
                                 <span class="px-2 py-1 mx-auto w-4/5 block text-gray-500">None</span>
