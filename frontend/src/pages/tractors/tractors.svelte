@@ -231,7 +231,6 @@
         }),
         }).then(response => {
             fetchTractors();
-            alert('Tractor assigned successfully');
         }).catch(error => {
             console.error('Error assigning tractor to traffic manager:', error);
             alert('Error assigning tractor to traffic manager');
@@ -244,7 +243,6 @@
             method: 'DELETE',
         }).then(response => {
             fetchTractors();
-            alert('Tractor deleted successfully');
         }).catch(error => {
             console.error('Error deleting tractor:', error);
             alert('Error deleting tractor');
@@ -282,8 +280,7 @@
             });
 
             if (response.status === 201) {
-                alert('Offre créée avec succès.');
-                closeStockExchangeModal(); // Fermer la modale après soumission réussie
+                closeStockExchangeModal();
                 fetchTractors();
             } else {
                 console.error('Failed to create stock exchange offer:', response.status);

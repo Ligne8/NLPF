@@ -209,7 +209,6 @@
             body: JSON.stringify({traffic_manager_id: trafficManager.id, lot_id: lotId})
         }).then(response => {
             fetchLots();
-            alert('Lot attribué avec succès');
         }).catch(error => {
             console.error('Error assigning lot to traffic manager:', error);
             alert('Erreur lors de l\'attribution du lot');
@@ -222,7 +221,6 @@
             method: 'DELETE'
         }).then(response => {
             fetchLots();
-            alert('Lot supprimé avec succès');
         }).catch(error => {
             console.error('Error deleting lot:', error);
             alert('Erreur lors de la suppression du lot');
@@ -259,8 +257,7 @@
             });
 
             if (response.status === 201) {
-                alert('Offre créée avec succès.');
-                closeStockExchangeModal(); // Fermer la modale après soumission réussie
+                closeStockExchangeModal();
                 fetchLots();
             } else {
                 console.error('Failed to create stock exchange offer:', response.status);
@@ -399,7 +396,13 @@
                                 {/each}
                             </select>
                         {:else}
-                            <span class="text-gray-500">{row.trafficManager}</span>
+                            {#if row.trafficManager}
+                                <span class="px-2 py-1 mx-auto w-4/5 block">
+                                    {row.trafficManager}
+                                </span>
+                            {:else}
+                                <span class="px-2 py-1 mx-auto w-4/5 block text-gray-500">None</span>
+                            {/if}
                         {/if}
                     </td>
 
