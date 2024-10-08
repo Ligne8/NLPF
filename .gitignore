@@ -1,4 +1,5 @@
 backend/tms-backend
+backend/.idea
 .idea
 .DS_Store
 backend/api.sql

@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"net/http"
+	"time"
 	"tms-backend/models"
 
 	"github.com/gin-gonic/gin"
@@ -574,12 +575,34 @@ func (LotController *LotController) AssignTraderToLot(c *gin.Context) {
 	}
 
 	lot.TraderId = &trader.Id
+	lot.State = models.StateAtTrader
 	if err := LotController.Db.Save(&lot).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	lot.State = models.StateAtTrader
+	var requestBody struct {
+		Date     string `json:"limit_date" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&requestBody); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	var offer models.Offer;
+	parsedDate, err := time.Parse(time.RFC3339, requestBody.Date)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date format"})
+		return
+	}
+	var offerId uuid.UUID;
+	offerId, err = offer.CreateOfferLot(LotController.Db, parsedDate, lot.Id);
+	if err != nil {	
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	lot.OfferId = &offerId;
 	if err := LotController.Db.Save(&lot).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -627,22 +650,12 @@ func (LotController *LotController) GetAllLotTraderId(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to retrieve lots", "details": err.Error()})
 		return
 	}
-
-	// For each lot, retrieve the current price from the Bid table
-	for i, lot := range lots {
-		if lot.Offer != nil {
-			var bid models.Bid
-			if err := LotController.Db.Where("offer_id = ?", lot.Offer.Id).
-				Order("created_at DESC").
-				First(&bid).Error; err == nil {
-				lots[i].CurrentPrice = bid.Bid // Set current price
-			} else {
-				lots[i].CurrentPrice = 0 // No bid found
-			}
-		} else {
-			lots[i].CurrentPrice = 0 // No offer associated
-		}
+	for i := range lots {
+		var maxBid float64
+		LotController.Db.Raw("SELECT COALESCE(MAX(bid), 0) FROM bids WHERE offer_id = ?", lots[i].OfferId).Scan(&maxBid)
+		lots[i].CurrentPrice = maxBid
 	}
+
 
 	// Return the enriched lots in the JSON response
 	c.JSON(http.StatusOK, lots)
