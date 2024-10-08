@@ -29,7 +29,6 @@
         isStockExchangeModalOpen = false; 
     }
 
-
     // Function to get tag color and text based on status
     function getStatusInfo(state: string): { color: string; text: string } {
         switch (state) {
