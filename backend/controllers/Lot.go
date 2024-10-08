@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"net/http"
+	"time"
 	"tms-backend/models"
 
 	"github.com/gin-gonic/gin"
@@ -548,17 +549,21 @@ func (LotController *LotController) GetAvailableTrader(c *gin.Context) (models.U
 // @Failure      404  "Lot not found"
 // @Failure      404  "Trader not found"
 // @Failure      500  "Unable to assign trader to lot"
-// @Router       /lots/assign/{lot_id}/trader [put]
+// @Router       /lots/assign/trader [put]
 func (LotController *LotController) AssignTraderToLot(c *gin.Context) {
-	lotId := c.Param("lot_id")
-	lotIdUUID, errIdUUID := uuid.Parse(lotId)
-	if errIdUUID != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid lot_id"})
+	var requestBody struct {
+		LimitDate time.Time `json:"limit_date" binding:"required"`
+		LotId     uuid.UUID `json:"lot_id" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&requestBody); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
+	// Check if the lot exists
 	var lot models.Lot
-	if err := LotController.Db.First(&lot, "id = ?", lotIdUUID).Error; err != nil {
+	if result := LotController.Db.First(&lot, "id = ?", requestBody.LotId); result.Error != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Lot not found"})
 		return
 	}
@@ -581,7 +586,25 @@ func (LotController *LotController) AssignTraderToLot(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, lot)
+	var simulation models.Simulation
+	if err := LotController.Db.First(&simulation); err.Error != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Unable to fetch simulation date"})
+		return
+	}
+
+	// Create the offer
+	offer := models.Offer{
+		LimitDate: requestBody.LimitDate,
+		LotId:     &requestBody.LotId,
+		CreatedAt: simulation.SimulationDate,
+	}
+
+	if err := LotController.Db.Create(&offer); err.Error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error})
+		return
+	}
+
+	c.JSON(http.StatusOK, offer)
 }
 
 // GetAllLotTraderId : Get all lots with trader id

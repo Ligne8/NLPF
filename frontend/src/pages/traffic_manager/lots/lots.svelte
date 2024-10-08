@@ -12,11 +12,14 @@
     let subtitle: string = 'Track the status of your lots in real time.';
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
     let lots: Lot[] = [];
-    let compatibleTractorsMap: Map<number, Tractor[]> = new Map();
+    let compatibleTractorsMap: Map<string, Tractor[]> = new Map();
     let isModalOpen = false;
-    let selectedLotId: number = null;
+    let selectedLotId: string = '';
     let selectedStatus: string = 'all';
     let sortOption: string = 'none';
+    let isStockExchangeModalOpen = false;
+    let limitDate: string = '';
+
 
     // Function to get tag color and text based on status
     function getStatusInfo(state: string): { color: string; text: string } {
@@ -39,7 +42,7 @@
     }
 
     // Function to open modal
-    function openModal(lotId: number) {
+    function openModal(lotId: string) {
         selectedLotId = lotId;
         isModalOpen = true;
     }
@@ -63,7 +66,7 @@
     }
 
     // Fetch table info
-    async function getCompatibleTractors(lotId: number) {
+    async function getCompatibleTractors(lotId: string) {
         if ($userRole !== "traffic_manager") {
             return;
         }
@@ -74,12 +77,12 @@
             updatedMap.set(lotId, response.data);
             compatibleTractorsMap = updatedMap;
         } catch (error) {
-            console.error('Error fetching compatible tractors:', error.response);
+            console.error('Error fetching compatible tractors:', error);
         }
     }
 
     // Assign tractor to lot
-    async function assignTractor(lotId: number, tractorId: number) {
+    async function assignTractor(lotId: string, tractorId: string) {
         try {
             await axios.put(`${API_BASE_URL}/lots/assign/tractor`, {
                 lot_id: lotId,
@@ -96,17 +99,48 @@
                 closeModal();
             await fetchTableInfo();
         } catch (error) {
-            console.error('Error assigning tractor:', error.response);
+            console.error('Error assigning tractor:', error);
         }
     }
 
-    async function assignLotToTrader(lotId: string) {
-         await axios.put(`${API_BASE_URL}/lots/assign/${lotId}/trader`)
-            .then((response) => {
-                fetchTableInfo();
-            }).catch((error) => {
-                console.error('Error assigning lot to trader:', error.response);
+    function openStockExchangeModal(lotId: string) {
+        selectedLotId = lotId;
+        isStockExchangeModalOpen = true;
+    }
+
+    function closeStockExchangeModal() {
+        isStockExchangeModalOpen = false;
+        limitDate = ''; // Réinitialiser la date après fermeture
+    }
+
+    async function createStockExchangeOffer() {
+        if (!limitDate) {
+            alert('Veuillez sélectionner une date limite.');
+            return;
+        }
+
+        const offerData = {
+            limit_date: new Date(limitDate).toISOString(),
+            lot_id: selectedLotId
+        };
+
+        try {
+            const response = await axios.post(`${API_BASE_URL}/stock_exchange/traffic_manager/lot_offers`, offerData, {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
             });
+
+            if (response.status === 201) {
+                closeStockExchangeModal();
+            } else {
+                console.error('Failed to create stock exchange offer:', response.status);
+                alert('Erreur lors de la création de l\'offre.');
+            }
+        } catch (error) {
+            console.error('Error creating stock exchange offer:', error);
+            alert('Erreur lors de la création de l\'offre.');
+        }
     }
 
     onMount(() => {
@@ -139,7 +173,7 @@
         }
     })();
 
-    const assignLotToTractor = async (lotId: number, tractorId: number) => {
+    const assignLotToTractor = async (lotId: string, tractorId: string) => {
         try {
             await axios.post(`${API_BASE_URL}/lots/tractors/assign`, {
               lot_id : lotId,
@@ -260,7 +294,7 @@
                         {#if row.state === 'pending'}
                             <div class="flex flex-wrap justify-center space-x-2 space-y-2">
                                 <button class="bg-blue-200 text-blue-800 px-4 py-2 flex items-center font-bold hover:bg-blue-300 transition-colors rounded-md"
-                                on:click={() => assignLotToTrader(row.id)} >
+                                on:click={() => openStockExchangeModal(row.id)} >
                                     <i class="fas fa-plus mr-2"></i>
                                     Stock exchange
                                 </button>
@@ -349,6 +383,43 @@
                     {/each}
                 </tbody>
             </table>
+        </div>
+    </div>
+{/if}
+
+{#if isStockExchangeModalOpen}
+    <div class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
+         on:click={closeStockExchangeModal}>
+        <div class="bg-white p-6 rounded-lg shadow-lg w-1/3" on:click|stopPropagation>
+            <!-- Close Button -->
+            <button class="absolute top-2 right-2 text-gray-500 hover:text-gray-800" on:click={closeStockExchangeModal}>
+                &times;
+            </button>
+
+            <!-- Modal Title -->
+            <h2 class="text-2xl font-bold mb-6">Stock Exchange</h2>
+
+            <!-- Form -->
+            <form on:submit|preventDefault={createStockExchangeOffer}>
+
+                <!-- Limit Date -->
+                <div class="mb-2">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Limit Date :</label>
+                    <input type="date"
+                           class="w-full border border-gray-300 p-2 rounded"
+                           bind:value={limitDate}
+                           required
+                    />
+                </div>
+
+                <!-- Submit button -->
+                <div class="flex justify-center mt-4">
+                    <button type="submit" class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600">
+                        <i class="fas fa-check"></i>
+                        <span class="font-bold">Submit</span>
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 {/if}
