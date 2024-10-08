@@ -162,11 +162,31 @@ func (sec *StockExchangeController) GetAllTractorOnMarket(c *gin.Context) {
 // @Failure 500 "Unable to fetch offers"
 // @Router /stock_exchange/lot_offers [get]
 func (sec *StockExchangeController) GetAllLotsOnMarket(c *gin.Context) {
-	var offers []models.Offer
-	if err := sec.Db.Preload("Lot").Where("lot_id IS NOT NULL").Find(&offers).Error; err != nil {
+	
+	var offers []struct {
+		LimitDate      time.Time           `json:"limit_date"`
+		LotId          uuid.UUID           `json:"lot_id"`
+		ResourceType   models.ResourceType `json:"resource_type"`
+		Volume         float64             `json:"volume"`
+		MaxPriceByKm   float64             `json:"max_price_by_km"`
+		CurrentPrice   float64             `json:"current_price"`
+	}
+
+	query := `
+		SELECT o.limit_date, l.id as lot_id, l.resource_type, l.volume, l.max_price_by_km, MAX(b.bid) as current_price
+		FROM lots l
+		JOIN offers o ON l.id = o.lot_id
+		LEFT JOIN bids b ON o.id = b.offer_id
+		WHERE o.limit_date > (SELECT simulation_date FROM simulations LIMIT 1)
+		GROUP BY o.limit_date, l.id, l.resource_type, l.volume, l.max_price_by_km
+		ORDER BY o.limit_date
+	`
+
+	if err := sec.Db.Raw(query).Scan(&offers).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to fetch offers"})
 		return
 	}
+
 
 	c.JSON(http.StatusOK, offers)
 }
