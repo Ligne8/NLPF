@@ -551,38 +551,63 @@ func (TractorController *TractorController) AssignTraderToTractor(c *gin.Context
 	c.JSON(http.StatusOK, tractor)
 }
 
-// GetAllTractorTraderId : Get all tractors trader id
+// GetAllTractorTraderId : Get all tractors with trader id
 //
-// @Summary      Get all tractors trader id
+// @Summary      Get all tractors with trader id
 // @Tags         tractors
 // @Accept       json
 // @Produce      json
+// @Param        trader_id  path  string  true  "Trader Id"
 // @Success      200  {array}  models.Tractor
-// @Failure      500  "Unable to fetch tractors"
+// @Failure      400  "Invalid trader_id"
+// @Failure      404  "Trader not found"
+// @Failure      500  "Unable to retrieve tractors"
 // @Router       /tractors/trader/{trader_id} [get]
 func (TractorController *TractorController) GetAllTractorTraderId(c *gin.Context) {
 	var tractors []models.Tractor
-	var tractorModel models.Tractor
 	traderId := c.Param("trader_id")
 	traderIdUUID, errIdUUID := uuid.Parse(traderId)
 
+	// Validate trader_id
 	if errIdUUID != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid trader_id"})
 		return
 	}
 
+	// Check if the trader exists
 	var trader models.User
 	if err := TractorController.Db.First(&trader, "id = ? AND role = ?", traderIdUUID, "trader").Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Trader not found"})
 		return
 	}
 
-	tractors, err := tractorModel.GetTractorsByTrader(TractorController.Db, traderIdUUID)
-
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	// Retrieve tractors for the trader with associated offers
+	if err := TractorController.Db.Preload("StartCheckpoint").
+		Preload("EndCheckpoint").
+		Preload("Route").
+		Preload("Offer"). // Preload associated offers
+		Where("trader_id = ?", traderIdUUID).
+		Find(&tractors).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to retrieve tractors", "details": err.Error()})
 		return
 	}
 
+	// For each tractor, retrieve the current price from the Bid table based on the associated offer
+	for i, tractor := range tractors {
+		if tractor.Offer != nil {
+			var bid models.Bid
+			if err := TractorController.Db.Where("offer_id = ?", tractor.Offer.Id).
+				Order("created_at DESC").
+				First(&bid).Error; err == nil {
+				tractors[i].CurrentPrice = bid.Bid // Set current price based on the latest bid
+			} else {
+				tractors[i].CurrentPrice = 0 // No bid found for this offer
+			}
+		} else {
+			tractors[i].CurrentPrice = 0 // No offer associated with this tractor
+		}
+	}
+
+	// Return the enriched tractors in the JSON response
 	c.JSON(http.StatusOK, tractors)
 }

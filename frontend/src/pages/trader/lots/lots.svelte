@@ -45,7 +45,6 @@
         try {
             const response = await axios.get(`${API_BASE_URL}/lots/trader/${$userId}`);
             lots = response.data;
-            console.log(lots)
         } catch (err) {
             console.error(err);
         }
@@ -184,7 +183,7 @@
                         <!-- Column 8 -->
                         <td class="border p-2 text-center">
                             <div class="flex flex-wrap justify-center space-x-2 space-y-2">
-                                {#if row.expirationDate}
+                                {#if !row.offer && row.state === "at_trader"}
                                     <button class="bg-blue-200 text-blue-800 px-4 py-2 flex items-center font-bold hover:bg-blue-300 transition-colors rounded-md">
                                         <i class="fas fa-plus mr-2"></i>
                                         Offer

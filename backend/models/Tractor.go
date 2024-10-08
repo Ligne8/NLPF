@@ -39,6 +39,9 @@ type Tractor struct {
 	Trader              *User        `json:"trader" gorm:"foreignKey:TraderId"`
 	RouteId             *uuid.UUID   `json:"route_id" gorm:"type:uuid"` // Foreign key for Route
 	Route               *Route       `json:"route" gorm:"foreignKey:RouteId"`
+	OfferId             *uuid.UUID   `json:"offer_id" gorm:""`
+	Offer               *Offer       `json:"offer" gorm:"foreignKey:OfferId"`
+	CurrentPrice        float64      `json:"current_price" gorm:"-"`
 }
 
 func (tractor *Tractor) BeforeCreate(tx *gorm.DB) (err error) {
