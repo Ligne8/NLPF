@@ -97,9 +97,37 @@
 <main class="p-10 mt-40">
 
     <!-- Title and subtitle -->
-    <section>
-        <h1 class="text-4xl font-bold mb-4">{title}</h1>
-        <h2 class="text-2xl mb-8 text-gray-600">{subtitle}</h2>
+    <div class="mb-2">
+        <h1 class="text-4xl font-bold mb-2">{title}</h1>
+        <h2 class="text-2xl text-gray-600">{subtitle}</h2>
+    </div>
+
+    <section class="flex justify-between items-center mb-4">
+
+        <div class="flex justify-between items-center self-end">
+
+            <!-- Filter by status -->
+            <select bind:value={selectedStatus} class="mr-2 border border-gray-300 rounded px-2 py-1">
+                <option value="all" disabled selected>Filter by status</option>
+                <option value="all">All</option>
+                <option value="available">Available</option>
+                <option value="pending">Pending</option>
+                <option value="in_transit">In transit</option>
+                <option value="on_market">On market</option>
+                <option value="archived">Archived</option>
+            </select>
+
+            <!-- Sort by volume and location -->
+            <select bind:value={sortOption} class="border border-gray-300 rounded px-2 py-1">
+                <option value="none" disabled selected>Sort by</option>
+                <option value="volume_asc">Volume (Ascending)</option>
+                <option value="volume_desc">Volume (Descending)</option>
+                <option value="location_asc">Location (A-Z)</option>
+                <option value="location_desc">Location (Z-A)</option>
+            </select>
+
+        </div>
+
     </section>
 
     <table class="table-auto w-full border-collapse border border-gray-300">
