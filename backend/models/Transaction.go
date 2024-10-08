@@ -81,19 +81,19 @@ func (transaction *Transaction) FindByRouteIdAndCheckpointIdAndTractorId(db *gor
 
 func (transaction *Transaction) ExecTransaction(db *gorm.DB) error {
 	if transaction.TransactionType == TransactionState(TransactionStateIn) {
-		transaction.Lot.State = StateInTransit
-		transaction.Lot.InTractor = true
-		transaction.Tractor.CurrentVolume += transaction.Lot.Volume
+		transaction.Lot.State = StateInTransit;
+		transaction.Lot.InTractor = true;
+		transaction.Tractor.CurrentVolume = transaction.Tractor.CurrentVolume - transaction.Lot.Volume;
 	} else {
-		transaction.Lot.State = StateArchive
-		transaction.Lot.InTractor = false
-		transaction.Tractor.CurrentVolume -= transaction.Lot.Volume
+		transaction.Lot.State = StateArchive;
+		transaction.Lot.InTractor = false;
+		transaction.Tractor.CurrentVolume = transaction.Tractor.CurrentVolume - transaction.Lot.Volume;
 	}
-	if err := transaction.Tractor.Update(db); err != nil {
-		return err
+	if err := transaction.Tractor.Save(db); err != nil {
+		return err;
 	}
-	if err := transaction.Lot.Update(db); err != nil {
-		return err
+	if err := transaction.Lot.Save(db); err != nil {
+		return err;
 	}
 	return nil;
 }

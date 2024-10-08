@@ -19,6 +19,7 @@ func SimulationRoutes(r *gin.Engine, db *gorm.DB) *gin.Engine {
 		v1.GET("/date", SimulationController.GetSimulationDate)
 
 		v1.PATCH("/date", SimulationController.UpdateSimulationDate)
+		v1.GET("/move_tractors", SimulationController.MoveTractorForward)
 		v1.GET("", SimulationController.MoveTractorForward)
 
 	}

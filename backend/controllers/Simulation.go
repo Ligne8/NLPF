@@ -78,7 +78,6 @@ func (SimulationController *SimulationController) MoveTractorForward(c *gin.Cont
 	tractors, err = tractorModel.GetByState(SimulationController.Db, "in_transit")
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to fetch tractors"})
-		return
 	}
   for _, tractor := range tractors {
 

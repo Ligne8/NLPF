@@ -22,7 +22,7 @@ func InitDb() *gorm.DB {
 		log.Fatal("Failed to migrate the database:", err)
 	}
 	DB = db
-	SeedDB(db)
+	//SeedDB(db)
 	log.Println("Database connection established successfully.")
 	return db
 }
