@@ -148,13 +148,7 @@
                 <tr class={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
                     
                     <!-- Column 1 -->
-                    <td class="border p-2 text-center">
-                        {#if row.offer}
-                            {formatDate(row.offer.limit_date)}
-                        {:else}
-                            <span class="px-2 py-1 mx-auto w-4/5 block text-gray-500">None</span>
-                        {/if}
-                    </td>
+                    <td class="border p-2 text-center">{formatDate(row.limit_date)}</td>
 
                     <!-- Column 2 -->
                     <td class="border p-2 text-center">{row.resource_type}</td>
