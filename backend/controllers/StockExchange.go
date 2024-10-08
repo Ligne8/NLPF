@@ -152,15 +152,16 @@ func (sec *StockExchangeController) GetAllTractorOnMarket(c *gin.Context) {
 		MaxUnits       float64             `json:"max_units"`
 		MinPriceByKm   float64             `json:"min_price_by_km"`
 		CurrentPrice   float64             `json:"current_price"`
+		OfferId   uuid.UUID             `json:"offer_id"`
 	}
 
 	query := `
-		SELECT o.limit_date, t.id as tractor_id, t.resource_type, t.current_volume as current_units, t.max_volume as max_units, t.min_price_by_km, MAX(b.bid) as current_price
+		SELECT o.id as offer_id, o.limit_date, t.id as tractor_id, t.resource_type, t.current_volume as current_units, t.max_volume as max_units, t.min_price_by_km, MAX(b.bid) as current_price
 		FROM tractors t
 		JOIN offers o ON t.id = o.tractor_id
 		LEFT JOIN bids b ON o.id = b.offer_id
 		WHERE o.limit_date > (SELECT simulation_date FROM simulations LIMIT 1)
-		GROUP BY o.limit_date, t.id, t.resource_type, t.current_volume, t.max_volume, t.min_price_by_km
+		GROUP BY o.id, o.limit_date, t.id, t.resource_type, t.current_volume, t.max_volume, t.min_price_by_km
 		ORDER BY o.limit_date
 	`
 
@@ -190,15 +191,16 @@ func (sec *StockExchangeController) GetAllLotsOnMarket(c *gin.Context) {
 		Volume         float64             `json:"volume"`
 		MaxPriceByKm   float64             `json:"max_price_by_km"`
 		CurrentPrice   float64             `json:"current_price"`
+		OfferId   uuid.UUID             `json:"offer_id"`
 	}
 
 	query := `
-		SELECT o.limit_date, l.id as lot_id, l.resource_type, l.volume, l.max_price_by_km, MAX(b.bid) as current_price
+		SELECT o.id as offer_id, o.limit_date, l.id as lot_id, l.resource_type, l.volume, l.max_price_by_km, MIN(b.bid) as current_price
 		FROM lots l
 		JOIN offers o ON l.id = o.lot_id
 		LEFT JOIN bids b ON o.id = b.offer_id
 		WHERE o.limit_date > (SELECT simulation_date FROM simulations LIMIT 1)
-		GROUP BY o.limit_date, l.id, l.resource_type, l.volume, l.max_price_by_km
+		GROUP BY o.id, o.limit_date, l.id, l.resource_type, l.volume, l.max_price_by_km
 		ORDER BY o.limit_date
 	`
 
@@ -209,4 +211,68 @@ func (sec *StockExchangeController) GetAllLotsOnMarket(c *gin.Context) {
 
 
 	c.JSON(http.StatusOK, offers)
+}
+
+func (StockExchangeController *StockExchangeController) CreateBidLot(c *gin.Context) {
+	var requestBody struct {
+		Bid float64 `json:"bid" binding:"required"`
+		OfferId uuid.UUID `json:"offer_id" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&requestBody); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Parse the UUID of the offer ID
+	offerUUID, err := uuid.Parse(requestBody.OfferId.String())
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid offer ID format"})
+		return
+	}
+
+	var bid models.Bid;
+	bid.Bid = requestBody.Bid;
+	bid.OfferId = offerUUID;
+	bid.State = "in_progress";
+
+	if err := StockExchangeController.Db.Create(&bid).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"errorrr": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, bid)
+}
+
+func (StockExchangeController *StockExchangeController) CreateBidTractor(c *gin.Context) {
+	var requestBody struct {
+		Bid float64 `json:"bid" binding:"required"`
+		OfferId uuid.UUID `json:"offer_id" binding:"required"`
+		Volume float64 `json:"volume" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&requestBody); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Parse the UUID of the offer ID
+	offerUUID, err := uuid.Parse(requestBody.OfferId.String())
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid offer ID format"})
+		return
+	}
+
+	var bid models.Bid;
+	bid.Bid = requestBody.Bid;
+	bid.OfferId = offerUUID;
+	bid.State = "in_progress";
+	bid.Volume = requestBody.Volume;
+
+	if err := StockExchangeController.Db.Create(&bid).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"errorrr": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, bid)
 }
