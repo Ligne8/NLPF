@@ -538,6 +538,7 @@ func (TractorController *TractorController) AssignTraderToTractor(c *gin.Context
 	}
 
 	tractor.TraderId = &trader.Id
+	tractor.State = models.StateAtTrader
 	if err := TractorController.Db.Save(&tractor).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

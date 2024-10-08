@@ -82,6 +82,15 @@
         }
     })();
 
+    const publish = (rowId: string)=>{
+      axios.patch(`${API_BASE_URL}/tractors/updateState`, {id: rowId, state: "on_market"}).then((response)=>{
+        fetchTractors();
+      }).catch((err)=>{
+        console.error(err);
+      });
+
+    }
+
 </script>
 
 
@@ -152,10 +161,10 @@
                         <!-- Column 8 -->
                         <td class="border p-2 text-center">
                             <div class="flex flex-wrap justify-center space-x-2 space-y-2">
-                                {#if !row.offer && row.state === "at_trader"}
-                                    <button class="bg-blue-200 text-blue-800 px-4 py-2 flex items-center font-bold hover:bg-blue-300 transition-colors rounded-md">
+                                {#if row.offer != null && row.state === "at_trader"}
+                                    <button on:click={()=>{publish(row.id)}} class="bg-blue-200 text-blue-800 px-4 py-2 flex items-center font-bold hover:bg-blue-300 transition-colors rounded-md">
                                         <i class="fas fa-plus mr-2"></i>
-                                        Offer
+                                        Publish
                                     </button>
                                 {:else}
                                     <span class="text-gray-500">-</span>

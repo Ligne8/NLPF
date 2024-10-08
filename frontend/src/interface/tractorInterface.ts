@@ -6,6 +6,7 @@ export type Tractor = {
   name?: string;
   end_checkpoint?: any;
   start_checkpoint?: any;
+  offer?: any;
 
   current_checkpoint_id?: string;
   // TODO: add current_checkpoint
