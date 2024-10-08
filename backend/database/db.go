@@ -22,8 +22,15 @@ func InitDb() *gorm.DB {
 	if err != nil {
 		log.Fatal("Failed to migrate the database:", err)
 	}
-
 	DB = db
+	SeedDB(db)
 	log.Println("Database connection established successfully.")
 	return db
+}
+
+func SeedDB(db *gorm.DB) {
+	models.CreateCheckpoints(db)
+	SeedUsers(db)
+	SeedTractors(db)
+	SeedLots(DB)
 }

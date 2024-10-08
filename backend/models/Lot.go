@@ -58,6 +58,7 @@ func (lot *Lot) BeforeCreate(tx *gorm.DB) (err error) {
 		StateAtTrader:  true,
 		StateInTransit: true,
 		StateOnMarket:  true,
+		StatePending:   true,
 	}
 
 	if !validState[lot.State] {
