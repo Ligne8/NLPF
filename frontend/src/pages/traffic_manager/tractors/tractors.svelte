@@ -13,13 +13,27 @@
     let tractors: Tractor[]  = [];
     let routes: Route[]  = [];
     let routesLoaded: boolean = false;
+    let isStockExchangeModalOpen = false;
+    let selectedLotId: number = null;
     let selectedStatus: string = 'all';
     let sortOption: string = 'none';
+    let limitDate: string = '';
 
     interface Route {
         name: string;
         id: string;
         route_path: string;
+    }
+
+    // Open select date modal
+    const openStockExchangeModal = (lotId: number)=>{
+        selectedLotId = lotId;  
+        isStockExchangeModalOpen = true; 
+    }
+
+    // Close select date modal
+    const closeStockExchangeModal = ()=>{
+        isStockExchangeModalOpen = false; 
     }
 
     // Function to get tag color and text based on status
@@ -124,14 +138,24 @@
         });
     }
 
-    async function assignTractorToTrader(tractorId: string){
-        await axios.put(`${API_BASE_URL}/tractors/assign/${tractorId}/trader`)
-            .then((response) => {
-                fetchTableInfo();
-            }).catch((error) => {
-                console.error('Error assigning tractor to trader:', error.response);
-            });
-    }
+    // Assign tractor to trader
+    async function assignTractorToTrader(tractorId: string) {
+        if (limitDate == '') {
+            alert('Veuillez sélectionner une date limite.');
+            return;
+        }
+        const offerData = {
+            limit_date: new Date(limitDate).toISOString(),
+        };
+        await axios.post(`${API_BASE_URL}/tractors/assign/${tractorId}/trader`, offerData)
+        .then((response) => {
+            fetchTableInfo();
+            limitDate = ''; 
+            closeStockExchangeModal();
+        }).catch((error) => {
+            console.error('Error assigning tractor to trader:', error.response);
+        });
+        }
 
     // Update data depending on filters
     $: sortedData = (() => {
@@ -271,9 +295,13 @@
                                 <span class="px-2 py-1 mx-auto w-4/5 block text-gray-500">None</span>
                             {/if}
                         {:else}
-                            <span class="px-2 py-1 mx-auto w-4/5 block">
-                                {row.route.name}
-                            </span>
+                            {#if row.route}
+                                <span class="px-2 py-1 mx-auto w-4/5 block">
+                                    {row.route.name}
+                                </span>
+                            {:else}
+                                <span class="px-2 py-1 mx-auto w-4/5 block text-gray-500">None</span>
+                            {/if}
                         {/if}
                     </td>
 
@@ -293,7 +321,7 @@
                                     Start
                                 </button>
                                 <button class="bg-blue-200 text-blue-800 px-4 py-2 flex items-center font-bold hover:bg-blue-300 transition-colors rounded-md"
-                                    on:click={()=> assignTractorToTrader(row.id)}>
+                                    on:click={openStockExchangeModal(row.id)} >
                                     <i class="fas fa-plus mr-2"></i>
                                     Stock exchange
                                 </button>
@@ -314,3 +342,44 @@
         </table>
     </div>
 </main>
+
+<!-- svelte-ignore a11y-no-static-element-interactions -->
+<!-- svelte-ignore a11y-no-static-element-interactions -->
+<!-- svelte-ignore a11y-click-events-have-key-events -->
+<!-- svelte-ignore a11y-label-has-associated-control -->
+{#if isStockExchangeModalOpen}
+    <div class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
+         on:click={closeStockExchangeModal}>
+        <div class="bg-white p-6 rounded-lg shadow-lg w-1/3" on:click|stopPropagation>
+            <!-- Close Button -->
+            <button class="absolute top-2 right-2 text-gray-500 hover:text-gray-800" on:click={closeStockExchangeModal}>
+                &times;
+            </button>
+
+            <!-- Modal Title -->
+            <h2 class="text-2xl font-bold mb-6">Stock Exchange</h2>
+
+            <!-- Form -->
+            <form on:submit|preventDefault={assignTractorToTrader(selectedLotId)}>
+
+                <!-- Limit Date -->
+                <div class="mb-2">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Limit Date :</label>
+                    <input type="date"
+                           class="w-full border border-gray-300 p-2 rounded"
+                           bind:value={limitDate}
+                           required
+                    />
+                </div>
+
+                <!-- Submit button -->
+                <div class="flex justify-center mt-4">
+                    <button type="submit" class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600">
+                        <i class="fas fa-check"></i>
+                        <span class="font-bold">Submit</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+{/if}

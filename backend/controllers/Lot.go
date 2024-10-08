@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"net/http"
+	"time"
 	"tms-backend/models"
 
 	"github.com/gin-gonic/gin"
@@ -483,7 +484,7 @@ func (LotController *LotController) AssignTractorToLot(c *gin.Context) {
 		return
 	}
 
-	if err := transactionIn.CreateTransaction(LotController.Db, models.TransactionState(models.TransactionStateIn), lot.Id, tractor.Id, *tractor.RouteId, *lot.CurrentCheckpointId, *lot.TrafficManagerId, routeCheckpointStart.Id); err != nil {
+	if err := transactionIn.CreateTransaction(LotController.Db, models.TransactionState(models.TransactionStateIn), lot.Id, tractor.Id, *tractor.RouteId, *lot.StartCheckpointId, *lot.TrafficManagerId, routeCheckpointStart.Id); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -492,13 +493,17 @@ func (LotController *LotController) AssignTractorToLot(c *gin.Context) {
 		return
 	}
 
-	lot.TractorId = &tractor.Id
-	lot.State = models.StateInTransit
-	if err := lot.Save(LotController.Db); err != nil {
+	if err := lot.AssociateTractor(LotController.Db, tractor.Id); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-
+	if lot.StartCheckpointId.String() == tractor.CurrentCheckpointId.String() {
+		lot.InTractor = true;
+		lot.State = models.StateInTransit;
+		tractor.CurrentVolume += lot.Volume;
+		lot.Update(LotController.Db);
+		tractor.Update(LotController.Db);
+	}
 	c.JSON(http.StatusOK, lot)
 }
 
@@ -570,16 +575,88 @@ func (LotController *LotController) AssignTraderToLot(c *gin.Context) {
 	}
 
 	lot.TraderId = &trader.Id
-	if err := LotController.Db.Save(&lot).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
 	lot.State = models.StateAtTrader
 	if err := LotController.Db.Save(&lot).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
+	var requestBody struct {
+		Date     string `json:"limit_date" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&requestBody); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	var offer models.Offer;
+	parsedDate, err := time.Parse(time.RFC3339, requestBody.Date)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date format"})
+		return
+	}
+	var offerId uuid.UUID;
+	offerId, err = offer.CreateOfferLot(LotController.Db, parsedDate, lot.Id);
+	if err != nil {	
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	lot.OfferId = &offerId;
+	if err := LotController.Db.Save(&lot).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
 	c.JSON(http.StatusOK, lot)
+}
+
+// GetAllLotTraderId : Get all lots with trader id
+//
+// @Summary      Get all lots with trader id
+// @Tags         lots
+// @Accept       json
+// @Produce      json
+// @Param        trader_id  path  string  true  "Trader Id"
+// @Success      200  {array}  models.Lot
+// @Failure      400  "Invalid trader_id"
+// @Failure      404  "Trader not found"
+// @Failure      500  "Unable to retrieve lots"
+// @Router       /lots/trader/{trader_id} [get]
+func (LotController *LotController) GetAllLotTraderId(c *gin.Context) {
+	var lots []models.Lot
+	traderId := c.Param("trader_id")
+	traderIdUUID, errIdUUID := uuid.Parse(traderId)
+
+	// Validate trader_id
+	if errIdUUID != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid trader_id"})
+		return
+	}
+
+	// Check if the trader exists
+	var trader models.User
+	if err := LotController.Db.First(&trader, "id = ? AND role = ?", traderIdUUID, "trader").Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Trader not found"})
+		return
+	}
+
+	// Retrieve lots for the trader with associated offers and current price from bids
+	if err := LotController.Db.Preload("StartCheckpoint").
+		Preload("EndCheckpoint").
+		Preload("Offer").
+		Where("trader_id = ?", traderIdUUID).
+		Find(&lots).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to retrieve lots", "details": err.Error()})
+		return
+	}
+	for i := range lots {
+		var maxBid float64
+		LotController.Db.Raw("SELECT COALESCE(MAX(bid), 0) FROM bids WHERE offer_id = ?", lots[i].OfferId).Scan(&maxBid)
+		lots[i].CurrentPrice = maxBid
+	}
+
+
+	// Return the enriched lots in the JSON response
+	c.JSON(http.StatusOK, lots)
 }

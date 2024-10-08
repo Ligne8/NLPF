@@ -2,23 +2,23 @@
     import Navbar from '@components/Navbar.svelte';
     import StockExchangeNavbar from '@components/StockExchangeNavbar.svelte';
     import { userRole } from '@stores/store';
+    import axios from 'axios';
+    import type { Lot } from 'src/interface/lotInterface';
+    import { onMount } from 'svelte';
 
     // Variables
     let title: string = 'Lot market';
     let subtitle: string = 'Explore a wide selection of lots with dynamic volumes and prices.';
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
     let isModalOpen = false;
     let priceValue: number = 1.0;
     let minPriceValue: number = 1.0;
     let maxPriceValue: number = 10.0;
     let volumeValue: number = 1.0;
     let minVolumeValue: number = 1.0;
-
-    // Example data
-    const tableData = [
-        { id: 1, expirationDate: 1695564000000, type: 'Bulk', volume: 500, maxPrice: 2.5, currentPrice: 3.2 },
-        { id: 2, expirationDate: 1698242400000, type: 'Liquid', volume: 800, maxPrice: 1.8, currentPrice: 2.1 },
-        { id: 3, expirationDate: 1700834400000, type: 'Solid', volume: 300, maxPrice: 3.0, currentPrice: 3.5 }
-    ];
+    let lots: Lot[] = [];
+    let selectedStatus: string = 'all';
+    let sortOption: string = 'none';
 
     // Function to format timestamp into DD/MM/YYYY
     const formatDate = (timestamp: number) => {
@@ -51,9 +51,41 @@
 
     // Function to bid
     function bid() {
-        console.log("Form submitted!");
         closeModal();
     }
+
+    // Fetch table info
+    async function fetchLots() {
+        await axios.get(`${API_BASE_URL}/stock_exchange/lot_offers`)
+            .then((response) => {
+                lots = response.data;
+            }).catch((error) => {
+                console.error('Error fetching lots:', error.response);
+            });
+    }
+
+    // Fetch all data
+    onMount(() => {
+        fetchLots();
+    });
+
+    // Update data depending on filters
+    $: sortedData = (() => {
+        let data = selectedStatus === 'all' ? lots : lots.filter(lot => lot.state === selectedStatus);
+
+        switch (sortOption) {
+            case 'volume_asc':
+                return data.sort((a, b) => a.volume - b.volume);
+            case 'volume_desc':
+                return data.sort((a, b) => b.volume - a.volume);
+            case 'location_asc':
+                return data.sort((a, b) => a.current_checkpoint.name.localeCompare(b.current_checkpoint.name));
+            case 'location_desc':
+                return data.sort((a, b) => b.current_checkpoint.name.localeCompare(a.current_checkpoint.name));
+            default:
+                return data;
+        }
+    })();
 
 </script>
 
@@ -65,51 +97,77 @@
 <main class="p-10 mt-40">
 
     <!-- Title and subtitle -->
-    <section>
-        <h1 class="text-4xl font-bold mb-4">{title}</h1>
-        <h2 class="text-2xl mb-8 text-gray-600">{subtitle}</h2>
+    <div class="mb-2">
+        <h1 class="text-4xl font-bold mb-2">{title}</h1>
+        <h2 class="text-2xl text-gray-600">{subtitle}</h2>
+    </div>
+
+    <section class="flex justify-between items-center mb-4">
+
+        <div class="flex justify-between items-center self-end">
+
+            <!-- Filter by status -->
+            <select bind:value={selectedStatus} class="mr-2 border border-gray-300 rounded px-2 py-1">
+                <option value="all" disabled selected>Filter by status</option>
+                <option value="all">All</option>
+                <option value="available">Available</option>
+                <option value="pending">Pending</option>
+                <option value="in_transit">In transit</option>
+                <option value="on_market">On market</option>
+                <option value="archived">Archived</option>
+            </select>
+
+            <!-- Sort by volume and location -->
+            <select bind:value={sortOption} class="border border-gray-300 rounded px-2 py-1">
+                <option value="none" disabled selected>Sort by</option>
+                <option value="volume_asc">Volume (Ascending)</option>
+                <option value="volume_desc">Volume (Descending)</option>
+                <option value="location_asc">Location (A-Z)</option>
+                <option value="location_desc">Location (Z-A)</option>
+            </select>
+
+        </div>
+
     </section>
 
     <table class="table-auto w-full border-collapse border border-gray-300">
         <thead>
             <tr class="bg-gray-100">
-                <th class="border p-2 text-center">ID</th>
                 <th class="border p-2 text-center">Expiration date</th>
                 <th class="border p-2 text-center">Type</th>
                 <th class="border p-2 text-center">Volume<br><span class="font-normal">(in m³)</span></th>
                 <th class="border p-2 text-center">Maximum price<br><span class="font-normal">(in €/km)</span></th>
                 <th class="border p-2 text-center">Current price<br><span class="font-normal">(in €/km)</span></th>
-                <th class="border p-2 text-center">Actions</th>
+                {#if $userRole === "client"}
+                    <th class="border p-2 text-center">Actions</th>
+                {/if}
             </tr>
         </thead>
         <tbody>
-            {#each tableData as row, index}
+            {#each sortedData as row, index}
                 <tr class={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
-
+                    
                     <!-- Column 1 -->
-                    <td class="border p-2 text-center">{row.id}</td>
-                    
-                    <!-- Column 2 -->
-                    <td class="border p-2 text-center">{formatDate(row.expirationDate)}</td>
+                    <td class="border p-2 text-center">{formatDate(row.limit_date)}</td>
 
-                    <!-- Column 3 -->
-                    <td class="border p-2 text-center">{row.type}</td>
+                    <!-- Column 2 -->
+                    <td class="border p-2 text-center">{row.resource_type}</td>
                     
-                    <!-- Column 4 -->
+                    <!-- Column 3 -->
                     <td class="border p-2 text-center">{row.volume}</td>
                     
+                    <!-- Column 4 -->
+                    <td class="border p-2 text-center">{row.max_price_by_km.toFixed(2)}</td>
+                    
                     <!-- Column 5 -->
-                    <td class="border p-2 text-center">{row.maxPrice.toFixed(2)}</td>
+                    <td class="border p-2 text-center">{row.current_price.toFixed(2)}</td>
                     
                     <!-- Column 6 -->
-                    <td class="border p-2 text-center">{row.currentPrice.toFixed(2)}</td>
-                    
-                    <!-- Column 7 -->
                     {#if $userRole === "client"}
                         <td class="border p-2 text-center">
                             <div class="flex flex-wrap justify-center space-x-2 space-y-2">
                                 <button class="bg-blue-200 text-blue-800 px-4 py-2 flex items-center font-bold hover:bg-blue-300 transition-colors rounded-md"
-                                    on:click={() => openModal(row.currentPrice)}
+                                    on:click={() => openModal(row.current_price)}
                                 >
                                     <i class="fas fa-coins mr-2"></i>
                                     Bid

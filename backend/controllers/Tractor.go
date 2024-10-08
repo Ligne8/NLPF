@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"net/http"
+	"time"
 	"tms-backend/models"
 
 	"github.com/gin-gonic/gin"
@@ -537,16 +538,88 @@ func (TractorController *TractorController) AssignTraderToTractor(c *gin.Context
 	}
 
 	tractor.TraderId = &trader.Id
-	if err := TractorController.Db.Save(&tractor).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
 	tractor.State = models.StateAtTrader
 	if err := TractorController.Db.Save(&tractor).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
+	var requestBody struct {
+		Date string `json:"limit_date" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&requestBody); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	var offer models.Offer
+	parsedDate, err := time.Parse(time.RFC3339, requestBody.Date)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date format"})
+		return
+	}
+	var offerId uuid.UUID
+	offerId, err = offer.CreateOfferTractor(TractorController.Db, parsedDate, tractor.Id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	tractor.OfferId = &offerId
+	if err := TractorController.Db.Save(&tractor).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
 	c.JSON(http.StatusOK, tractor)
+}
+
+// GetAllTractorTraderId : Get all tractors with trader id
+//
+// @Summary      Get all tractors with trader id
+// @Tags         tractors
+// @Accept       json
+// @Produce      json
+// @Param        trader_id  path  string  true  "Trader Id"
+// @Success      200  {array}  models.Tractor
+// @Failure      400  "Invalid trader_id"
+// @Failure      404  "Trader not found"
+// @Failure      500  "Unable to retrieve tractors"
+// @Router       /tractors/trader/{trader_id} [get]
+func (TractorController *TractorController) GetAllTractorTraderId(c *gin.Context) {
+	var tractors []models.Tractor
+	traderId := c.Param("trader_id")
+	traderIdUUID, errIdUUID := uuid.Parse(traderId)
+
+	// Validate trader_id
+	if errIdUUID != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid trader_id"})
+		return
+	}
+
+	// Check if the trader exists
+	var trader models.User
+	if err := TractorController.Db.First(&trader, "id = ? AND role = ?", traderIdUUID, "trader").Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Trader not found"})
+		return
+	}
+
+	// Retrieve tractors for the trader with associated offers
+	if err := TractorController.Db.Preload("StartCheckpoint").
+		Preload("EndCheckpoint").
+		Preload("Route").
+		Preload("Offer"). // Preload associated offers
+		Where("trader_id = ?", traderIdUUID).
+		Find(&tractors).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to retrieve tractors", "details": err.Error()})
+		return
+	}
+	for i := range tractors {
+		var maxBid float64
+		TractorController.Db.Raw("SELECT COALESCE(MAX(bid), 0) FROM bids WHERE offer_id = ?", tractors[i].OfferId).Scan(&maxBid)
+		tractors[i].CurrentPrice = maxBid
+	}
+
+	// Return the enriched tractors in the JSON response
+	c.JSON(http.StatusOK, tractors)
 }
