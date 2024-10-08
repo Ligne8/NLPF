@@ -31,7 +31,7 @@
                 return { color: 'bg-blue-200 text-blue-800', text: '◉ On market' };
             case 'at_trader':
                 return { color: 'bg-purple-200 text-purple-800', text: '◉ At trader' };
-            case 'archived':
+            case 'archive':
                 return { color: 'bg-gray-200 text-gray-800', text: '◉ Archived' };
             default:
                 return { color: 'bg-gray-200 text-gray-800', text: '🛇 Unknown' };
