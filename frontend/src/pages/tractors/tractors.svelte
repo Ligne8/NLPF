@@ -383,7 +383,8 @@
                             </select>
                         {:else}
                                 <span class="px-2 py-1 mx-auto w-4/5 block">
-                                    {row.trafficManager.username}
+                                    {console.log(row.trafficManager)}
+                                    {row.trafficManager}
                                 </span>
                         {/if}
                     </td>
