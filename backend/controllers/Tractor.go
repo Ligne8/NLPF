@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"net/http"
+	"time"
 	"tms-backend/models"
 
 	"github.com/gin-gonic/gin"
@@ -542,7 +543,28 @@ func (TractorController *TractorController) AssignTraderToTractor(c *gin.Context
 		return
 	}
 
-	tractor.State = models.StateAtTrader
+	var requestBody struct {
+		Date string `json:"limit_date" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&requestBody); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	var offer models.Offer
+	parsedDate, err := time.Parse(time.RFC3339, requestBody.Date)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date format"})
+		return
+	}
+	var offerId uuid.UUID
+	offerId, err = offer.CreateOfferTractor(TractorController.Db, parsedDate, tractor.Id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	tractor.OfferId = &offerId
 	if err := TractorController.Db.Save(&tractor).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -591,21 +613,10 @@ func (TractorController *TractorController) GetAllTractorTraderId(c *gin.Context
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to retrieve tractors", "details": err.Error()})
 		return
 	}
-
-	// For each tractor, retrieve the current price from the Bid table based on the associated offer
-	for i, tractor := range tractors {
-		if tractor.Offer != nil {
-			var bid models.Bid
-			if err := TractorController.Db.Where("offer_id = ?", tractor.Offer.Id).
-				Order("created_at DESC").
-				First(&bid).Error; err == nil {
-				tractors[i].CurrentPrice = bid.Bid // Set current price based on the latest bid
-			} else {
-				tractors[i].CurrentPrice = 0 // No bid found for this offer
-			}
-		} else {
-			tractors[i].CurrentPrice = 0 // No offer associated with this tractor
-		}
+	for i := range tractors {
+		var maxBid float64
+		TractorController.Db.Raw("SELECT COALESCE(MAX(bid), 0) FROM bids WHERE offer_id = ?", tractors[i].OfferId).Scan(&maxBid)
+		tractors[i].CurrentPrice = maxBid
 	}
 
 	// Return the enriched tractors in the JSON response

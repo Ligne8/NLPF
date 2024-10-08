@@ -29,7 +29,7 @@ func (offer *Offer) BeforeCreate(tx *gorm.DB) (err error) {
 	return
 }
 
-func (offer *Offer) CreateOfferLot(db *gorm.DB, limitDate time.Time, lotId uuid.UUID) (uuid.UUID,error) {
+func (offer *Offer) CreateOfferLot(db *gorm.DB, limitDate time.Time, lotId uuid.UUID) (uuid.UUID, error) {
 	var o = Offer{
 		LimitDate: limitDate,
 		LotId:     &lotId,
@@ -40,10 +40,13 @@ func (offer *Offer) CreateOfferLot(db *gorm.DB, limitDate time.Time, lotId uuid.
 	return o.Id, nil
 }
 
-func (offer *Offer) CreateOfferTractor(db *gorm.DB, limitDate time.Time, tractorId uuid.UUID) error {
+func (offer *Offer) CreateOfferTractor(db *gorm.DB, limitDate time.Time, tractorId uuid.UUID) (uuid.UUID, error) {
 	var o = Offer{
 		LimitDate: limitDate,
 		TractorId: &tractorId,
 	}
-	return db.Create(&o).Error
+	if err := db.Create(&o).Error; err != nil {
+		return uuid.Nil, err
+	}
+	return o.Id, nil
 }
