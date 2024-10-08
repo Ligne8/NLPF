@@ -429,9 +429,13 @@
                                 {/each}
                             </select>
                         {:else}
-                                <span class="px-2 py-1 mx-auto w-4/5 block">
-                                    {row.trafficManager.username}
-                                </span>
+                                {#if row.trafficManager}
+                                    <span class="px-2 py-1 mx-auto w-4/5 block">
+                                        {row.trafficManager.username}
+                                    </span>
+                                {:else}
+                                    <span class="px-2 py-1 mx-auto w-4/5 block text-gray-500">None</span>
+                                {/if}
                         {/if}
                     </td>
 
