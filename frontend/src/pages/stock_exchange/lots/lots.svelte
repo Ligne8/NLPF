@@ -51,7 +51,6 @@
 
     // Function to bid
     function bid() {
-        console.log("Form submitted!");
         closeModal();
     }
 
@@ -79,7 +78,9 @@
                 <th class="border p-2 text-center">Volume<br><span class="font-normal">(in m³)</span></th>
                 <th class="border p-2 text-center">Maximum price<br><span class="font-normal">(in €/km)</span></th>
                 <th class="border p-2 text-center">Current price<br><span class="font-normal">(in €/km)</span></th>
-                <th class="border p-2 text-center">Actions</th>
+                {#if $userRole === "client"}
+                    <th class="border p-2 text-center">Actions</th>
+                {/if}
             </tr>
         </thead>
         <tbody>

@@ -93,7 +93,7 @@
             else if (elt.type == MarkerType.TRACTOR)
             {
                 // Routes
-                if (elt.route !== null && showRoutes)
+                if (elt.route !== null && elt.state === 'in_transit' && showRoutes)
                 {
                     const checkpoints = await getCheckpointsByRouteID(elt.route_id);
                     let coords = [];

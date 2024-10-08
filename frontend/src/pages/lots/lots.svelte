@@ -1,13 +1,14 @@
 <script lang="ts">
-    import { onMount } from 'svelte';
+    import {onMount} from 'svelte';
     import Navbar from '@components/Navbar.svelte';
     import {userId} from "@stores/store";
+    import axios from "axios";
 
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
     interface Checkpoint {
-      id: string;
-      name: string;
+        id: string;
+        name: string;
     }
 
     let title: string = 'Lot management';
@@ -24,20 +25,23 @@
     let trafficManagers: TrafficManager[] = [];
     let selectedStatus: string = 'all';
     let sortOption: string = 'none';
-    
+    let isStockExchangeModalOpen = false;
+    let limitDate: string = '';
+    let selectedLotId: string = ''; // Utilisé pour stocker l'ID du lot pour l'offre
+
     interface TrafficManager {
-      id: string;
-      name: string;
+        id: string;
+        name: string;
     }
 
     interface LotTable {
-      id: string
-      state: string;
-      volume: number;
-      currentCheckpoint: string;
-      startCheckpoint: string;
-      endCheckpoint: string;
-      trafficManager: TrafficManager;
+        id: string
+        state: string;
+        volume: number;
+        currentCheckpoint: string;
+        startCheckpoint: string;
+        endCheckpoint: string;
+        trafficManager: TrafficManager;
     }
 
     const fetchAllData = async () => {
@@ -48,26 +52,26 @@
 
     // Fetch all data
     onMount(async () => {
-      await fetchAllData();
+        await fetchAllData();
     });
 
     // Function to get tag color and text based on status
     function getStatusInfo(state: string): { color: string; text: string } {
         switch (state) {
             case 'available':
-                return { color: 'bg-green-200 text-green-800', text: '◉ Available' };
+                return {color: 'bg-green-200 text-green-800', text: '◉ Available'};
             case 'pending':
-                return { color: 'bg-yellow-200 text-yellow-800', text: '◉ Pending' };
+                return {color: 'bg-yellow-200 text-yellow-800', text: '◉ Pending'};
             case 'in_transit':
-                return { color: 'bg-orange-200 text-orange-800', text: '◉ In transit' };
+                return {color: 'bg-orange-200 text-orange-800', text: '◉ In transit'};
             case 'on_market':
-                return { color: 'bg-blue-200 text-blue-800', text: '◉ On market' };
-            case 'archived':
-                return { color: 'bg-gray-200 text-gray-800', text: '◉ Archived' };
+                return {color: 'bg-blue-200 text-blue-800', text: '◉ On market'};
+            case 'archive':
+                return {color: 'bg-gray-200 text-gray-800', text: '◉ Archived'};
             case 'at_trader':
-                return { color: 'bg-purple-200 text-purple-800', text: '◉ At trader' };
+                return {color: 'bg-purple-200 text-purple-800', text: '◉ At trader'};
             default:
-                return { color: 'bg-gray-200 text-gray-800', text: '🛇 Unknown' };
+                return {color: 'bg-gray-200 text-gray-800', text: '🛇 Unknown'};
         }
     }
 
@@ -89,55 +93,55 @@
         maxPrice = input.value;
     }
 
-    async function fetchTrafficManagers(){
-      try {
-        const response = await fetch(`${API_BASE_URL}/users/traffic_managers`);
-        if (response.ok) {
-          const data = await response.json();
-          trafficManagers = data.map((trafficManager: any) => ({id: trafficManager.id, name: `${trafficManager.username}`}));
-        } else {
-          console.error('Failed to fetch traffic managers:', response.status);
+    async function fetchTrafficManagers() {
+        try {
+            const response = await fetch(`${API_BASE_URL}/users/traffic_managers`);
+            if (response.ok) {
+                const data = await response.json();
+                trafficManagers = data.map((trafficManager: any) => ({
+                    id: trafficManager.id,
+                    name: `${trafficManager.username}`
+                }));
+            } else {
+                console.error('Failed to fetch traffic managers:', response.status);
+            }
+        } catch (error) {
+            console.error('Error fetching traffic managers:', error);
         }
-      } catch (error) {
-        console.error('Error fetching traffic managers:', error);
-      }
     }
 
     async function fetchLots() {
-      try {
-        const response = await fetch(`${API_BASE_URL}/lots/owner/${$userId}`);
-        if (response.ok) {
-          const data = await response.json();
-          tableData = data.map((lot: any) => ({
-            id: lot.id,
-            state: lot.state,
-            volume: lot.volume,
-            currentCheckpoint: lot.current_checkpoint.name,
-            startCheckpoint: lot.start_checkpoint.name,
-            endCheckpoint: lot.end_checkpoint.name,
-            trafficManager: lot.traffic_manager == null ? null : lot.traffic_manager.username,
-            createdAt: new Date(lot.created_at)
-          })).sort((a:any, b:any) => b.createdAt - a.createdAt);
-        } else {
-          console.error('Failed to fetch lots:', response.status);
+        try {
+            const response = await fetch(`${API_BASE_URL}/lots/owner/${$userId}`);
+            if (response.ok) {
+                const data = await response.json();
+                tableData = data.map((lot: any) => ({
+                    id: lot.id,
+                    state: lot.state,
+                    volume: lot.volume,
+                    currentCheckpoint: lot.current_checkpoint.name,
+                    startCheckpoint: lot.start_checkpoint.name,
+                    endCheckpoint: lot.end_checkpoint.name,
+                    trafficManager: lot.traffic_manager == null ? null : lot.traffic_manager.username,
+                    createdAt: new Date(lot.created_at)
+                })).sort((a: any, b: any) => b.createdAt - a.createdAt);
+            } else {
+                console.error('Failed to fetch lots:', response.status);
+            }
+        } catch (error) {
+            console.error('Error fetching lots:', error);
         }
-      } catch (error) {
-        console.error('Error fetching lots:', error);
-      }
     }
 
-    async function fetchCheckpoints(){
+    async function fetchCheckpoints() {
         try {
             const response = await fetch(`${API_BASE_URL}/checkpoints`);
-            if (response.ok)
-            {
+            if (response.ok) {
                 const data = await response.json();
                 checkpoints = data.map((checkpoint: any) => ({name: checkpoint.name, id: checkpoint.id}));
                 selectedDeparture = checkpoints[0];
                 selectedArrival = checkpoints.length > 1 ? checkpoints[1] : checkpoints[0];
-            }
-            else
-            {
+            } else {
                 console.error('Failed to fetch checkpoints:', response.status);
             }
         } catch (error) {
@@ -174,7 +178,7 @@
             },
             body: JSON.stringify(newLot)
         }).then(response => {
-          fetchLots();
+            fetchLots();
         }).catch(error => {
             console.error('Error adding lot:', error);
         });
@@ -192,38 +196,79 @@
     }
 
     const assignToTrafficManager = (lotId: string, trafficManager: TrafficManager) => {
-      if (trafficManager == null) {
-        console.error('Traffic manager is null');
-        alert('Veuillez sélectionner un traffic manager');
-        return;
-      }
-      fetch(`${API_BASE_URL}/lots/traffic_manager`, {
-          method: 'POST',
-          headers: {
-              'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ traffic_manager_id: trafficManager.id, lot_id: lotId })
-      }).then(response => {
-          fetchLots();
-          alert('Lot attribué avec succès');
-      }).catch(error => {
-          console.error('Error assigning lot to traffic manager:', error);
-          alert('Erreur lors de l\'attribution du lot');
-      });
+        if (trafficManager == null) {
+            console.error('Traffic manager is null');
+            alert('Veuillez sélectionner un traffic manager');
+            return;
+        }
+        fetch(`${API_BASE_URL}/lots/traffic_manager`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({traffic_manager_id: trafficManager.id, lot_id: lotId})
+        }).then(response => {
+            fetchLots();
+        }).catch(error => {
+            console.error('Error assigning lot to traffic manager:', error);
+            alert('Erreur lors de l\'attribution du lot');
+        });
     }
 
     // Fucntion to delete a lot
     const deleteLot = (lotId: string) => {
-      fetch(`${API_BASE_URL}/lots/${lotId}`, {
-          method: 'DELETE'
-      }).then(response => {
-          fetchLots();
-          alert('Lot supprimé avec succès');
-      }).catch(error => {
-          console.error('Error deleting lot:', error);
-          alert('Erreur lors de la suppression du lot');
-      });
+        fetch(`${API_BASE_URL}/lots/${lotId}`, {
+            method: 'DELETE'
+        }).then(response => {
+            fetchLots();
+        }).catch(error => {
+            console.error('Error deleting lot:', error);
+            alert('Erreur lors de la suppression du lot');
+        });
     }
+
+    function openStockExchangeModal(lotId: string) {
+        selectedLotId = lotId;
+        isStockExchangeModalOpen = true;
+    }
+
+    function closeStockExchangeModal() {
+        isStockExchangeModalOpen = false;
+        limitDate = ''; // Réinitialiser la date après fermeture
+    }
+
+    // Function to create a stock exchange offer for lot
+    async function createStockExchangeOffer() {
+        if (!limitDate) {
+            alert('Veuillez sélectionner une date limite.');
+            return;
+        }
+
+        const offerData = {
+            limit_date: new Date(limitDate).toISOString(),
+            lot_id: selectedLotId
+        };
+
+        try {
+            const response = await axios.post(`${API_BASE_URL}/stock_exchange/lot_offers`, offerData, {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.status === 201) {
+                closeStockExchangeModal();
+                fetchLots();
+            } else {
+                console.error('Failed to create stock exchange offer:', response.status);
+                alert('Erreur lors de la création de l\'offre.');
+            }
+        } catch (error) {
+            console.error('Error creating stock exchange offer:', error);
+            alert('Erreur lors de la création de l\'offre.');
+        }
+    }
+
 
     // Update data depending on filters
     $: sortedData = (() => {
@@ -344,13 +389,20 @@
                     <!-- Column 6 -->
                     <td class="border p-2 text-center">
                         {#if row.state === 'available'}
-                            <select bind:value={row.trafficManager}  class="border border-gray-300 rounded px-2 py-1 mx-auto w-4/5">
+                            <select bind:value={row.trafficManager}
+                                    class="border border-gray-300 rounded px-2 py-1 mx-auto w-4/5">
                                 {#each trafficManagers as trafficManagerOption}
                                     <option value={trafficManagerOption}>{trafficManagerOption.name}</option>
                                 {/each}
                             </select>
                         {:else}
-                            <span class="text-gray-500">{row.trafficManager}</span>
+                            {#if row.trafficManager}
+                                <span class="px-2 py-1 mx-auto w-4/5 block">
+                                    {row.trafficManager}
+                                </span>
+                            {:else}
+                                <span class="px-2 py-1 mx-auto w-4/5 block text-gray-500">None</span>
+                            {/if}
                         {/if}
                     </td>
 
@@ -358,15 +410,18 @@
                     <td class="border p-2 text-center">
                         {#if row.state === 'available'}
                             <div class="flex flex-wrap justify-center space-x-2 space-y-2">
-                                <button on:click={()=>{assignToTrafficManager(row.id, row.trafficManager)}} class="bg-green-200 text-green-800 px-4 py-2 flex items-center font-bold hover:bg-green-300 transition-colors rounded-md">
+                                <button on:click={()=>{assignToTrafficManager(row.id, row.trafficManager)}}
+                                        class="bg-green-200 text-green-800 px-4 py-2 flex items-center font-bold hover:bg-green-300 transition-colors rounded-md">
                                     <i class="fas fa-truck mr-2"></i>
                                     Assign
                                 </button>
-                                <button class="bg-blue-200 text-blue-800 px-4 py-2 flex items-center font-bold hover:bg-blue-300 transition-colors rounded-md">
+                                <button on:click={() => openStockExchangeModal(row.id)}
+                                        class="bg-blue-200 text-blue-800 px-4 py-2 flex items-center font-bold hover:bg-blue-300 transition-colors rounded-md">
                                     <i class="fas fa-plus mr-2"></i>
                                     Stock exchange
                                 </button>
-                                <button on:click={()=>{deleteLot(row.id)}} class="bg-gray-800 text-white px-4 py-2 flex items-center font-bold hover:bg-black transition-colors rounded-md">
+                                <button on:click={()=>{deleteLot(row.id)}}
+                                        class="bg-gray-800 text-white px-4 py-2 flex items-center font-bold hover:bg-black transition-colors rounded-md">
                                     <i class="fas fa-right-from-bracket mr-2"></i>
                                     Retirer
                                 </button>
@@ -467,6 +522,43 @@
                     <button type="submit" class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600">
                         <i class="fas fa-plus"></i>
                         <span class="font-bold">Add</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+{/if}
+
+{#if isStockExchangeModalOpen}
+    <div class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
+         on:click={closeStockExchangeModal}>
+        <div class="bg-white p-6 rounded-lg shadow-lg w-1/3" on:click|stopPropagation>
+            <!-- Close Button -->
+            <button class="absolute top-2 right-2 text-gray-500 hover:text-gray-800" on:click={closeStockExchangeModal}>
+                &times;
+            </button>
+
+            <!-- Modal Title -->
+            <h2 class="text-2xl font-bold mb-6">Stock Exchange</h2>
+
+            <!-- Form -->
+            <form on:submit|preventDefault={createStockExchangeOffer}>
+
+                <!-- Limit Date -->
+                <div class="mb-2">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Limit Date :</label>
+                    <input type="date"
+                           class="w-full border border-gray-300 p-2 rounded"
+                           bind:value={limitDate}
+                           required
+                    />
+                </div>
+
+                <!-- Submit button -->
+                <div class="flex justify-center mt-4">
+                    <button type="submit" class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600">
+                        <i class="fas fa-check"></i>
+                        <span class="font-bold">Submit</span>
                     </button>
                 </div>
             </form>

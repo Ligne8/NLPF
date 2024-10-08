@@ -57,6 +57,7 @@ func (tractor *Tractor) BeforeCreate(tx *gorm.DB) (err error) {
 		StateAtTrader:  true,
 		StateInTransit: true,
 		StateOnMarket:  true,
+		StatePending:   true,
 	}
 
 	if !validState[tractor.State] {
@@ -154,23 +155,23 @@ func (tractor *Tractor) UpdateNextCheckpoint(db *gorm.DB) error {
 }
 
 func (tractor *Tractor) GetVolumeAtCheckpoint(db *gorm.DB, checkpointId uuid.UUID) (float64, error) {
-	var transactionModel Transaction;
-	 if tractor.RouteId == nil {
+	var transactionModel Transaction
+	if tractor.RouteId == nil {
 		return 0, errors.New("Tractor has no route")
 	}
-	var routeModel Route;
+	var routeModel Route
 	// je récupère le checkpoint actuel
-	var currentCheckpointId uuid.UUID = checkpointId;
-	var currentRouteCheckpoint RouteCheckpoint;
-	var allRouteCheckpoints []RouteCheckpoint;
+	var currentCheckpointId uuid.UUID = checkpointId
+	var currentRouteCheckpoint RouteCheckpoint
+	var allRouteCheckpoints []RouteCheckpoint
 	// je récupère tous les checkpoints de la route du tracteur
-	allRouteCheckpoints, err := routeModel.GetRouteCheckpoint(db, *tractor.RouteId);
+	allRouteCheckpoints, err := routeModel.GetRouteCheckpoint(db, *tractor.RouteId)
 	if err != nil {
-		return 0, err;
+		return 0, err
 	}
 	// je récupère le route checkpoint actuel
 	if err := currentRouteCheckpoint.GetRouteCheckpoint(db, *tractor.RouteId, currentCheckpointId); err != nil {
-		return 0, err;
+		return 0, err
 	}
 	// je filtre les checkpoints pour ne garder que ceux avant le checkpoint actuel
 	var filteredRouteCheckpoints []RouteCheckpoint
@@ -180,10 +181,10 @@ func (tractor *Tractor) GetVolumeAtCheckpoint(db *gorm.DB, checkpointId uuid.UUI
 		}
 	}
 	allRouteCheckpoints = filteredRouteCheckpoints
-	var result float64 = 0;
+	var result float64 = 0
 	// je parcours les transactions pour calculer le volume du tracteur
 	for _, checkpoint := range allRouteCheckpoints {
-		var transaction []Transaction;
+		var transaction []Transaction
 		// je récupère les transactions du tracteur pour le checkpoint actuel
 		transaction, err = transactionModel.FindByRouteIdAndCheckpointIdAndTractorId(db, *tractor.RouteId, checkpoint.CheckpointId, tractor.Id);
 		if err != nil{
@@ -194,15 +195,15 @@ func (tractor *Tractor) GetVolumeAtCheckpoint(db *gorm.DB, checkpointId uuid.UUI
 			// je vérifie si la transaction est une entrée ou une sortie
 			if transaction.TransactionType == TransactionState(TransactionStateIn) {
 				// si c'est une entrée, j'ajoute le volume
-				result += transaction.Lot.Volume;
+				result += transaction.Lot.Volume
 			} else {
 				// si c'est une sortie, je soustrait le volume
-				result -= transaction.Lot.Volume;
+				result -= transaction.Lot.Volume
 			}
 		}
-	} 
+	}
 	// si le checkpoint n'a pas été trouvé, je retourne une erreur
-	return result,nil;
+	return result, nil
 }
 
 func (tractor *Tractor) ExecTransaction(db *gorm.DB) error {

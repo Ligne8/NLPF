@@ -15,7 +15,6 @@
                 password,
             });
             if (response.status === 200) {
-                console.log(response.data);
                 userId.set(response.data.user.id);
                 userRole.set(response.data.user.role);
                 window.location.href = '/';
