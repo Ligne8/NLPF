@@ -50,7 +50,6 @@
             {
                 const data = await response.json();
                 checkpoints = data.map((checkpoint: any) => ({name: checkpoint.name, id: checkpoint.id}));
-                console.log(checkpoints[0]);
                 selectedCheckpoints = [checkpoints[0]];
             }
             else
