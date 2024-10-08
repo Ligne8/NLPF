@@ -43,6 +43,7 @@ type Lot struct {
 	OfferId             *uuid.UUID   `json:"offer_id" gorm:""`
 	Offer               *Offer       `json:"offer" gorm:"foreignKey:OfferId"`
 	CurrentPrice        float64      `json:"current_price" gorm:"-"`
+	InTractor 					  bool         `json:"in_tractor" gorm:"not null;default:false"`
 }
 
 func (lot *Lot) BeforeCreate(tx *gorm.DB) (err error) {
@@ -67,13 +68,18 @@ func (lot *Lot) BeforeCreate(tx *gorm.DB) (err error) {
 	if !validState[lot.State] {
 		return errors.New("invalid valid state")
 	}
-
-	lot.Id = uuid.New()
+	if lot.Id == uuid.Nil {
+		lot.Id = uuid.New()
+	}
 	return
 }
 
 func (lot *Lot) Save(db *gorm.DB) error {
 	return db.Preload("EndCheckpoint").Preload("StartCheckpoint").Preload("Tractor").Save(lot).Error
+}
+
+func (lot *Lot) Update(db *gorm.DB) error {
+	return db.Model(lot).Updates(lot).Error
 }
 
 func (lot *Lot) GetAllLots(db *gorm.DB) ([]Lot, error) {
@@ -166,4 +172,16 @@ func (lot *Lot) UpdateState(db *gorm.DB, state State) error {
 
 func (lot *Lot) UpdateStateByTractorId(db *gorm.DB, tractorId uuid.UUID, state State) error {
 	return db.Model(&lot).Where("tractor_id = ?", tractorId).Update("state", state).Error
+}
+
+func (lot *Lot) GetAllInTractorByTracorId(db *gorm.DB, tractorId uuid.UUID) ([]Lot, error) {
+	var lots []Lot
+	if err := db.Preload("EndCheckpoint").Preload("StartCheckpoint").Preload("Tractor").Where("tractor_id = ? AND in_tractor = ?", tractorId, true).Find(&lots).Error; err != nil {
+		return nil, err
+	}
+	return lots, nil
+}
+
+func (lot *Lot) AssociateTractor(db *gorm.DB, tractorId uuid.UUID) error {
+	return db.Model(&lot).Update("tractor_id", tractorId).Error
 }

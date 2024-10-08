@@ -1,9 +1,10 @@
 package routes
 
 import (
+	"tms-backend/controllers"
+
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
-	"tms-backend/controllers"
 )
 
 func SimulationRoutes(r *gin.Engine, db *gorm.DB) *gin.Engine {
@@ -18,6 +19,8 @@ func SimulationRoutes(r *gin.Engine, db *gorm.DB) *gin.Engine {
 		v1.GET("/date", SimulationController.GetSimulationDate)
 
 		v1.PATCH("/date", SimulationController.UpdateSimulationDate)
+		v1.GET("/move_tractors", SimulationController.MoveTractorForward)
+		v1.GET("", SimulationController.MoveTractorForward)
 
 	}
 

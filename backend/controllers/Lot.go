@@ -483,7 +483,7 @@ func (LotController *LotController) AssignTractorToLot(c *gin.Context) {
 		return
 	}
 
-	if err := transactionIn.CreateTransaction(LotController.Db, models.TransactionState(models.TransactionStateIn), lot.Id, tractor.Id, *tractor.RouteId, *lot.CurrentCheckpointId, *lot.TrafficManagerId, routeCheckpointStart.Id); err != nil {
+	if err := transactionIn.CreateTransaction(LotController.Db, models.TransactionState(models.TransactionStateIn), lot.Id, tractor.Id, *tractor.RouteId, *lot.StartCheckpointId, *lot.TrafficManagerId, routeCheckpointStart.Id); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -492,13 +492,17 @@ func (LotController *LotController) AssignTractorToLot(c *gin.Context) {
 		return
 	}
 
-	lot.TractorId = &tractor.Id
-	lot.State = models.StateInTransit
-	if err := lot.Save(LotController.Db); err != nil {
+	if err := lot.AssociateTractor(LotController.Db, tractor.Id); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-
+	if lot.StartCheckpointId.String() == tractor.CurrentCheckpointId.String() {
+		lot.InTractor = true;
+		lot.State = models.StateInTransit;
+		tractor.CurrentVolume += lot.Volume;
+		lot.Update(LotController.Db);
+		tractor.Update(LotController.Db);
+	}
 	c.JSON(http.StatusOK, lot)
 }
 

@@ -67,12 +67,18 @@ func (tractor *Tractor) BeforeCreate(tx *gorm.DB) (err error) {
 		return errors.New("invalid valid state")
 	}
 
-	tractor.Id = uuid.New()
+	if tractor.Id == uuid.Nil {
+		tractor.Id = uuid.New()
+	}
 	return
 }
 
 func (tractor *Tractor) Save(db *gorm.DB) error {
 	return db.Preload("EndCheckpoint").Preload("StartCheckpoint").Save(tractor).Error
+}
+
+func (tractor *Tractor) Update(db *gorm.DB) error {
+	return db.Model(&tractor).Updates(tractor).Error
 }
 
 func (tractor *Tractor) GetAllTractors(db *gorm.DB) ([]Tractor, error) {
@@ -191,9 +197,9 @@ func (tractor *Tractor) GetVolumeAtCheckpoint(db *gorm.DB, checkpointId uuid.UUI
 	for _, checkpoint := range allRouteCheckpoints {
 		var transaction []Transaction
 		// je récupère les transactions du tracteur pour le checkpoint actuel
-		transaction, err = transactionModel.FindByRouteIdAndCheckpointId(db, *tractor.RouteId, checkpoint.CheckpointId, tractor.Id)
-		if err != nil {
-			return 0, err
+		transaction, err = transactionModel.FindByRouteIdAndCheckpointIdAndTractorId(db, *tractor.RouteId, checkpoint.CheckpointId, tractor.Id);
+		if err != nil{
+			return 0, err;
 		}
 		// je parcours les transactions pour calculer le volume du tracteur
 		for _, transaction := range transaction {
