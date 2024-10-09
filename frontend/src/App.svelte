@@ -1,7 +1,7 @@
 <script>
     import { Router, Link, Route } from "svelte-routing";
-    import Register from "@pages/Authentification/Register.svelte";
-    import Login from "@pages/Authentification/Login.svelte";
+    import Register from "@pages/authentification/Register.svelte";
+    import Login from "@pages/authentification/Login.svelte";
     import Home from '@pages/Home.svelte';
     import Lots from '@pages/lots/lots.svelte';
     import Tractors from '@pages/tractors/tractors.svelte';

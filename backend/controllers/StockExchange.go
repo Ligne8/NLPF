@@ -61,14 +61,8 @@ func (sec *StockExchangeController) CreateLotOffer(c *gin.Context) {
 		return
 	}
 
-	var offerId uuid.UUID
-	offerId, err = offer.CreateOfferLot(sec.Db, parsedDate, lot.Id)
+	_, err = offer.CreateOfferLot(sec.Db, parsedDate, lot.Id)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	lot.OfferId = &offerId
-	if err := sec.Db.Save(&lot).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -121,18 +115,11 @@ func (sec *StockExchangeController) CreateTractorOffer(c *gin.Context) {
 		return
 	}
 
-	var offerId uuid.UUID
-	offerId, err = offer.CreateOfferTractor(sec.Db, parsedDate, tractor.Id)
+	_, err = offer.CreateOfferTractor(sec.Db, parsedDate, tractor.Id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	tractor.OfferId = &offerId
-	if err := sec.Db.Save(&tractor).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
 	c.JSON(http.StatusCreated, offer)
 }
 
