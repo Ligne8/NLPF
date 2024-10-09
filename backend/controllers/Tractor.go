@@ -609,7 +609,7 @@ func (TractorController *TractorController) GetAllTractorTraderId(c *gin.Context
 	for i := range tractors {
 		var maxBid float64
 		var offer models.Offer
-		if err := TractorController.Db.First(&offer, "lot_id = ?", tractors[i].Id).Error; err != nil {
+		if err := TractorController.Db.First(&offer, "tractor_id = ?", tractors[i].Id).Error; err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to retrieve offer", "details": err.Error()})
 			return
 		}
