@@ -341,6 +341,11 @@ func (sec *StockExchangeController) ChangeStateToReturnFromMarket(c *gin.Context
 // @Failure 500 "Unable to fetch offers"
 // @Router /stock_exchange/return_from_market [put]
 func (sec *StockExchangeController) ChangeStateToReturnFromMarket2(c *gin.Context) {
+
+	if err := sec.UpdateLotsBids(); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 	
 	if err := sec.updateLotsOffers(); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -351,18 +356,41 @@ func (sec *StockExchangeController) ChangeStateToReturnFromMarket2(c *gin.Contex
 		return
 	}
 
+
 }
 
-func (sec *StockExchangeController) updateBids() error{
+func (sec *StockExchangeController) UpdateLotsBids() error{
+	var offers []models.Offer;
 	query := `
-		UPDATE bids
-		SET state = 'closed'
+		SELECT offers.*
 		FROM offers
-		WHERE offers.id = bids.offer_id AND offers.limit_date <= (SELECT simulation_date FROM simulations LIMIT 1)
+		JOIN lots l ON offers.id = l.offer_id
+		WHERE offers.limit_date < (SELECT simulation_date FROM simulations LIMIT 1)
+		AND offers.lot_id IS NOT NULL
+		AND l.state = 'on_market'
 	`
-	if err := sec.Db.Exec(query).Error; err != nil {
+
+	if err := sec.Db.Raw(query).Scan(&offers).Error; err != nil {
 		return err
 	}
+
+	for _, offer := range offers {
+		var bids []models.Bid
+		if err := sec.Db.Where("offer_id = ?", offer.Id).Order("bid asc").Find(&bids).Error; err != nil {
+			return err
+		}
+		for i, bid := range bids {
+			if i == 0 {
+				bid.State = "accepted"
+			} else {
+				bid.State = "rejected"
+			}
+			if err := sec.Db.Save(&bid).Error; err != nil {
+				return err
+			}
+		}
+	}
+
 	return nil
 }
 
@@ -381,7 +409,7 @@ func (sec *StockExchangeController) updateLotsOffers() error{
 			traffic_manager_id = COALESCE(traffic_manager_id, (SELECT random_trafic_manager.id FROM random_trafic_manager)),
 			state = 'return_from_market'
 		FROM offers
-		WHERE offers.lot_id = lots.id AND limit_date <= (SELECT simulation_date FROM simulations LIMIT 1) AND lots.state = 'on_market'
+		WHERE offers.lot_id = lots.id AND offers.limit_date <= (SELECT simulation_date FROM simulations LIMIT 1) AND lots.state = 'on_market'
 	`
 	if err := sec.Db.Exec(query).Error; err != nil {
 		return err
@@ -402,7 +430,7 @@ func (sec *StockExchangeController) updateTractorsOffers() error{
 			traffic_manager_id = COALESCE(traffic_manager_id, (SELECT random_trafic_manager.id FROM random_trafic_manager)),
 			state = 'return_from_market'
 		FROM offers
-		WHERE offers.tractor_id = tractor.id AND limit_date <= (SELECT simulation_date FROM simulations LIMIT 1) AND tractors.state = 'on_market'
+		WHERE offers.tractor_id = tractors.id AND offers.limit_date <= (SELECT simulation_date FROM simulations LIMIT 1) AND tractors.state = 'on_market'
 	`
 	if err := sec.Db.Exec(query).Error; err != nil {
 		return err
