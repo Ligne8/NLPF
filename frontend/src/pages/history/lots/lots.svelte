@@ -111,10 +111,10 @@
         <table class="table-auto w-full border-collapse border border-gray-300">
             <thead>
             <tr class="bg-gray-100">
+                <th class="border p-2 text-center">State</th>
                 <th class="border p-2 text-center">Date</th>
                 <th class="border p-2 text-center">Maximum price<br><span class="font-normal">(in €/km)</span></th>
                 <th class="border p-2 text-center">Current price<br><span class="font-normal">(in €/km)</span></th>
-                <th class="border p-2 text-center">State</th>
             </tr>
             </thead>
             <tbody>
@@ -122,16 +122,16 @@
                 <tr class={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
 
                     <!-- Column 1 -->
-                    <td class="border p-2 text-center">{formatDate(row.offer.limit_date)}</td>
+                    <td class="border p-2 text-center">{row.state}</td>
 
                     <!-- Column 2 -->
-                    <td class="border p-2 text-center">{row.max_price_by_km.toFixed(2)}</td>
+                    <td class="border p-2 text-center">{formatDate(row.offer.limit_date)}</td>
 
                     <!-- Column 3 -->
-                    <td class="border p-2 text-center">{row.current_price.toFixed(2)}</td>
+                    <td class="border p-2 text-center">{row.max_price_by_km.toFixed(2)}</td>
 
                     <!-- Column 4 -->
-                    <td class="border p-2 text-center">{row.state}</td>
+                    <td class="border p-2 text-center">{row.current_price.toFixed(2)}</td>
 
                 </tr>
             {/each}
