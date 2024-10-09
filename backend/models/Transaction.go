@@ -85,7 +85,7 @@ func (transaction *Transaction) ExecTransaction(db *gorm.DB) error {
 	if transaction.TransactionType == TransactionState(TransactionStateIn) {
 		transaction.Lot.State = StateInTransit;
 		transaction.Lot.InTractor = true;
-		transaction.Tractor.CurrentVolume = transaction.Tractor.CurrentVolume - transaction.Lot.Volume;
+		transaction.Tractor.CurrentVolume = transaction.Tractor.CurrentVolume + transaction.Lot.Volume;
 	} else {
 		transaction.Lot.State = StateArchive;
 		transaction.Lot.InTractor = false;
