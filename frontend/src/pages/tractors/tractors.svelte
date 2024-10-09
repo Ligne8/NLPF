@@ -517,7 +517,7 @@
                     <label class="block text-gray-700 text-sm font-bold mb-2">Minimum price :</label>
                     <input type="text"
                            class="w-full border border-gray-300 p-2 rounded"
-                           placeholder="Enter maximum price (per km)"
+                           placeholder="Enter minimum price (per km)"
                            on:input={validateMinPrice}
                            value={minPrice}
                            required
