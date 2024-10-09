@@ -208,6 +208,7 @@
 
     // Function to close modal
     function closeModal() {
+        fetchLots();
         isModalOpen = false;
     }
 

@@ -34,6 +34,9 @@
 
     // Close select date modal
     const closeStockExchangeModal = ()=>{
+        fetchRoutes();
+        fetchTableInfo();
+        fetchLimitDate();
         isStockExchangeModalOpen = false; 
     }
 

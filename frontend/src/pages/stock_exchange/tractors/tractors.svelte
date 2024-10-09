@@ -49,6 +49,7 @@
 
     // Function to close tractors modal
     function closeModal() {
+        fetchTractors();
         current_offer_id = 0;
         isModalOpen = false;
     }

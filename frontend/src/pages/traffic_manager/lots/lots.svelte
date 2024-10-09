@@ -27,6 +27,8 @@
     }
 
     const closeStockExchangeModal = ()=>{
+        fetchTableInfo();
+        fetchLimitDate();
         isStockExchangeModalOpen = false; 
     }
 
@@ -60,6 +62,8 @@
 
     // Function to close modal
     function closeModal() {
+        fetchTableInfo();
+        fetchLimitDate();
         isModalOpen = false;
     }
 
