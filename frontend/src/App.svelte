@@ -19,6 +19,9 @@
     import './app.css';
     import '@fortawesome/fontawesome-free/css/all.css';
     import Map from "@pages/map/map.svelte";
+    import History from "@pages/history/history.svelte";
+    import HistoryLots from "@pages/history/lots/lots.svelte";
+    import HistoryTractors from "@pages/history/tractors/tractors.svelte";
     export let url = "";
 </script>
 
@@ -39,6 +42,9 @@
         <Route path="/stock-exchange" component={StockExchange} />
         <Route path="/stock-exchange/lots" component={StockExchangeLots} />
         <Route path="/stock-exchange/tractors" component={StockExchangeTractors} />
+        <Route path="/history" component={History} />
+        <Route path="/history/lots" component={HistoryLots} />
+        <Route path="/history/tractors" component={HistoryTractors} />
         <Route path="/map" component={Map} />
     </div>
 </Router>

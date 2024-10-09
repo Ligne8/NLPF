@@ -204,6 +204,7 @@ func (StockExchangeController *StockExchangeController) CreateBidLot(c *gin.Cont
 	var requestBody struct {
 		Bid     float64   `json:"bid" binding:"required"`
 		OfferId uuid.UUID `json:"offer_id" binding:"required"`
+		OwnerId uuid.UUID `json:"owner_id" binding:"required"`
 	}
 
 	if err := c.ShouldBindJSON(&requestBody); err != nil {
@@ -222,6 +223,7 @@ func (StockExchangeController *StockExchangeController) CreateBidLot(c *gin.Cont
 	bid.Bid = requestBody.Bid
 	bid.OfferId = offerUUID
 	bid.State = "in_progress"
+	bid.OwnerId = requestBody.OwnerId
 
 	if err := StockExchangeController.Db.Create(&bid).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"errorrr": err.Error()})
@@ -236,6 +238,7 @@ func (StockExchangeController *StockExchangeController) CreateBidTractor(c *gin.
 		Bid     float64   `json:"bid" binding:"required"`
 		OfferId uuid.UUID `json:"offer_id" binding:"required"`
 		Volume  float64   `json:"volume" binding:"required"`
+		OwnerId uuid.UUID `json:"owner_id" binding:"required"`
 	}
 
 	if err := c.ShouldBindJSON(&requestBody); err != nil {
@@ -255,6 +258,7 @@ func (StockExchangeController *StockExchangeController) CreateBidTractor(c *gin.
 	bid.OfferId = offerUUID
 	bid.State = "in_progress"
 	bid.Volume = requestBody.Volume
+	bid.OwnerId = requestBody.OwnerId
 
 	if err := StockExchangeController.Db.Create(&bid).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"errorrr": err.Error()})

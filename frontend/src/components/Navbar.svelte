@@ -10,10 +10,10 @@
 
     // Role permissions
     const rolePermissions: Record<UserRole, string[]> = {
-        admin: ['Lots', 'Tractors', 'TrafficManager', 'Trader', 'StockExchange', 'Map'],
+        admin: ['Lots', 'Tractors', 'TrafficManager', 'Trader', 'StockExchange', 'History', 'Map'],
         traffic_manager: ['TrafficManager', 'Map'],
         trader: ['Trader', 'StockExchange'],
-        client: ['Lots', 'Tractors', 'StockExchange', 'Map']
+        client: ['Lots', 'Tractors', 'StockExchange', 'History', 'Map']
     };
 
     // State for simulation date
@@ -72,6 +72,8 @@
             currentTab.set('Trader');
         else if (path.startsWith('/stock-exchange'))
             currentTab.set('StockExchange');
+        else if (path.startsWith('/history'))
+            currentTab.set('History');
         else if (path.startsWith('/map'))
             currentTab.set('Map');
         else
@@ -148,6 +150,13 @@
                     <li>
                         <a href="/stock-exchange" on:click={() => switchTab('StockExchange')} class="{$currentTab === 'StockExchange' ? 'font-bold text-blue-400' : 'hover:text-blue-400 transition-colors duration-300'}">
                             Stock exchange
+                        </a>
+                    </li>
+                {/if}
+                {#if hasAccess('History')}
+                    <li>
+                        <a href="/history" on:click={() => switchTab('History')} class="{$currentTab === 'History' ? 'font-bold text-blue-400' : 'hover:text-blue-400 transition-colors duration-300'}">
+                            History
                         </a>
                     </li>
                 {/if}
