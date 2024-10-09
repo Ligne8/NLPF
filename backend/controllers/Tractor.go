@@ -643,7 +643,7 @@ func (TractorController *TractorController) GetTractorBidByOwnerId(c *gin.Contex
 		return
 	}
 
-	if err := TractorController.Db.Where("owner_id = ?", clientIdUUID).Find(&bids).Error; err != nil {
+	if err := TractorController.Db.Joins("JOIN offers ON offers.id = bids.offer_id").Where("bids.owner_id = ? AND offers.tractor_id IS NOT NULL", clientIdUUID).Find(&bids).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

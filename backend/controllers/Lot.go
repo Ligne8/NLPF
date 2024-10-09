@@ -685,7 +685,7 @@ func (LotController *LotController) GetLotBidByOwnerId(c *gin.Context) {
 		return
 	}
 
-	if err := LotController.Db.Where("owner_id = ? AND lot_id IS NOT NULL", clientIdUUID).Find(&bids).Error; err != nil {
+	if err := LotController.Db.Joins("JOIN offers ON offers.id = bids.offer_id").Where("bids.owner_id = ? AND offers.lot_id IS NOT NULL", clientIdUUID).Find(&bids).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
