@@ -277,7 +277,7 @@ func (StockExchangeController *StockExchangeController) CreateBidTractor(c *gin.
 
 	c.JSON(http.StatusCreated, bid)
 }
-// ReturnFromMarket : Return a tractor or a lot from the market
+// ReturnFromMarket : Return a tractor or a lot from the market Deso on utilise plus la fonction daniel
 // @Summary After getting all the offers on morket with the limit date passed, the state of the tractor/lot is changed to return_from_market
 // @Tags Stock Exchange
 // @Produce json
@@ -351,6 +351,19 @@ func (sec *StockExchangeController) ChangeStateToReturnFromMarket2(c *gin.Contex
 		return
 	}
 
+}
+
+func (sec *StockExchangeController) updateBids() error{
+	query := `
+		UPDATE bids
+		SET state = 'closed'
+		FROM offers
+		WHERE offers.id = bids.offer_id AND offers.limit_date <= (SELECT simulation_date FROM simulations LIMIT 1)
+	`
+	if err := sec.Db.Exec(query).Error; err != nil {
+		return err
+	}
+	return nil
 }
 
 
