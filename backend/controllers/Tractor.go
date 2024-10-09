@@ -563,6 +563,11 @@ func (TractorController *TractorController) AssignTraderToTractor(c *gin.Context
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+	tractor.LimitDate = parsedDate
+	if err := TractorController.Db.Save(&tractor).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 
 	c.JSON(http.StatusOK, tractor)
 }
@@ -634,7 +639,13 @@ func (TractorController *TractorController) GetAllTractorTraderId(c *gin.Context
 // @Failure      500  "Unable to retrieve bids"
 // @Router       /tractors/bids/{client_id} [get]
 func (TractorController *TractorController) GetTractorBidByOwnerId(c *gin.Context) {
-	var bids []models.Bid
+	var result []struct {
+		ExpirationDate time.Time `json:"caca"`
+		CurrentPrice   float64   `json:"current_price"`
+		MinPrice       float64   `json:"min_price_by_km"`
+		State          string    `json:"state"`
+	}
+
 	clientId := c.Param("owner_id")
 	clientIdUUID, errIdUUID := uuid.Parse(clientId)
 
@@ -643,10 +654,20 @@ func (TractorController *TractorController) GetTractorBidByOwnerId(c *gin.Contex
 		return
 	}
 
-	if err := TractorController.Db.Joins("JOIN offers ON offers.id = bids.offer_id").Where("bids.owner_id = ? AND offers.tractor_id IS NOT NULL", clientIdUUID).Find(&bids).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	if err := TractorController.Db.Raw(`
+		SELECT o.limit_date caca,
+		       MAX(bids.bid) current_price,
+		       tractors.min_price_by_km min_price,
+		       bids.state
+		FROM bids
+		         JOIN offers o ON o.id = bids.offer_id
+		         JOIN tractors ON o.tractor_id = tractors.id
+		WHERE bids.owner_id = ?
+		GROUP BY o.limit_date, tractors.min_price_by_km, bids.state
+	`, clientIdUUID).Scan(&result).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to retrieve bids", "details": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, bids)
+	c.JSON(http.StatusOK, result)
 }
