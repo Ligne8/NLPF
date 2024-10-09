@@ -82,7 +82,7 @@
 </script>
 
 <!-- Centered User Role Title -->
-<div class="text-center flex-1 hidden lg:block bg-yellow-500 fixed top-0 left-0 w-full z-50">
+<div class="text-center flex-1 block lg:block bg-yellow-500 fixed top-0 left-0 w-full z-50">
     <p class="text-lg text-gray-800">
         <span class="font-bold">
             {#if $userRole === 'traffic_manager'}
