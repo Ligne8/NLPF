@@ -88,6 +88,8 @@
                 return { color: 'bg-purple-200 text-purple-800', text: '◉ At trader' };
             case 'archive':
                 return { color: 'bg-gray-200 text-gray-800', text: '◉ Archived' };
+            case 'return_from_market':
+                return {color: 'bg-fuchsia-200 text-fuchsia-800', text: '◉ Return from market'};
             default:
                 return { color: 'bg-gray-200 text-gray-800', text: '🛇 Unknown' };
         }

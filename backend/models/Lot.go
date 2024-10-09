@@ -11,12 +11,13 @@ import (
 type State string
 
 const (
-	StateAvailable State = "available"
-	StatePending   State = "pending"
-	StateInTransit State = "in_transit"
-	StateArchive   State = "archive"
-	StateOnMarket  State = "on_market"
-	StateAtTrader  State = "at_trader"
+	StateAvailable        State = "available"
+	StatePending          State = "pending"
+	StateInTransit        State = "in_transit"
+	StateArchive          State = "archive"
+	StateOnMarket         State = "on_market"
+	StateAtTrader         State = "at_trader"
+	StateReturnFromMarket State = "return_from_market"
 )
 
 type Lot struct {

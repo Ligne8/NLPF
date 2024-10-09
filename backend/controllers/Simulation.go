@@ -64,6 +64,10 @@ func (SimulationController *SimulationController) UpdateSimulationDate(c *gin.Co
 		return
 	}
 
+	// Update the state of the offers
+	stockExchangeController := StockExchangeController{Db: SimulationController.Db}
+	stockExchangeController.ChangeStateToReturnFromMarket2(c)
+
 	// Return the new updated date
 	c.JSON(http.StatusOK, gin.H{
 		"message":         "Simulation date updated successfully",
