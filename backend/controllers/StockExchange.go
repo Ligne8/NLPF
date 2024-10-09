@@ -395,6 +395,7 @@ func (sec *StockExchangeController) UpdateLotsBids() error{
 }
 
 
+//traffic_manager_id = COALESCE(traffic_manager_id, (SELECT random_trafic_manager.id FROM random_trafic_manager)),
 func (sec *StockExchangeController) updateLotsOffers() error{
 	query := `
 		WITH random_trafic_manager AS (
@@ -406,7 +407,6 @@ func (sec *StockExchangeController) updateLotsOffers() error{
 		)
 		UPDATE lots
 		SET
-			traffic_manager_id = COALESCE(traffic_manager_id, (SELECT random_trafic_manager.id FROM random_trafic_manager)),
 			state = 'return_from_market'
 		FROM offers
 		WHERE offers.lot_id = lots.id AND offers.limit_date <= (SELECT simulation_date FROM simulations LIMIT 1) AND lots.state = 'on_market'
@@ -427,7 +427,6 @@ func (sec *StockExchangeController) updateTractorsOffers() error{
 		)
 		UPDATE tractors
 		SET
-			traffic_manager_id = COALESCE(traffic_manager_id, (SELECT random_trafic_manager.id FROM random_trafic_manager)),
 			state = 'return_from_market'
 		FROM offers
 		WHERE offers.tractor_id = tractors.id AND offers.limit_date <= (SELECT simulation_date FROM simulations LIMIT 1) AND tractors.state = 'on_market'
