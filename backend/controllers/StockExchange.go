@@ -415,16 +415,26 @@ func (sec *StockExchangeController) UpdateTractorsBids() error {
 
 	for _, offer := range offers {
 		var bids []models.Bid
-		if err := sec.Db.Where("offer_id = ?", offer.Id).Order("bid asc").Find(&bids).Error; err != nil {
+		if err := sec.Db.Where("offer_id = ?", offer.Id).Order("bid desc").Find(&bids).Error; err != nil {
 			return err
 		}
-		for i, bid := range bids {
-			if i == 0 {
-				bid.State = "accepted"
-			} else {
-				bid.State = "rejected"
+		for _, bid := range bids {
+			var tractor models.Tractor
+			tractor, err := tractor.FindById(sec.Db, *offer.TractorId)
+			if err != nil {
+				return err
 			}
-			if err := sec.Db.Save(&bid).Error; err != nil {
+			if tractor.MaxVolume-tractor.CurrentVolume < bid.Volume {
+				bid.State = "rejected"
+				if err := sec.Db.Save(&bid).Error; err != nil {
+					return err
+				}
+				continue
+			}
+			bid.State = "accepted"
+
+			tractor.CurrentVolume += bid.Volume
+			if err := sec.Db.Save(&tractor).Error; err != nil {
 				return err
 			}
 		}
