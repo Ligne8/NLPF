@@ -27,6 +27,7 @@ func LotRoutes(r *gin.Engine, db *gorm.DB) *gin.Engine {
 		v1.POST("/tractors/assign", LotController.AssignTractorToLot)
 		v1.POST("/assign/:lot_id/trader", LotController.AssignTraderToLot)
 		v1.GET("/trader/:trader_id", LotController.GetAllLotTraderId)
+		v1.GET("/bids/:owner_id", LotController.GetLotBidByOwnerId)
 	}
 	return r
 }

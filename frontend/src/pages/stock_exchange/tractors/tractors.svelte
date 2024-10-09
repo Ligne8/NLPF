@@ -1,7 +1,7 @@
 <script lang="ts">
     import Navbar from '@components/Navbar.svelte';
     import StockExchangeNavbar from '@components/StockExchangeNavbar.svelte';
-    import { userRole } from '@stores/store';
+    import { userRole, userId } from '@stores/store';
     import axios from 'axios';
     import type { Tractor } from 'src/interface/tractorInterface';
     import { onMount } from 'svelte';
@@ -40,8 +40,8 @@
     }
 
     // Function to open tractors modal
-    function openModal(currentPrice: any, offer_id: any, min_price_by_km: number) {
-      console.log(min_price_by_km)
+    function openModal(currentPrice: any, offer_id: any, min_price_by_km: number, bid_owner_id: string) {
+      console.log(bid_owner_id)
         current_offer_id = offer_id;
         priceValue = min_price_by_km;
         minPriceValue = min_price_by_km;
@@ -59,11 +59,12 @@
         console.log('Bid:', priceValue);
         console.log('VolumeValue:', volumeValue);
         console.log('offerId:', current_offer_id);
-        
+
         const payload = {
             offer_id: current_offer_id,
             bid: priceValue,
-            volume: volumeValue
+            volume: volumeValue,
+            owner_id: $userId
         }
         axios.post(`${API_BASE_URL}/stock_exchange/tractor/bid`, payload).then((response) => {
           fetchTractors();
@@ -187,7 +188,7 @@
                         <td class="border p-2 text-center">
                             <div class="flex flex-wrap justify-center space-x-2 space-y-2">
                                 <button class="bg-blue-200 text-blue-800 px-4 py-2 flex items-center font-bold hover:bg-blue-300 transition-colors rounded-md"
-                                    on:click={() => openModal(row.current_price, row.offer_id, row.min_price_by_km)}
+                                    on:click={() => openModal(row.current_price, row.offer_id, row.min_price_by_km, row.id)}
                                 >
                                     <i class="fas fa-coins mr-2"></i>
                                     Bid

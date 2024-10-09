@@ -1,7 +1,7 @@
 <script lang="ts">
     import Navbar from '@components/Navbar.svelte';
     import StockExchangeNavbar from '@components/StockExchangeNavbar.svelte';
-    import { userRole } from '@stores/store';
+    import { userRole, userId } from '@stores/store';
     import axios from 'axios';
     import type { Lot } from 'src/interface/lotInterface';
     import { onMount } from 'svelte';
@@ -45,7 +45,8 @@
     function bid() {
         const payload = {
             bid: priceValue,
-            offer_id: current_offer_id
+            offer_id: current_offer_id,
+            owner_id: $userId
         };
         axios.post(`${API_BASE_URL}/stock_exchange/lot/bid`, payload).then((response) => {
           fetchLots();

@@ -621,3 +621,32 @@ func (TractorController *TractorController) GetAllTractorTraderId(c *gin.Context
 	// Return the enriched tractors in the JSON response
 	c.JSON(http.StatusOK, tractors)
 }
+
+// GetTractorBidByOwnerId : Get all bids for a lot by owner id
+//
+// @Summary      Get all bids for a lot by owner id
+// @Tags         lots
+// @Accept       json
+// @Produce      json
+// @Param        client_id  path  string  true  "Client Id"
+// @Success      200  {array}  models.Bid
+// @Failure      400  "Invalid client_id"
+// @Failure      500  "Unable to retrieve bids"
+// @Router       /tractors/bids/{client_id} [get]
+func (TractorController *TractorController) GetTractorBidByOwnerId(c *gin.Context) {
+	var bids []models.Bid
+	clientId := c.Param("owner_id")
+	clientIdUUID, errIdUUID := uuid.Parse(clientId)
+
+	if errIdUUID != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid owner_id"})
+		return
+	}
+
+	if err := TractorController.Db.Where("owner_id = ?", clientIdUUID).Find(&bids).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, bids)
+}
