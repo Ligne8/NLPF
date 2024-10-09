@@ -1,7 +1,7 @@
 <script lang="ts">
     import Navbar from '@components/Navbar.svelte';
     import TrafficManagerNavbar from '@components/TrafficManagerNavbar.svelte';
-    import {onMount} from "svelte";
+    import {onDestroy, onMount} from "svelte";
     import type {Tractor} from "../../../interface/tractorInterface";
     import {userId, userRole} from "@stores/store";
     import axios from "axios";
@@ -19,6 +19,7 @@
     let sortOption: string = 'none';
     let limitDate: string = '';
     let minDate: string = '';
+    let intervalId: number;
 
     interface Route {
         name: string;
@@ -68,10 +69,22 @@
         }
     }
 
-    onMount(() => {
+    onMount(async () => {
         fetchRoutes();
         fetchTableInfo();
         fetchLimitDate();
+        intervalId = setInterval(async () => {
+            await fetchRoutes();
+            await fetchTableInfo();
+            await fetchLimitDate();
+        }, 1000);
+    });
+
+    // Clean interval
+    onDestroy(() => {
+        if (intervalId) {
+            clearInterval(intervalId);
+        }
     });
 
 

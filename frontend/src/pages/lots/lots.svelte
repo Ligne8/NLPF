@@ -1,5 +1,5 @@
 <script lang="ts">
-    import {onMount} from 'svelte';
+    import {onDestroy, onMount} from 'svelte';
     import Navbar from '@components/Navbar.svelte';
     import {userId} from "@stores/store";
     import axios from "axios";
@@ -29,6 +29,7 @@
     let limitDate: string = '';
     let minDate: string = '';
     let selectedLotId: string = ''; // Utilisé pour stocker l'ID du lot pour l'offre
+    let intervalId: number;
 
     interface TrafficManager {
         id: string;
@@ -55,6 +56,16 @@
     // Fetch all data
     onMount(async () => {
         await fetchAllData();
+        intervalId = setInterval(async () => {
+            await fetchAllData();
+        }, 1000);
+    });
+
+    // Clean interval
+    onDestroy(() => {
+        if (intervalId) {
+            clearInterval(intervalId);
+        }
     });
 
     // Function to get tag color and text based on status

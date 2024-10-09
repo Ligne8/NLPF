@@ -2,7 +2,7 @@
     import Navbar from '@components/Navbar.svelte';
     import TrafficManagerNavbar from '@components/TrafficManagerNavbar.svelte';
     import { userId, userRole } from "@stores/store";
-    import { onMount } from "svelte";
+    import { onDestroy, onMount } from "svelte";
     import axios from "axios";
     import type { Lot } from 'src/interface/lotInterface';
     import type { Tractor } from 'src/interface/tractorInterface';
@@ -20,6 +20,7 @@
     let sortOption: string = 'none';
     let limitDate: string = '';
     let minDate: string = '';
+    let intervalId: number;
 
     const openStockExchangeModal = (lotId: number)=>{
         selectedLotId = lotId;  
@@ -121,9 +122,20 @@
         }
     }
 
-    onMount(() => {
-        fetchTableInfo();
-        fetchLimitDate();
+    onMount(async () => {
+        await fetchTableInfo();
+        await fetchLimitDate();
+        intervalId = setInterval(async () => {
+            await fetchTableInfo();
+            await fetchLimitDate();
+        }, 1000);
+    });
+
+    // Clean interval
+    onDestroy(() => {
+        if (intervalId) {
+            clearInterval(intervalId);
+        }
     });
 
     // Update compatible tractors map

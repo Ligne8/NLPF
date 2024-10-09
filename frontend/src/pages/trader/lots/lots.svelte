@@ -4,7 +4,7 @@
     import { userId } from '@stores/store';
     import axios from 'axios';
     import type { Lot } from 'src/interface/lotInterface';
-    import { onMount } from 'svelte';
+    import { onDestroy, onMount } from 'svelte';
 
     // Variables
     let title: string = 'Lot offers';
@@ -13,6 +13,7 @@
     let lots: Lot[] = [];
     let selectedStatus: string = 'all';
     let sortOption: string = 'none';
+    let intervalId: number;
 
     // Function to format timestamp into DD/MM/YYYY
     const formatDate = (timestamp: number) => {
@@ -54,6 +55,16 @@
     // Fetch all data
     onMount(async () => {
         await fetchLots();
+        intervalId = setInterval(async () => {
+            await fetchLots();
+        }, 1000);
+    });
+
+    // Clean interval
+    onDestroy(() => {
+        if (intervalId) {
+            clearInterval(intervalId);
+        }
     });
 
     // Update data depending on filters

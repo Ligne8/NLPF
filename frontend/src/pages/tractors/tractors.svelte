@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { onMount } from 'svelte';
+    import { onDestroy, onMount } from 'svelte';
     import Navbar from '@components/Navbar.svelte';
     import TrafficManager from '@pages/traffic_manager/traffic_manager.svelte';
     import {userId} from "@stores/store";
@@ -49,6 +49,7 @@
     let limitDate: string = '';
     let minDate: string = '';
     let selectedTractorId: string = ''; // Utilisé pour stocker l'ID du lot pour l'offre
+    let intervalId: number;
 
     const fetchAllData = async () => {
         await fetchTractors();
@@ -60,6 +61,16 @@
     // Fetch all data
     onMount(async () => {
         fetchAllData();
+        intervalId = setInterval(async () => {
+            await fetchAllData();
+        }, 1000);
+    });
+
+    // Clean interval
+    onDestroy(() => {
+        if (intervalId) {
+            clearInterval(intervalId);
+        }
     });
 
     // Fetch limit date from backend

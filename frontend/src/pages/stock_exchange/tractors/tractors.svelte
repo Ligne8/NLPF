@@ -4,7 +4,7 @@
     import { userRole } from '@stores/store';
     import axios from 'axios';
     import type { Tractor } from 'src/interface/tractorInterface';
-    import { onMount } from 'svelte';
+    import { onDestroy, onMount } from 'svelte';
 
     // Variables
     let title: string = 'Tractor market';
@@ -21,6 +21,7 @@
     let selectedStatus: string = 'all';
     let sortOption: string = 'none';
     let current_offer_id: number;
+    let intervalId: number;
 
     // Function to format timestamp into DD/MM/YYYY
     const formatDate = (timestamp: number) => {
@@ -86,6 +87,16 @@
     // Fetch all data
     onMount(() => {
         fetchTractors();
+        intervalId = setInterval(async () => {
+            await fetchTractors();
+        }, 1000);
+    });
+
+    // Clean interval
+    onDestroy(() => {
+        if (intervalId) {
+            clearInterval(intervalId);
+        }
     });
 
     // Update data depending on filters

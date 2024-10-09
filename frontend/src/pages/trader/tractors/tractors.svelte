@@ -3,7 +3,7 @@
     import TraderNavbar from '@components/TraderNavbar.svelte';
     import axios from 'axios';
     import {userId} from "@stores/store";
-    import { onMount } from 'svelte';
+    import { onDestroy, onMount } from 'svelte';
     import type { Tractor } from 'src/interface/tractorInterface';
 
     // Variables
@@ -13,6 +13,7 @@
     let selectedStatus: string = 'all';
     let sortOption: string = 'none';
     let tractors: Tractor[] = [];
+    let intervalId: number;
 
     // Function to format timestamp into DD/MM/YYYY
     const formatDate = (timestamp: number) => {
@@ -54,6 +55,16 @@
     // Fetch all data
     onMount(async () => {
         await fetchTractors();
+        intervalId = setInterval(async () => {
+            await fetchTractors();
+        }, 1000);
+    });
+
+    // Clean interval
+    onDestroy(() => {
+        if (intervalId) {
+            clearInterval(intervalId);
+        }
     });
 
     // Update data depending on filters
