@@ -558,15 +558,8 @@ func (TractorController *TractorController) AssignTraderToTractor(c *gin.Context
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date format"})
 		return
 	}
-	var offerId uuid.UUID
-	offerId, err = offer.CreateOfferTractor(TractorController.Db, parsedDate, tractor.Id)
+	_, err = offer.CreateOfferTractor(TractorController.Db, parsedDate, tractor.Id)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	tractor.OfferId = &offerId
-	if err := TractorController.Db.Save(&tractor).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -608,7 +601,6 @@ func (TractorController *TractorController) GetAllTractorTraderId(c *gin.Context
 	if err := TractorController.Db.Preload("StartCheckpoint").
 		Preload("EndCheckpoint").
 		Preload("Route").
-		Preload("Offer"). // Preload associated offers
 		Where("trader_id = ?", traderIdUUID).
 		Find(&tractors).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to retrieve tractors", "details": err.Error()})
@@ -616,8 +608,14 @@ func (TractorController *TractorController) GetAllTractorTraderId(c *gin.Context
 	}
 	for i := range tractors {
 		var maxBid float64
-		TractorController.Db.Raw("SELECT COALESCE(MAX(bid), 0) FROM bids WHERE offer_id = ?", tractors[i].OfferId).Scan(&maxBid)
+		var offer models.Offer
+		if err := TractorController.Db.First(&offer, "lot_id = ?", tractors[i].Id).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to retrieve offer", "details": err.Error()})
+			return
+		}
+		TractorController.Db.Raw("SELECT COALESCE(MAX(bid), 0) FROM bids WHERE offer_id = ?", offer.Id).Scan(&maxBid)
 		tractors[i].CurrentPrice = maxBid
+		tractors[i].LimitDate = offer.LimitDate
 	}
 
 	// Return the enriched tractors in the JSON response

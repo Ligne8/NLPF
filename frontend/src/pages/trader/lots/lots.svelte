@@ -166,11 +166,7 @@
                         
                         <!-- Column 2 -->
                         <td class="border p-2 text-center">
-                            {#if row.offer}
-                                {formatDate(row.offer.limit_date)}
-                            {:else}
-                                <span class="px-2 py-1 mx-auto w-4/5 block text-gray-500">None</span>
-                            {/if}
+                                {formatDate(row.limit_date)}
                         </td>
 
                         <!-- Column 3 -->
@@ -193,7 +189,7 @@
                         <!-- Column 8 -->
                         <td class="border p-2 text-center">
                             <div class="flex flex-wrap justify-center space-x-2 space-y-2">
-                                {#if row.offer != null && row.state === "at_trader"}
+                                {#if row.state === "at_trader"}
                                     <button on:click={()=>{publish(row.id)}} class="bg-blue-200 text-blue-800 px-4 py-2 flex items-center font-bold hover:bg-blue-300 transition-colors rounded-md">
                                         <i class="fas fa-plus mr-2"></i>
                                         Publish
