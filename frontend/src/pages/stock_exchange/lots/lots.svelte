@@ -1,7 +1,7 @@
 <script lang="ts">
     import Navbar from '@components/Navbar.svelte';
     import StockExchangeNavbar from '@components/StockExchangeNavbar.svelte';
-    import { userRole } from '@stores/store';
+    import { userRole, userId } from '@stores/store';
     import axios from 'axios';
     import type { Lot } from 'src/interface/lotInterface';
     import { onMount } from 'svelte';
@@ -14,10 +14,9 @@
     let priceValue: number = 1.0;
     let minPriceValue: number = 1.0;
     let maxPriceValue: number = 10.0;
-    let volumeValue: number = 1.0;
     let minVolumeValue: number = 1.0;
+    let current_offer_id: string = '';
     let lots: Lot[] = [];
-    let selectedStatus: string = 'all';
     let sortOption: string = 'none';
 
     // Function to format timestamp into DD/MM/YYYY
@@ -26,21 +25,13 @@
         return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
     };
 
-    // Function to increase volume
-    function increaseVolume() {
-        volumeValue += 1;
-    }
-
-    // Function to decrease volume
-    function decreaseVolume() {
-        if (volumeValue > minVolumeValue)
-            volumeValue -= 1;
-    }
 
     // Function to open tractors modal
-    function openModal(currentPrice: number) {
+    function openModal(currentPrice: number, offer_id: string, max_price_by_km: number) {
         priceValue = currentPrice;
-        minPriceValue = currentPrice;
+        current_offer_id = offer_id;
+        minPriceValue = 1;
+        maxPriceValue = max_price_by_km;
         isModalOpen = true;
     }
 
@@ -51,7 +42,17 @@
 
     // Function to bid
     function bid() {
-        closeModal();
+        const payload = {
+            bid: priceValue,
+            offer_id: current_offer_id,
+            owner_id: $userId
+        };
+        axios.post(`${API_BASE_URL}/stock_exchange/lot/bid`, payload).then((response) => {
+          fetchLots();
+          closeModal();
+        }).catch((error) => {
+            console.error('Error bidding:', error.response);
+        });
     }
 
     // Fetch table info
@@ -71,17 +72,13 @@
 
     // Update data depending on filters
     $: sortedData = (() => {
-        let data = selectedStatus === 'all' ? lots : lots.filter(lot => lot.state === selectedStatus);
+        let data = lots;
 
         switch (sortOption) {
             case 'volume_asc':
                 return data.sort((a, b) => a.volume - b.volume);
             case 'volume_desc':
                 return data.sort((a, b) => b.volume - a.volume);
-            case 'location_asc':
-                return data.sort((a, b) => a.current_checkpoint.name.localeCompare(b.current_checkpoint.name));
-            case 'location_desc':
-                return data.sort((a, b) => b.current_checkpoint.name.localeCompare(a.current_checkpoint.name));
             default:
                 return data;
         }
@@ -106,25 +103,24 @@
 
         <div class="flex justify-between items-center self-end">
 
-            <!-- Filter by status -->
-            <select bind:value={selectedStatus} class="mr-2 border border-gray-300 rounded px-2 py-1">
-                <option value="all" disabled selected>Filter by status</option>
-                <option value="all">All</option>
-                <option value="available">Available</option>
-                <option value="pending">Pending</option>
-                <option value="in_transit">In transit</option>
-                <option value="on_market">On market</option>
-                <option value="archived">Archived</option>
-            </select>
-
             <!-- Sort by volume and location -->
             <select bind:value={sortOption} class="border border-gray-300 rounded px-2 py-1">
                 <option value="none" disabled selected>Sort by</option>
                 <option value="volume_asc">Volume (Ascending)</option>
                 <option value="volume_desc">Volume (Descending)</option>
-                <option value="location_asc">Location (A-Z)</option>
-                <option value="location_desc">Location (Z-A)</option>
             </select>
+
+        </div>
+
+        <div class="flex justify-between items-center self-end">
+
+            <!-- Reload button -->
+            <button class="bg-gray-800 text-white font-bold px-4 py-2 rounded flex items-center hover:bg-gray-900 transition-colors self-end"
+                    on:click={fetchLots}
+            >
+                <i class="fas fa-rotate-right mr-2"></i>
+                Reload
+            </button>
 
         </div>
 
@@ -137,7 +133,7 @@
                 <th class="border p-2 text-center">Type</th>
                 <th class="border p-2 text-center">Volume<br><span class="font-normal">(in m³)</span></th>
                 <th class="border p-2 text-center">Maximum price<br><span class="font-normal">(in €/km)</span></th>
-                <th class="border p-2 text-center">Current price<br><span class="font-normal">(in €/km)</span></th>
+                <th class="border p-2 text-center">Minimum Bid<br><span class="font-normal">(in €/km)</span></th>
                 {#if $userRole === "client"}
                     <th class="border p-2 text-center">Actions</th>
                 {/if}
@@ -167,8 +163,7 @@
                         <td class="border p-2 text-center">
                             <div class="flex flex-wrap justify-center space-x-2 space-y-2">
                                 <button class="bg-blue-200 text-blue-800 px-4 py-2 flex items-center font-bold hover:bg-blue-300 transition-colors rounded-md"
-                                    on:click={() => openModal(row.current_price)}
-                                >
+                                    on:click={() => openModal(row.current_price, row.offer_id, row.max_price_by_km)}>
                                     <i class="fas fa-coins mr-2"></i>
                                     Bid
                                 </button>
@@ -218,38 +213,6 @@
                     />
                 </div>
 
-                <!-- Volume -->
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-lg font-bold">Volume <span class="font-normal">(in m³)</span></label>
-                    <div class="flex items-center justify-between">
-                        <button
-                            type="button"
-                            class="bg-gray-200 px-3 py-2 rounded disabled:opacity-50"
-                            on:click|stopPropagation={decreaseVolume}
-                            disabled={volumeValue === minVolumeValue}
-                        >
-                            <i class="fas fa-minus"></i>
-                        </button>
-
-                        <input
-                            type="number"
-                            min={minVolumeValue}
-                            bind:value={volumeValue}
-                            class="text-2xl font-bold mx-4 text-gray-700 w-16 text-center"
-                            on:input|preventDefault={() => {
-                                if (volumeValue < minVolumeValue) volumeValue = minVolumeValue;
-                            }}
-                        />
-
-                        <button
-                            type="button"
-                            class="bg-gray-200 px-3 py-2 rounded disabled:opacity-50"
-                            on:click|stopPropagation={increaseVolume}
-                        >
-                            <i class="fas fa-plus"></i>
-                        </button>
-                    </div>
-                </div>
 
                 <!-- Validate button -->
                 <div class="flex justify-center mt-8">
@@ -305,16 +268,6 @@
         border-radius: 50%;
         background: #374151;
         cursor: pointer;
-    }
-
-    input[type="number"] {
-        -moz-appearance: textfield;
-    }
-
-    input[type="number"]::-webkit-outer-spin-button,
-    input[type="number"]::-webkit-inner-spin-button {
-        -webkit-appearance: none;
-        margin: 0;
     }
 
 </style>

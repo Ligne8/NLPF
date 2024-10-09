@@ -19,6 +19,7 @@
     let selectedStatus: string = 'all';
     let sortOption: string = 'none';
     let limitDate: string = '';
+    let minDate: string = '';
 
     const openStockExchangeModal = (lotId: number)=>{
         selectedLotId = lotId;  
@@ -44,6 +45,8 @@
                 return { color: 'bg-purple-200 text-purple-800', text: '◉ At trader' };
             case 'archive':
                 return { color: 'bg-gray-200 text-gray-800', text: '◉ Archived' };
+            case 'return_from_market':
+                return {color: 'bg-fuchsia-200 text-fuchsia-800', text: '◉ Return from market'};
             default:
                 return { color: 'bg-gray-200 text-gray-800', text: '🛇 Unknown' };
         }
@@ -58,19 +61,6 @@
     // Function to close modal
     function closeModal() {
         isModalOpen = false;
-    }
-
-    // Function to create a stock exchange offer for lot
-    async function createStockExchangeOffer() {
-        if (!limitDate) {
-            alert('Veuillez sélectionner une date limite.');
-            return;
-        }
-        const offerData = {
-            limit_date: new Date(limitDate).toISOString(),
-            lot_id: selectedLotId
-        };
-
     }
 
     // Fetch table info
@@ -113,17 +103,31 @@
             limit_date: new Date(limitDate).toISOString(),
         };
         await axios.post(`${API_BASE_URL}/lots/assign/${lotId}/trader`, offerData)
-           .then((response) => {
-               fetchTableInfo();
-               limitDate = ''; 
-               closeStockExchangeModal();
+           .then(() => {
+                fetchTableInfo().then(() => {
+                    limitDate = ''; 
+                    closeStockExchangeModal();
+                });
            }).catch((error) => {
                console.error('Error assigning lot to trader:', error.response);
            });
     }
 
+    // Fetch limit date from backend
+    async function fetchLimitDate() {
+        try {
+            const response = await axios.get(`${API_BASE_URL}/simulations/date`);
+            const date = new Date(response.data.simulation_date);
+            date.setDate(date.getDate() + 1);
+            minDate = date.toISOString().split('T')[0];
+        } catch (err) {
+            console.error('Error fetching limit date:', err);
+        }
+    }
+
     onMount(() => {
         fetchTableInfo();
+        fetchLimitDate();
     });
 
     // Update compatible tractors map
@@ -228,9 +232,9 @@
 
                     <!-- Column 1 -->
                     <td class="border p-2 text-center">
-                            <span class={`px-2 py-1 rounded ${getStatusInfo(row.state).color}`}>
-                                {getStatusInfo(row.state).text}
-                            </span>
+                        <span class={`px-2 py-1 rounded ${getStatusInfo(row.state).color}`}>
+                            {getStatusInfo(row.state).text}
+                        </span>
                     </td>
 
                     <!-- Column 2 -->
@@ -270,7 +274,7 @@
 
                     <!-- Column 6 -->
                     <td class="border p-2 text-center">
-                        {#if row.state === 'pending'}
+                        {#if row.state === 'pending' && !row.tractor}
                             <div class="flex flex-wrap justify-center space-x-2 space-y-2">
                                 <button class="bg-blue-200 text-blue-800 px-4 py-2 flex items-center font-bold hover:bg-blue-300 transition-colors rounded-md"
                                 on:click={openStockExchangeModal(row.id)} >
@@ -404,9 +408,10 @@
                 <div class="mb-2">
                     <label class="block text-gray-700 text-sm font-bold mb-2">Limit Date :</label>
                     <input type="date"
-                           class="w-full border border-gray-300 p-2 rounded"
-                           bind:value={limitDate}
-                           required
+                        class="w-full border border-gray-300 p-2 rounded"
+                        bind:value={limitDate}
+                        min={minDate}
+                        required
                     />
                 </div>
 

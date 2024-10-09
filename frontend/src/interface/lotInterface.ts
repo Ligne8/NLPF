@@ -5,6 +5,8 @@ export type Lot = {
   resource_type: string;
   volume: number;
 
+  offer_id?: string;
+
   start_checkpoint_id?: string;
   start_checkpoint?: any; // TODO: add interface checkpoint
 

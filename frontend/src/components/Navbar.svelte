@@ -10,15 +10,21 @@
 
     // Role permissions
     const rolePermissions: Record<UserRole, string[]> = {
-        admin: ['Lots', 'Tractors', 'TrafficManager', 'Trader', 'StockExchange', 'Map'],
+        admin: ['Lots', 'Tractors', 'TrafficManager', 'Trader', 'StockExchange', 'History', 'Map'],
         traffic_manager: ['TrafficManager', 'Map'],
         trader: ['Trader', 'StockExchange'],
-        client: ['Lots', 'Tractors', 'StockExchange', 'Map']
+        client: ['Lots', 'Tractors', 'StockExchange', 'History', 'Map']
     };
 
     // State for simulation date
     let simulationDate: string = '';
     let error: string = '';
+
+    // Function to format timestamp into DD/MM/YYYY
+    const formatDate = (timestamp: number) => {
+        const date = new Date(timestamp);
+        return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
+    };
 
     // Fetch simulation date from the backend
     async function fetchSimulationDate() {
@@ -66,6 +72,8 @@
             currentTab.set('Trader');
         else if (path.startsWith('/stock-exchange'))
             currentTab.set('StockExchange');
+        else if (path.startsWith('/history'))
+            currentTab.set('History');
         else if (path.startsWith('/map'))
             currentTab.set('Map');
         else
@@ -76,7 +84,7 @@
 </script>
 
 <!-- Centered User Role Title -->
-<div class="text-center flex-1 hidden lg:block bg-yellow-500 fixed top-0 left-0 w-full z-50">
+<div class="text-center flex-1 block lg:block bg-yellow-500 fixed top-0 left-0 w-full z-50">
     <p class="text-lg text-gray-800">
         <span class="font-bold">
             {#if $userRole === 'traffic_manager'}
@@ -100,7 +108,7 @@
         <div class="flex items-center">
             <!-- Logo -->
             <a href="/" class="flex-shrink-0">
-                <img src="/images/logo.png" alt="Logo" class="h-12 w-auto transition-transform duration-300 hover:scale-105" />
+                <img src="/images/logo.png" alt="Logo" class="h-10 w-auto transition-transform duration-300 hover:scale-105" />
             </a>
             <a href="/">
                 <span class="ml-3 text-xl font-bold tracking-widest hover:text-blue-400 transition-colors duration-300">
@@ -109,7 +117,7 @@
             </a>
 
             <!-- Navigation Links -->
-            <ul class="flex space-x-8 ml-16 text-base">
+            <ul class="flex space-x-6 ml-12 text-base">
                 {#if hasAccess('Lots')}
                     <li>
                         <a href="/lots" on:click={() => switchTab('Lots')} class="{$currentTab === 'Lots' ? 'font-bold text-blue-400' : 'hover:text-blue-400 transition-colors duration-300'}">
@@ -145,6 +153,13 @@
                         </a>
                     </li>
                 {/if}
+                {#if hasAccess('History')}
+                    <li>
+                        <a href="/history" on:click={() => switchTab('History')} class="{$currentTab === 'History' ? 'font-bold text-blue-400' : 'hover:text-blue-400 transition-colors duration-300'}">
+                            History
+                        </a>
+                    </li>
+                {/if}
                 {#if hasAccess('Map')}
                     <li>
                         <a href="/map" on:click={() => switchTab('Map')} class="{$currentTab === 'Map' ? 'font-bold text-blue-400' : 'hover:text-blue-400 transition-colors duration-300'}">
@@ -158,8 +173,8 @@
         <!-- Right section -->
         <div class="flex items-center space-x-4">
             {#if simulationDate}
-                <div class="text-lg text-white">
-                    Simulation date : <span class="font-bold text-blue-400">{simulationDate}</span>
+                <div class="text-md text-white">
+                    Simulation date : <span class="font-bold text-blue-400">{formatDate(simulationDate)}</span>
                 </div>
             {:else}
                 <div class="text-lg font-normal text-red-600">

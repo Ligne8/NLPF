@@ -498,11 +498,11 @@ func (LotController *LotController) AssignTractorToLot(c *gin.Context) {
 		return
 	}
 	if lot.StartCheckpointId.String() == tractor.CurrentCheckpointId.String() {
-		lot.InTractor = true;
-		lot.State = models.StateInTransit;
-		tractor.CurrentVolume += lot.Volume;
-		lot.Update(LotController.Db);
-		tractor.Update(LotController.Db);
+		lot.InTractor = true
+		lot.State = models.StateInTransit
+		tractor.CurrentVolume += lot.Volume
+		lot.Update(LotController.Db)
+		tractor.Update(LotController.Db)
 	}
 	c.JSON(http.StatusOK, lot)
 }
@@ -553,7 +553,7 @@ func (LotController *LotController) GetAvailableTrader(c *gin.Context) (models.U
 // @Failure      404  "Lot not found"
 // @Failure      404  "Trader not found"
 // @Failure      500  "Unable to assign trader to lot"
-// @Router       /lots/assign/{lot_id}/trader [put]
+// @Router       /lots/assign/{lot_id}/trader [post]
 func (LotController *LotController) AssignTraderToLot(c *gin.Context) {
 	lotId := c.Param("lot_id")
 	lotIdUUID, errIdUUID := uuid.Parse(lotId)
@@ -582,28 +582,21 @@ func (LotController *LotController) AssignTraderToLot(c *gin.Context) {
 	}
 
 	var requestBody struct {
-		Date     string `json:"limit_date" binding:"required"`
+		Date string `json:"limit_date" binding:"required"`
 	}
 
 	if err := c.ShouldBindJSON(&requestBody); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	var offer models.Offer;
+	var offer models.Offer
 	parsedDate, err := time.Parse(time.RFC3339, requestBody.Date)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date format"})
 		return
 	}
-	var offerId uuid.UUID;
-	offerId, err = offer.CreateOfferLot(LotController.Db, parsedDate, lot.Id);
-	if err != nil {	
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	lot.OfferId = &offerId;
-	if err := LotController.Db.Save(&lot).Error; err != nil {
+	_, err = offer.CreateOfferLot(LotController.Db, parsedDate, lot.Id)
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -641,22 +634,95 @@ func (LotController *LotController) GetAllLotTraderId(c *gin.Context) {
 		return
 	}
 
-	// Retrieve lots for the trader with associated offers and current price from bids
+	// Retrieve lots for the trader
 	if err := LotController.Db.Preload("StartCheckpoint").
 		Preload("EndCheckpoint").
-		Preload("Offer").
 		Where("trader_id = ?", traderIdUUID).
 		Find(&lots).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to retrieve lots", "details": err.Error()})
 		return
 	}
+
+	// Enrich the lots with current prices and limit_date from associated offers
 	for i := range lots {
 		var maxBid float64
-		LotController.Db.Raw("SELECT COALESCE(MAX(bid), 0) FROM bids WHERE offer_id = ?", lots[i].OfferId).Scan(&maxBid)
+		var offer models.Offer
+		if err := LotController.Db.First(&offer, "lot_id = ?", lots[i].Id).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to retrieve offer", "details": err.Error()})
+			return
+		}
+		// Get the maximum bid for the offer
+		if err := LotController.Db.Raw("SELECT COALESCE(MAX(bid), 0) FROM bids WHERE offer_id = ?", offer.Id).Scan(&maxBid).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to retrieve max bid", "details": err.Error()})
+			return
+		}
 		lots[i].CurrentPrice = maxBid
+		lots[i].LimitDate = offer.LimitDate // Set the limit_date from the offer
 	}
-
 
 	// Return the enriched lots in the JSON response
 	c.JSON(http.StatusOK, lots)
+}
+
+// GetLotBidByOwnerId : Get all bids for a lot by owner id
+//
+// @Summary      Get all bids for a lot by owner id
+// @Tags         lots
+// @Accept       json
+// @Produce      json
+// @Param        client_id  path  string  true  "Client Id"
+// @Success      200  {array}  models.Bid
+// @Failure      400  "Invalid client_id"
+// @Failure      500  "Unable to retrieve bids"
+// @Router       /lots/bids/{client_id} [get]
+func (LotController *LotController) GetLotBidByOwnerId(c *gin.Context) {
+	var result []struct {
+		LimitDate    time.Time `json:"limit_date"`
+		MaxPriceByKm float64   `json:"max_price_by_km"`
+		CurrentPrice float64   `json:"current_price"`
+		State        string    `json:"state"`
+	}
+
+	clientId := c.Param("owner_id")
+	ownerID, errIdUUID := uuid.Parse(clientId)
+
+	if errIdUUID != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid owner_id"})
+		return
+	}
+
+	query := `
+    SELECT offers.limit_date AS limit_date,
+           MAX(lots.max_price_by_km) AS max_price_by_km,
+           MAX(bids.bid) AS current_price,
+           bids.state
+    FROM bids
+    JOIN offers ON offers.id = bids.offer_id
+    JOIN lots ON offers.lot_id = lots.id
+    WHERE bids.owner_id = $1
+    GROUP BY offers.limit_date, bids.state;
+`
+
+	rows, err := LotController.Db.Raw(query, ownerID).Rows()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to retrieve lots"})
+		return
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var record struct {
+			LimitDate    time.Time `json:"limit_date"`
+			MaxPriceByKm float64   `json:"max_price_by_km"`
+			CurrentPrice float64   `json:"current_price"`
+			State        string    `json:"state"`
+		}
+		if err := rows.Scan(&record.LimitDate, &record.MaxPriceByKm, &record.CurrentPrice, &record.State); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to scan lot results"})
+			return
+		}
+		result = append(result, record)
+	}
+
+	c.JSON(http.StatusOK, result)
 }

@@ -1,7 +1,7 @@
 <script lang="ts">
     import Navbar from '@components/Navbar.svelte';
     import StockExchangeNavbar from '@components/StockExchangeNavbar.svelte';
-    import { userRole } from '@stores/store';
+    import { userRole, userId } from '@stores/store';
     import axios from 'axios';
     import type { Tractor } from 'src/interface/tractorInterface';
     import { onMount } from 'svelte';
@@ -14,12 +14,12 @@
     let isModalOpen = false;
     let priceValue: number = 1.0;
     let minPriceValue: number = 1.0;
-    let maxPriceValue: number = 10.0;
+    let maxPriceValue: number = 100.0;
     let volumeValue: number = 1.0;
     let minVolumeValue: number = 1.0;
-    let maxVolumeValue: number = 10.0;
-    let selectedStatus: string = 'all';
+    let maxVolumeValue: number = 50.0;
     let sortOption: string = 'none';
+    let current_offer_id: number;
 
     // Function to format timestamp into DD/MM/YYYY
     const formatDate = (timestamp: number) => {
@@ -39,21 +39,38 @@
     }
 
     // Function to open tractors modal
-    function openModal(currentPrice: number, spaceAvailable: number) {
-        priceValue = currentPrice;
-        minPriceValue = currentPrice;
-        maxVolumeValue = spaceAvailable;
+    function openModal(currentPrice: any, offer_id: any, min_price_by_km: number, bid_owner_id: string) {
+      console.log(bid_owner_id)
+        current_offer_id = offer_id;
+        priceValue = min_price_by_km;
+        minPriceValue = min_price_by_km;
         isModalOpen = true;
     }
 
     // Function to close tractors modal
     function closeModal() {
+        current_offer_id = 0;
         isModalOpen = false;
     }
 
     // Function to bid
     function bid() {
-        closeModal();
+        console.log('Bid:', priceValue);
+        console.log('VolumeValue:', volumeValue);
+        console.log('offerId:', current_offer_id);
+
+        const payload = {
+            offer_id: current_offer_id,
+            bid: priceValue,
+            volume: volumeValue,
+            owner_id: $userId
+        }
+        axios.post(`${API_BASE_URL}/stock_exchange/tractor/bid`, payload).then((response) => {
+          fetchTractors();
+          closeModal();
+        }).catch((error) => {
+            console.error('Error bidding:', error.response);
+        });
     }
 
     // Fetch table info
@@ -73,13 +90,9 @@
 
     // Update data depending on filters
     $: sortedData = (() => {
-        let data = selectedStatus === 'all' ? tractors : tractors.filter(tractor => tractor.state === selectedStatus);
+        let data = tractors;
 
         switch (sortOption) {
-            case 'name_asc':
-                return data.sort((a, b) => a.name.localeCompare(b.name));
-            case 'name_desc':
-                return data.sort((a, b) => b.name.localeCompare(a.name));
             case 'loading_asc':
                 return data.sort((a, b) => (a.current_units / a.max_units) - (b.current_units / b.max_units));
             case 'loading_desc':
@@ -88,12 +101,8 @@
                 return data.sort((a, b) => (a.max_units - a.current_units) - (b.max_units - b.current_units));
             case 'remaining_volume_desc':
                 return data.sort((a, b) => (b.max_units - b.current_units) - (a.max_units - a.current_units));
-            case 'location_asc':
-                return data.sort((a, b) => a.current_checkpoint.name.localeCompare(b.current_checkpoint.name));
-            case 'location_desc':
-                return data.sort((a, b) => b.current_checkpoint.name.localeCompare(a.current_checkpoint.name));
             default:
-                return data.sort((a, b) => a.name.localeCompare(b.name));
+                return data;
         }
     })();
 
@@ -116,30 +125,26 @@
 
         <div class="flex justify-between items-center self-end">
 
-            <!-- Filter by status -->
-            <select bind:value={selectedStatus} class="mr-2 border border-gray-300 rounded px-2 py-1">
-                <option value="all" disabled selected>Filter by status</option>
-                <option value="all">All</option>
-                <option value="available">Available</option>
-                <option value="pending">Pending</option>
-                <option value="in_transit">In transit</option>
-                <option value="on_market">On market</option>
-                <option value="at_trader">At trader</option>
-                <option value="archive">Archived</option>
-            </select>
-
             <!-- Sort by name, volume and location -->
             <select bind:value={sortOption} class="border border-gray-300 rounded px-2 py-1">
                 <option value="none" disabled selected>Sort by</option>
-                <option value="name_asc">Name (A-Z)</option>
-                <option value="name_desc">Name (Z-A)</option>
                 <option value="loading_asc">Loading (Ascending)</option>
                 <option value="loading_desc">Loading (Descending)</option>
                 <option value="remaining_volume_asc">Remaining volume (Ascending)</option>
                 <option value="remaining_volume_desc">Remaining volume (Descending)</option>
-                <option value="location_asc">Location (A-Z)</option>
-                <option value="location_desc">Location (Z-A)</option>
             </select>
+
+        </div>
+
+        <div class="flex justify-between items-center self-end">
+
+            <!-- Reload button -->
+            <button class="bg-gray-800 text-white font-bold px-4 py-2 rounded flex items-center hover:bg-gray-900 transition-colors self-end"
+                    on:click={fetchTractors}
+            >
+                <i class="fas fa-rotate-right mr-2"></i>
+                Reload
+            </button>
 
         </div>
 
@@ -182,7 +187,7 @@
                         <td class="border p-2 text-center">
                             <div class="flex flex-wrap justify-center space-x-2 space-y-2">
                                 <button class="bg-blue-200 text-blue-800 px-4 py-2 flex items-center font-bold hover:bg-blue-300 transition-colors rounded-md"
-                                    on:click={() => openModal(row.current_price, row.current_price)}
+                                    on:click={() => openModal(row.current_price, row.offer_id, row.min_price_by_km, row.id)}
                                 >
                                     <i class="fas fa-coins mr-2"></i>
                                     Bid

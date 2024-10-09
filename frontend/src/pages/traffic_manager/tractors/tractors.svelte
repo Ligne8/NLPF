@@ -18,6 +18,7 @@
     let selectedStatus: string = 'all';
     let sortOption: string = 'none';
     let limitDate: string = '';
+    let minDate: string = '';
 
     interface Route {
         name: string;
@@ -51,14 +52,29 @@
                 return { color: 'bg-purple-200 text-purple-800', text: '◉ At trader' };
             case 'archive':
                 return { color: 'bg-gray-200 text-gray-800', text: '◉ Archived' };
+            case 'return_from_market':
+                return {color: 'bg-fuchsia-200 text-fuchsia-800', text: '◉ Return from market'};
             default:
                 return { color: 'bg-gray-200 text-gray-800', text: '🛇 Unknown' };
+        }
+    }
+
+    // Fetch limit date from backend
+    async function fetchLimitDate() {
+        try {
+            const response = await axios.get(`${API_BASE_URL}/simulations/date`);
+            const date = new Date(response.data.simulation_date);
+            date.setDate(date.getDate() + 1);
+            minDate = date.toISOString().split('T')[0];
+        } catch (err) {
+            console.error('Error fetching limit date:', err);
         }
     }
 
     onMount(() => {
         fetchRoutes();
         fetchTableInfo();
+        fetchLimitDate();
     });
 
 
@@ -366,9 +382,10 @@
                 <div class="mb-2">
                     <label class="block text-gray-700 text-sm font-bold mb-2">Limit Date :</label>
                     <input type="date"
-                           class="w-full border border-gray-300 p-2 rounded"
-                           bind:value={limitDate}
-                           required
+                        class="w-full border border-gray-300 p-2 rounded"
+                        bind:value={limitDate}
+                        min={minDate}
+                        required
                     />
                 </div>
 

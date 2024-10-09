@@ -33,7 +33,7 @@ func (SimulationController *SimulationController) GetSimulationDate(c *gin.Conte
 	}
 
 	// Format day/month/year
-	c.JSON(http.StatusOK, gin.H{"simulation_date": simulation.SimulationDate.Format("2006-01-02")})
+	c.JSON(http.StatusOK, gin.H{"simulation_date": simulation.SimulationDate})
 }
 
 // UpdateSimulationDate : Handler to increment the simulation date by 1 day
@@ -64,6 +64,10 @@ func (SimulationController *SimulationController) UpdateSimulationDate(c *gin.Co
 		return
 	}
 
+	// Update the state of the offers
+	stockExchangeController := StockExchangeController{Db: SimulationController.Db}
+	stockExchangeController.ChangeStateToReturnFromMarket2(c)
+
 	// Return the new updated date
 	c.JSON(http.StatusOK, gin.H{
 		"message":         "Simulation date updated successfully",
@@ -71,81 +75,81 @@ func (SimulationController *SimulationController) UpdateSimulationDate(c *gin.Co
 	})
 }
 
-func (SimulationController *SimulationController) MoveTractorForward(c *gin.Context){
-	var tractorModel models.Tractor;
+func (SimulationController *SimulationController) MoveTractorForward(c *gin.Context) {
+	var tractorModel models.Tractor
 	var tractors []models.Tractor
-	var err error;
+	var err error
 	tractors, err = tractorModel.GetByState(SimulationController.Db, "in_transit")
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to fetch tractors"})
 	}
-  for _, tractor := range tractors {
+	for _, tractor := range tractors {
 
-    // get les trucs a get
-    var currentRouteCheckpoint models.RouteCheckpoint;
-    if err := currentRouteCheckpoint.GetRouteCheckpoint(SimulationController.Db, *tractor.RouteId, *tractor.CurrentCheckpointId); err != nil {
-      c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to fetch route checkpoint"});
-      return;
-    }
-    var nextRouteCheckpoint models.RouteCheckpoint;
-    if err := nextRouteCheckpoint.GetNextCheckpoint(SimulationController.Db, *tractor.RouteId, currentRouteCheckpoint.Position); err != nil {
-      c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to fetch next route checkpoint"});
-      return;
-    }
+		// get les trucs a get
+		var currentRouteCheckpoint models.RouteCheckpoint
+		if err := currentRouteCheckpoint.GetRouteCheckpoint(SimulationController.Db, *tractor.RouteId, *tractor.CurrentCheckpointId); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to fetch route checkpoint"})
+			return
+		}
+		var nextRouteCheckpoint models.RouteCheckpoint
+		if err := nextRouteCheckpoint.GetNextCheckpoint(SimulationController.Db, *tractor.RouteId, currentRouteCheckpoint.Position); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to fetch next route checkpoint"})
+			return
+		}
 
-    UpdateTractorCheckpoint(SimulationController.Db, c, tractor, currentRouteCheckpoint, nextRouteCheckpoint);
-    UpdateLotCheckpoint(SimulationController.Db, c, tractor.Id, nextRouteCheckpoint.CheckpointId);
-    ExecAllTransactions(SimulationController.Db, nextRouteCheckpoint.CheckpointId, tractor.Id, *tractor.RouteId, c);
+		UpdateTractorCheckpoint(SimulationController.Db, c, tractor, currentRouteCheckpoint, nextRouteCheckpoint)
+		UpdateLotCheckpoint(SimulationController.Db, c, tractor.Id, nextRouteCheckpoint.CheckpointId)
+		ExecAllTransactions(SimulationController.Db, nextRouteCheckpoint.CheckpointId, tractor.Id, *tractor.RouteId, c)
 
-    // update lot checkpoint
-    
-  }
+		// update lot checkpoint
+
+	}
 }
 
-func UpdateTractorCheckpoint(db *gorm.DB, c *gin.Context, tractor models.Tractor, currentRouteCheckpoint models.RouteCheckpoint, nextRouteCheckpoint models.RouteCheckpoint){
-  tractor.CurrentCheckpointId = &nextRouteCheckpoint.CheckpointId;
-  var lastCheckpointPosition uint; 
-    db.Raw("select max(position) from route_checkpoints where route_id = ?", tractor.RouteId).Scan(&lastCheckpointPosition);
-    if nextRouteCheckpoint.Position == lastCheckpointPosition {
-        tractor.State = models.StateArchive
-    }
-    if err := tractor.Update(db); err != nil {
-      c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to save tractor"});
-      return;
-    }
+func UpdateTractorCheckpoint(db *gorm.DB, c *gin.Context, tractor models.Tractor, currentRouteCheckpoint models.RouteCheckpoint, nextRouteCheckpoint models.RouteCheckpoint) {
+	tractor.CurrentCheckpointId = &nextRouteCheckpoint.CheckpointId
+	var lastCheckpointPosition uint
+	db.Raw("select max(position) from route_checkpoints where route_id = ?", tractor.RouteId).Scan(&lastCheckpointPosition)
+	if nextRouteCheckpoint.Position == lastCheckpointPosition {
+		tractor.State = models.StateArchive
+	}
+	if err := tractor.Update(db); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to save tractor"})
+		return
+	}
 }
 
-func UpdateLotCheckpoint(db *gorm.DB, c *gin.Context, tractorId uuid.UUID, newCheckpointId uuid.UUID){
-  var lot models.Lot;
-  var lots []models.Lot;
-  var err error;
-  lots, err = lot.GetAllInTractorByTracorId(db, tractorId);
-  if err != nil {
-    c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to fetch lots"});
-    return;
-  }
-  for _, lot := range lots {
-    if lot.InTractor{
-      lot.CurrentCheckpointId = &newCheckpointId;
-      if err := lot.Update(db); err != nil {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to save lot"});
-        return;
-      }
-    }
-  }
+func UpdateLotCheckpoint(db *gorm.DB, c *gin.Context, tractorId uuid.UUID, newCheckpointId uuid.UUID) {
+	var lot models.Lot
+	var lots []models.Lot
+	var err error
+	lots, err = lot.GetAllInTractorByTracorId(db, tractorId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to fetch lots"})
+		return
+	}
+	for _, lot := range lots {
+		if lot.InTractor {
+			lot.CurrentCheckpointId = &newCheckpointId
+			if err := lot.Update(db); err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to save lot"})
+				return
+			}
+		}
+	}
 }
 
-func ExecAllTransactions(db *gorm.DB, checkpointId uuid.UUID, tractorId uuid.UUID, routeId uuid.UUID, c *gin.Context){
-  var transactionModel models.Transaction;
-  var transactions []models.Transaction;
-  var err error;
-  transactions, err = transactionModel.FindByRouteIdAndCheckpointIdAndTractorId(db, routeId, checkpointId, tractorId);
-  if err != nil {
-    c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to fetch transactions"});
-  }
-  for _, transaction := range transactions {
-    if err := transaction.ExecTransaction(db); err != nil {
-      c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to execute transaction"});
-    }
-  } 
+func ExecAllTransactions(db *gorm.DB, checkpointId uuid.UUID, tractorId uuid.UUID, routeId uuid.UUID, c *gin.Context) {
+	var transactionModel models.Transaction
+	var transactions []models.Transaction
+	var err error
+	transactions, err = transactionModel.FindByRouteIdAndCheckpointIdAndTractorId(db, routeId, checkpointId, tractorId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to fetch transactions"})
+	}
+	for _, transaction := range transactions {
+		if err := transaction.ExecTransaction(db); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to execute transaction"})
+		}
+	}
 }

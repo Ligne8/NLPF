@@ -17,8 +17,12 @@ func StockExchangeRoute(r *gin.Engine, db *gorm.DB) *gin.Engine {
 		v1.POST("/lot_offers", StockExchangeController.CreateLotOffer)
 		v1.GET("/lot_offers", StockExchangeController.GetAllLotsOnMarket)
 
+		v1.POST("/lot/bid", StockExchangeController.CreateBidLot)
+		v1.POST("/tractor/bid", StockExchangeController.CreateBidTractor)
+
 		v1.POST("/tractor_offers", StockExchangeController.CreateTractorOffer)
 		v1.GET("/tractor_offers", StockExchangeController.GetAllTractorOnMarket)
+		v1.PUT("/return_from_market", StockExchangeController.ChangeStateToReturnFromMarket2)
 	}
 	return r
 }
