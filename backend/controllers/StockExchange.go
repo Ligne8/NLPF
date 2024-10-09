@@ -30,7 +30,7 @@ type StockExchangeController struct {
 // @Router /stock_exchange/lot_offers [post]
 func (sec *StockExchangeController) CreateLotOffer(c *gin.Context) {
 	var requestBody struct {
-		LimitDate string `json:"limit_date" binding:"required"`
+		LimitDate string    `json:"limit_date" binding:"required"`
 		LotId     uuid.UUID `json:"lot_id" binding:"required"`
 	}
 
@@ -54,20 +54,20 @@ func (sec *StockExchangeController) CreateLotOffer(c *gin.Context) {
 	}
 
 	// Create the offer
-	var offer models.Offer;
+	var offer models.Offer
 	parsedDate, err := time.Parse(time.RFC3339, requestBody.LimitDate)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date format"})
 		return
 	}
 
-	var offerId uuid.UUID;
-	offerId, err = offer.CreateOfferLot(sec.Db, parsedDate, lot.Id);
-	if err != nil {	
+	var offerId uuid.UUID
+	offerId, err = offer.CreateOfferLot(sec.Db, parsedDate, lot.Id)
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	lot.OfferId = &offerId;
+	lot.OfferId = &offerId
 	if err := sec.Db.Save(&lot).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -91,7 +91,7 @@ func (sec *StockExchangeController) CreateLotOffer(c *gin.Context) {
 // @Router /stock_exchange/tractor_offers [post]
 func (sec *StockExchangeController) CreateTractorOffer(c *gin.Context) {
 	var requestBody struct {
-		LimitDate string `json:"limit_date" binding:"required"`
+		LimitDate string    `json:"limit_date" binding:"required"`
 		TractorId uuid.UUID `json:"tractor_id" binding:"required"`
 	}
 
@@ -114,20 +114,20 @@ func (sec *StockExchangeController) CreateTractorOffer(c *gin.Context) {
 	}
 
 	// Create the offer
-	var offer models.Offer;
+	var offer models.Offer
 	parsedDate, err := time.Parse(time.RFC3339, requestBody.LimitDate)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date format"})
 		return
 	}
 
-	var offerId uuid.UUID;
-	offerId, err = offer.CreateOfferTractor(sec.Db, parsedDate, tractor.Id);
-	if err != nil {	
+	var offerId uuid.UUID
+	offerId, err = offer.CreateOfferTractor(sec.Db, parsedDate, tractor.Id)
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	tractor.OfferId = &offerId;
+	tractor.OfferId = &offerId
 	if err := sec.Db.Save(&tractor).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -146,14 +146,14 @@ func (sec *StockExchangeController) CreateTractorOffer(c *gin.Context) {
 // @Router /stock_exchange/tractor_offers [get]
 func (sec *StockExchangeController) GetAllTractorOnMarket(c *gin.Context) {
 	var offers []struct {
-		LimitDate      time.Time           `json:"limit_date"`
-		TractorId      uuid.UUID           `json:"tractor_id"`
-		ResourceType   models.ResourceType `json:"resource_type"`
-		CurrentUnits   float64             `json:"current_units"`
-		MaxUnits       float64             `json:"max_units"`
-		MinPriceByKm   float64             `json:"min_price_by_km"`
-		CurrentPrice   float64             `json:"current_price"`
-		OfferId   uuid.UUID             `json:"offer_id"`
+		LimitDate    time.Time           `json:"limit_date"`
+		TractorId    uuid.UUID           `json:"tractor_id"`
+		ResourceType models.ResourceType `json:"resource_type"`
+		CurrentUnits float64             `json:"current_units"`
+		MaxUnits     float64             `json:"max_units"`
+		MinPriceByKm float64             `json:"min_price_by_km"`
+		CurrentPrice float64             `json:"current_price"`
+		OfferId      uuid.UUID           `json:"offer_id"`
 	}
 
 	query := `
@@ -184,15 +184,15 @@ func (sec *StockExchangeController) GetAllTractorOnMarket(c *gin.Context) {
 // @Failure 500 "Unable to fetch offers"
 // @Router /stock_exchange/lot_offers [get]
 func (sec *StockExchangeController) GetAllLotsOnMarket(c *gin.Context) {
-	
+
 	var offers []struct {
-		LimitDate      time.Time           `json:"limit_date"`
-		LotId          uuid.UUID           `json:"lot_id"`
-		ResourceType   models.ResourceType `json:"resource_type"`
-		Volume         float64             `json:"volume"`
-		MaxPriceByKm   float64             `json:"max_price_by_km"`
-		CurrentPrice   float64             `json:"current_price"`
-		OfferId   uuid.UUID             `json:"offer_id"`
+		LimitDate    time.Time           `json:"limit_date"`
+		LotId        uuid.UUID           `json:"lot_id"`
+		ResourceType models.ResourceType `json:"resource_type"`
+		Volume       float64             `json:"volume"`
+		MaxPriceByKm float64             `json:"max_price_by_km"`
+		CurrentPrice float64             `json:"current_price"`
+		OfferId      uuid.UUID           `json:"offer_id"`
 	}
 
 	query := `
@@ -210,13 +210,12 @@ func (sec *StockExchangeController) GetAllLotsOnMarket(c *gin.Context) {
 		return
 	}
 
-
 	c.JSON(http.StatusOK, offers)
 }
 
 func (StockExchangeController *StockExchangeController) CreateBidLot(c *gin.Context) {
 	var requestBody struct {
-		Bid float64 `json:"bid" binding:"required"`
+		Bid     float64   `json:"bid" binding:"required"`
 		OfferId uuid.UUID `json:"offer_id" binding:"required"`
 	}
 
@@ -232,10 +231,10 @@ func (StockExchangeController *StockExchangeController) CreateBidLot(c *gin.Cont
 		return
 	}
 
-	var bid models.Bid;
-	bid.Bid = requestBody.Bid;
-	bid.OfferId = offerUUID;
-	bid.State = "in_progress";
+	var bid models.Bid
+	bid.Bid = requestBody.Bid
+	bid.OfferId = offerUUID
+	bid.State = "in_progress"
 
 	if err := StockExchangeController.Db.Create(&bid).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"errorrr": err.Error()})
@@ -247,9 +246,9 @@ func (StockExchangeController *StockExchangeController) CreateBidLot(c *gin.Cont
 
 func (StockExchangeController *StockExchangeController) CreateBidTractor(c *gin.Context) {
 	var requestBody struct {
-		Bid float64 `json:"bid" binding:"required"`
+		Bid     float64   `json:"bid" binding:"required"`
 		OfferId uuid.UUID `json:"offer_id" binding:"required"`
-		Volume float64 `json:"volume" binding:"required"`
+		Volume  float64   `json:"volume" binding:"required"`
 	}
 
 	if err := c.ShouldBindJSON(&requestBody); err != nil {
@@ -264,11 +263,11 @@ func (StockExchangeController *StockExchangeController) CreateBidTractor(c *gin.
 		return
 	}
 
-	var bid models.Bid;
-	bid.Bid = requestBody.Bid;
-	bid.OfferId = offerUUID;
-	bid.State = "in_progress";
-	bid.Volume = requestBody.Volume;
+	var bid models.Bid
+	bid.Bid = requestBody.Bid
+	bid.OfferId = offerUUID
+	bid.State = "in_progress"
+	bid.Volume = requestBody.Volume
 
 	if err := StockExchangeController.Db.Create(&bid).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"errorrr": err.Error()})
@@ -277,6 +276,7 @@ func (StockExchangeController *StockExchangeController) CreateBidTractor(c *gin.
 
 	c.JSON(http.StatusCreated, bid)
 }
+
 // ReturnFromMarket : Return a tractor or a lot from the market Deso on utilise plus la fonction daniel
 // @Summary After getting all the offers on morket with the limit date passed, the state of the tractor/lot is changed to return_from_market
 // @Tags Stock Exchange
@@ -346,7 +346,12 @@ func (sec *StockExchangeController) ChangeStateToReturnFromMarket2(c *gin.Contex
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	
+
+	if err := sec.UpdateTractorsBids(); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
 	if err := sec.updateLotsOffers(); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -356,11 +361,10 @@ func (sec *StockExchangeController) ChangeStateToReturnFromMarket2(c *gin.Contex
 		return
 	}
 
-
 }
 
-func (sec *StockExchangeController) UpdateLotsBids() error{
-	var offers []models.Offer;
+func (sec *StockExchangeController) UpdateLotsBids() error {
+	var offers []models.Offer
 	query := `
 		SELECT offers.*
 		FROM offers
@@ -394,9 +398,51 @@ func (sec *StockExchangeController) UpdateLotsBids() error{
 	return nil
 }
 
+func (sec *StockExchangeController) UpdateTractorsBids() error {
+	var offers []models.Offer
+	query := `
+		SELECT offers.*
+		FROM offers
+		JOIN tractors t ON offers.id = t.offer_id
+		WHERE offers.limit_date < (SELECT simulation_date FROM simulations LIMIT 1)
+		AND offers.tractor_id IS NOT NULL
+		AND t.state = 'on_market'
+	`
+	if err := sec.Db.Raw(query).Scan(&offers).Error; err != nil {
+		return err
+	}
 
-//traffic_manager_id = COALESCE(traffic_manager_id, (SELECT random_trafic_manager.id FROM random_trafic_manager)),
-func (sec *StockExchangeController) updateLotsOffers() error{
+	for _, offer := range offers {
+		var bids []models.Bid
+		if err := sec.Db.Where("offer_id = ?", offer.Id).Order("bid desc").Find(&bids).Error; err != nil {
+			return err
+		}
+		for _, bid := range bids {
+			var tractor models.Tractor
+			tractor, err := tractor.FindById(sec.Db, *offer.TractorId)
+			if err != nil {
+				return err
+			}
+			if tractor.MaxVolume-tractor.CurrentVolume < bid.Volume {
+				bid.State = "rejected"
+				if err := sec.Db.Save(&bid).Error; err != nil {
+					return err
+				}
+				continue
+			}
+			bid.State = "accepted"
+
+			tractor.CurrentVolume += bid.Volume
+			if err := sec.Db.Save(&tractor).Error; err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func (sec *StockExchangeController) updateLotsOffers() error {
 	query := `
 		WITH random_trafic_manager AS (
 			SELECT id
@@ -416,7 +462,7 @@ func (sec *StockExchangeController) updateLotsOffers() error{
 	}
 	return nil
 }
-func (sec *StockExchangeController) updateTractorsOffers() error{
+func (sec *StockExchangeController) updateTractorsOffers() error {
 	query := `
 		WITH random_trafic_manager AS (
 			SELECT id
