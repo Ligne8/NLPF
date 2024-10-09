@@ -19,6 +19,7 @@
     let selectedStatus: string = 'all';
     let sortOption: string = 'none';
     let limitDate: string = '';
+    let minDate: string = '';
 
     const openStockExchangeModal = (lotId: number)=>{
         selectedLotId = lotId;  
@@ -58,19 +59,6 @@
     // Function to close modal
     function closeModal() {
         isModalOpen = false;
-    }
-
-    // Function to create a stock exchange offer for lot
-    async function createStockExchangeOffer() {
-        if (!limitDate) {
-            alert('Veuillez sélectionner une date limite.');
-            return;
-        }
-        const offerData = {
-            limit_date: new Date(limitDate).toISOString(),
-            lot_id: selectedLotId
-        };
-
     }
 
     // Fetch table info
@@ -122,8 +110,20 @@
            });
     }
 
+    // Fetch limit date from backend
+    async function fetchLimitDate() {
+        try {
+            const response = await axios.get(`${API_BASE_URL}/simulations/date`);
+            const date = new Date(response.data.simulation_date);
+            minDate = date.toISOString().split('T')[0];
+        } catch (err) {
+            console.error('Error fetching limit date:', err);
+        }
+    }
+
     onMount(() => {
         fetchTableInfo();
+        fetchLimitDate();
     });
 
     // Update compatible tractors map
@@ -404,9 +404,10 @@
                 <div class="mb-2">
                     <label class="block text-gray-700 text-sm font-bold mb-2">Limit Date :</label>
                     <input type="date"
-                           class="w-full border border-gray-300 p-2 rounded"
-                           bind:value={limitDate}
-                           required
+                        class="w-full border border-gray-300 p-2 rounded"
+                        bind:value={limitDate}
+                        min={minDate}
+                        required
                     />
                 </div>
 

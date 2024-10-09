@@ -20,6 +20,12 @@
     let simulationDate: string = '';
     let error: string = '';
 
+    // Function to format timestamp into DD/MM/YYYY
+    const formatDate = (timestamp: number) => {
+        const date = new Date(timestamp);
+        return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
+    };
+
     // Fetch simulation date from the backend
     async function fetchSimulationDate() {
         try {
@@ -159,7 +165,7 @@
         <div class="flex items-center space-x-4">
             {#if simulationDate}
                 <div class="text-lg text-white">
-                    Simulation date : <span class="font-bold text-blue-400">{simulationDate}</span>
+                    Simulation date : <span class="font-bold text-blue-400">{formatDate(simulationDate)}</span>
                 </div>
             {:else}
                 <div class="text-lg font-normal text-red-600">
