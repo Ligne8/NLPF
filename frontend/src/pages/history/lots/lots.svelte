@@ -6,7 +6,7 @@
     import type { Lot } from 'src/interface/lotInterface';
     import HistoryNavbar from '@components/HistoryNavbar.svelte';
 
-    let title: string = 'History';
+    let title: string = 'History of lots bids';
     let subtitle: string = 'Find your lot bid history.';
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
     let lots: Lot[] = [];
@@ -18,6 +18,22 @@
         const date = new Date(timestamp);
         return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
     };
+
+    // Function to get tag color and text based on status
+    function getStateInfo(state: string): { color: string; text: string } {
+        switch (state) {
+            case 'accepted':
+                return {color: 'bg-green-200 text-green-800', text: '◉ Accepted'};
+            case 'rejected':
+                return {color: 'bg-red-200 text-red-800', text: '◉ Rejected'};
+            case 'in_progress':
+                return {color: 'bg-blue-200 text-blue-800', text: '◉ In progress'};
+            case 'denied':
+                return {color: 'bg-orange-200 text-orange-800', text: '◉ Denied'};
+            default:
+                return {color: 'bg-gray-200 text-gray-800', text: '🛇 Unknown'};
+        }
+    }
 
     // Fetch lots bid
     async function fetchLots() {
@@ -122,10 +138,14 @@
                 <tr class={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
 
                     <!-- Column 1 -->
-                    <td class="border p-2 text-center">{row.state}</td>
+                    <td class="border p-2 text-center">
+                        <span class={`px-2 py-1 rounded ${getStateInfo(row.state).color}`}>
+                            {getStateInfo(row.state).text}
+                        </span>
+                    </td>
 
                     <!-- Column 2 -->
-                    <td class="border p-2 text-center">{formatDate(row.offer.limit_date)}</td>
+                    <td class="border p-2 text-center">{formatDate(row.limit_date)}</td>
 
                     <!-- Column 3 -->
                     <td class="border p-2 text-center">{row.max_price_by_km.toFixed(2)}</td>
