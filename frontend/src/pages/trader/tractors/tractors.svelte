@@ -134,7 +134,7 @@
                         
                         <!-- Column 2 -->
                         <td class="border p-2 text-center">
-                            {formatDate(row.offer.limit_date)}
+                            {formatDate(row.limit_date)}
                         </td>
     
                         <!-- Column 3 -->
