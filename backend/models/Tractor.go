@@ -39,9 +39,8 @@ type Tractor struct {
 	Trader              *User        `json:"trader" gorm:"foreignKey:TraderId"`
 	RouteId             *uuid.UUID   `json:"route_id" gorm:"type:uuid"` // Foreign key for Route
 	Route               *Route       `json:"route" gorm:"foreignKey:RouteId"`
-	OfferId             *uuid.UUID   `json:"offer_id" gorm:""`
-	Offer               *Offer       `json:"offer" gorm:"foreignKey:OfferId"`
 	CurrentPrice        float64      `json:"current_price" gorm:"-"`
+	LimitDate           time.Time    `json:"limit_date" gorm:""`
 }
 
 func (tractor *Tractor) BeforeCreate(tx *gorm.DB) (err error) {
@@ -197,9 +196,9 @@ func (tractor *Tractor) GetVolumeAtCheckpoint(db *gorm.DB, checkpointId uuid.UUI
 	for _, checkpoint := range allRouteCheckpoints {
 		var transaction []Transaction
 		// je récupère les transactions du tracteur pour le checkpoint actuel
-		transaction, err = transactionModel.FindByRouteIdAndCheckpointIdAndTractorId(db, *tractor.RouteId, checkpoint.CheckpointId, tractor.Id);
-		if err != nil{
-			return 0, err;
+		transaction, err = transactionModel.FindByRouteIdAndCheckpointIdAndTractorId(db, *tractor.RouteId, checkpoint.CheckpointId, tractor.Id)
+		if err != nil {
+			return 0, err
 		}
 		// je parcours les transactions pour calculer le volume du tracteur
 		for _, transaction := range transaction {

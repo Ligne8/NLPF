@@ -29,7 +29,7 @@ type StockExchangeController struct {
 // @Router /stock_exchange/lot_offers [post]
 func (sec *StockExchangeController) CreateLotOffer(c *gin.Context) {
 	var requestBody struct {
-		LimitDate string `json:"limit_date" binding:"required"`
+		LimitDate string    `json:"limit_date" binding:"required"`
 		LotId     uuid.UUID `json:"lot_id" binding:"required"`
 	}
 
@@ -53,21 +53,15 @@ func (sec *StockExchangeController) CreateLotOffer(c *gin.Context) {
 	}
 
 	// Create the offer
-	var offer models.Offer;
+	var offer models.Offer
 	parsedDate, err := time.Parse(time.RFC3339, requestBody.LimitDate)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date format"})
 		return
 	}
 
-	var offerId uuid.UUID;
-	offerId, err = offer.CreateOfferLot(sec.Db, parsedDate, lot.Id);
-	if err != nil {	
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	lot.OfferId = &offerId;
-	if err := sec.Db.Save(&lot).Error; err != nil {
+	_, err = offer.CreateOfferLot(sec.Db, parsedDate, lot.Id)
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -90,7 +84,7 @@ func (sec *StockExchangeController) CreateLotOffer(c *gin.Context) {
 // @Router /stock_exchange/tractor_offers [post]
 func (sec *StockExchangeController) CreateTractorOffer(c *gin.Context) {
 	var requestBody struct {
-		LimitDate string `json:"limit_date" binding:"required"`
+		LimitDate string    `json:"limit_date" binding:"required"`
 		TractorId uuid.UUID `json:"tractor_id" binding:"required"`
 	}
 
@@ -113,25 +107,18 @@ func (sec *StockExchangeController) CreateTractorOffer(c *gin.Context) {
 	}
 
 	// Create the offer
-	var offer models.Offer;
+	var offer models.Offer
 	parsedDate, err := time.Parse(time.RFC3339, requestBody.LimitDate)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date format"})
 		return
 	}
 
-	var offerId uuid.UUID;
-	offerId, err = offer.CreateOfferTractor(sec.Db, parsedDate, tractor.Id);
-	if err != nil {	
+	_, err = offer.CreateOfferTractor(sec.Db, parsedDate, tractor.Id)
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	tractor.OfferId = &offerId;
-	if err := sec.Db.Save(&tractor).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
 	c.JSON(http.StatusCreated, offer)
 }
 
@@ -145,14 +132,14 @@ func (sec *StockExchangeController) CreateTractorOffer(c *gin.Context) {
 // @Router /stock_exchange/tractor_offers [get]
 func (sec *StockExchangeController) GetAllTractorOnMarket(c *gin.Context) {
 	var offers []struct {
-		LimitDate      time.Time           `json:"limit_date"`
-		TractorId      uuid.UUID           `json:"tractor_id"`
-		ResourceType   models.ResourceType `json:"resource_type"`
-		CurrentUnits   float64             `json:"current_units"`
-		MaxUnits       float64             `json:"max_units"`
-		MinPriceByKm   float64             `json:"min_price_by_km"`
-		CurrentPrice   float64             `json:"current_price"`
-		OfferId   uuid.UUID             `json:"offer_id"`
+		LimitDate    time.Time           `json:"limit_date"`
+		TractorId    uuid.UUID           `json:"tractor_id"`
+		ResourceType models.ResourceType `json:"resource_type"`
+		CurrentUnits float64             `json:"current_units"`
+		MaxUnits     float64             `json:"max_units"`
+		MinPriceByKm float64             `json:"min_price_by_km"`
+		CurrentPrice float64             `json:"current_price"`
+		OfferId      uuid.UUID           `json:"offer_id"`
 	}
 
 	query := `
@@ -183,15 +170,15 @@ func (sec *StockExchangeController) GetAllTractorOnMarket(c *gin.Context) {
 // @Failure 500 "Unable to fetch offers"
 // @Router /stock_exchange/lot_offers [get]
 func (sec *StockExchangeController) GetAllLotsOnMarket(c *gin.Context) {
-	
+
 	var offers []struct {
-		LimitDate      time.Time           `json:"limit_date"`
-		LotId          uuid.UUID           `json:"lot_id"`
-		ResourceType   models.ResourceType `json:"resource_type"`
-		Volume         float64             `json:"volume"`
-		MaxPriceByKm   float64             `json:"max_price_by_km"`
-		CurrentPrice   float64             `json:"current_price"`
-		OfferId   uuid.UUID             `json:"offer_id"`
+		LimitDate    time.Time           `json:"limit_date"`
+		LotId        uuid.UUID           `json:"lot_id"`
+		ResourceType models.ResourceType `json:"resource_type"`
+		Volume       float64             `json:"volume"`
+		MaxPriceByKm float64             `json:"max_price_by_km"`
+		CurrentPrice float64             `json:"current_price"`
+		OfferId      uuid.UUID           `json:"offer_id"`
 	}
 
 	query := `
@@ -209,13 +196,12 @@ func (sec *StockExchangeController) GetAllLotsOnMarket(c *gin.Context) {
 		return
 	}
 
-
 	c.JSON(http.StatusOK, offers)
 }
 
 func (StockExchangeController *StockExchangeController) CreateBidLot(c *gin.Context) {
 	var requestBody struct {
-		Bid float64 `json:"bid" binding:"required"`
+		Bid     float64   `json:"bid" binding:"required"`
 		OfferId uuid.UUID `json:"offer_id" binding:"required"`
 	}
 
@@ -231,10 +217,10 @@ func (StockExchangeController *StockExchangeController) CreateBidLot(c *gin.Cont
 		return
 	}
 
-	var bid models.Bid;
-	bid.Bid = requestBody.Bid;
-	bid.OfferId = offerUUID;
-	bid.State = "in_progress";
+	var bid models.Bid
+	bid.Bid = requestBody.Bid
+	bid.OfferId = offerUUID
+	bid.State = "in_progress"
 
 	if err := StockExchangeController.Db.Create(&bid).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"errorrr": err.Error()})
@@ -246,9 +232,9 @@ func (StockExchangeController *StockExchangeController) CreateBidLot(c *gin.Cont
 
 func (StockExchangeController *StockExchangeController) CreateBidTractor(c *gin.Context) {
 	var requestBody struct {
-		Bid float64 `json:"bid" binding:"required"`
+		Bid     float64   `json:"bid" binding:"required"`
 		OfferId uuid.UUID `json:"offer_id" binding:"required"`
-		Volume float64 `json:"volume" binding:"required"`
+		Volume  float64   `json:"volume" binding:"required"`
 	}
 
 	if err := c.ShouldBindJSON(&requestBody); err != nil {
@@ -263,11 +249,11 @@ func (StockExchangeController *StockExchangeController) CreateBidTractor(c *gin.
 		return
 	}
 
-	var bid models.Bid;
-	bid.Bid = requestBody.Bid;
-	bid.OfferId = offerUUID;
-	bid.State = "in_progress";
-	bid.Volume = requestBody.Volume;
+	var bid models.Bid
+	bid.Bid = requestBody.Bid
+	bid.OfferId = offerUUID
+	bid.State = "in_progress"
+	bid.Volume = requestBody.Volume
 
 	if err := StockExchangeController.Db.Create(&bid).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"errorrr": err.Error()})
