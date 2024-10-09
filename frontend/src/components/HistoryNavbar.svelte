@@ -10,9 +10,9 @@
     // Set tab based on URL on mount
     onMount(() => {
         const path = window.location.pathname;
-        if (path.includes('stock-exchange/lots'))
+        if (path.includes('history/lots'))
             currentTrafficManagerTab.set('Lots');
-        else if (path.includes('stock-exchange/tractors'))
+        else if (path.includes('history/tractors'))
             currentTrafficManagerTab.set('Tractors');
         else
             currentTrafficManagerTab.set(''); // Reset if on an unknown path
@@ -21,18 +21,18 @@
 
 
 <!-- Sub-Navbar -->
-<nav class="bg-gray-200 px-10 py-4 text-gray-800 fixed top-24 left-0 w-full z-40">
+<nav class="bg-gray-200 px-10 py-4 text-gray-800 fixed top-24 mt-3 left-0 w-full z-40">
     <ul class="flex space-x-16">
         <li>
             <a
-                    href="/stock-exchange/lots"
+                    href="/history/lots"
                     on:click={() => switchTab('Lots')}
                     class="{$currentTrafficManagerTab === 'Lots' ? 'font-bold bg-gray-800 text-gray-200 rounded-md px-4 py-2' : ''}">Lots
             </a>
         </li>
         <li>
             <a
-                    href="/stock-exchange/tractors"
+                    href="/history/tractors"
                     on:click={() => switchTab('Tractors')}
                     class="{$currentTrafficManagerTab === 'Tractors' ? 'font-bold bg-gray-800 text-gray-200 rounded-md px-4 py-2' : ''}">Tractors
             </a>

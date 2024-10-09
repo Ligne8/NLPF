@@ -1,34 +1,38 @@
-import type {Tractor} from "./tractorInterface";
+import type { Tractor } from "./tractorInterface";
 
 export type Lot = {
-    id: string;
-    resource_type: string;
-    volume: number;
+  id: string;
+  resource_type: string;
+  volume: number;
 
-    start_checkpoint_id?: string;
-    start_checkpoint?: any;  // TODO: add interface checkpoint
+  offer_id?: string;
 
-    end_checkpoint_id?: string;
-    end_checkpoint?: any;
+  start_checkpoint_id?: string;
+  start_checkpoint?: any; // TODO: add interface checkpoint
 
-    tractor_id?: string;
-    tractor?: Tractor;
+  end_checkpoint_id?: string;
+  end_checkpoint?: any;
 
-    created_at: string;
+  tractor_id?: string;
+  tractor?: Tractor;
 
-    current_checkpoint_id?: string;
-    current_checkpoint?: any;
+  created_at: string;
 
-    owner_id: string;
-    owner?: any;  // TODO: add interface User
+  current_checkpoint_id?: string;
+  current_checkpoint?: any;
 
-    state: string;
+  offer?: any;
 
-    max_price_by_km: number;
+  owner_id: string;
+  owner?: any; // TODO: add interface User
 
-    traffic_manager_id?: string;
-    traffic_manager?: string;
+  state: string;
 
-    trader_id?: string;
-    trader?: string;
+  max_price_by_km: number;
+
+  traffic_manager_id?: string;
+  traffic_manager?: string;
+
+  trader_id?: string;
+  trader?: string;
 };

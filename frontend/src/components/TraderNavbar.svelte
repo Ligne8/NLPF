@@ -21,7 +21,7 @@
 
 
 <!-- Sub-Navbar -->
-<nav class="bg-gray-200 px-10 py-4 text-gray-800 fixed top-24 mt-3 left-0 w-full z-40">
+<nav class="bg-gray-200 px-10 py-4 text-gray-800 fixed top-24 left-0 w-full z-40">
     <ul class="flex space-x-16">
         <li>
             <a

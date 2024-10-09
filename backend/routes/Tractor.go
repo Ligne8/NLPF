@@ -30,7 +30,9 @@ func TractorRoutes(r *gin.Engine, db *gorm.DB) *gin.Engine {
 		v1.DELETE("/:tractor_id", TractorController.DeleteTractor)
 		//v1.PATCH(":id", LotController.PatchLot)
 		//v1.GET("", LotController.ListLots)
-		v1.PUT("/assign/:tractor_id/trader", TractorController.AssignTraderToTractor)
+		v1.POST("/assign/:tractor_id/trader", TractorController.AssignTraderToTractor)
+		v1.GET("/trader/:trader_id", TractorController.GetAllTractorTraderId)
+		v1.GET("/bids/:owner_id", TractorController.GetTractorBidByOwnerId)
 	}
 	return r
 }

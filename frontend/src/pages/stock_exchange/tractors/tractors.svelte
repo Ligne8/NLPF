@@ -1,25 +1,25 @@
 <script lang="ts">
     import Navbar from '@components/Navbar.svelte';
     import StockExchangeNavbar from '@components/StockExchangeNavbar.svelte';
-    import { userRole } from '@stores/store';
+    import { userRole, userId } from '@stores/store';
+    import axios from 'axios';
+    import type { Tractor } from 'src/interface/tractorInterface';
+    import { onMount } from 'svelte';
 
     // Variables
     let title: string = 'Tractor market';
     let subtitle: string = 'Negotiate available freight space according to market needs.';
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+    let tractors: Tractor[] = [];
     let isModalOpen = false;
     let priceValue: number = 1.0;
     let minPriceValue: number = 1.0;
-    let maxPriceValue: number = 10.0;
+    let maxPriceValue: number = 100.0;
     let volumeValue: number = 1.0;
     let minVolumeValue: number = 1.0;
-    let maxVolumeValue: number = 10.0;
-
-    // Example data
-    const tableData = [
-        { id: 1, expirationDate: 1695564000000, type: 'Bulk', spaceAvailable: 500, minPrice: 2.5, currentPrice: 3.2 },
-        { id: 2, expirationDate: 1698242400000, type: 'Liquid', spaceAvailable: 800, minPrice: 1.8, currentPrice: 2.1 },
-        { id: 3, expirationDate: 1700834400000, type: 'Solid', spaceAvailable: 300, minPrice: 3.0, currentPrice: 3.5 }
-    ];
+    let maxVolumeValue: number = 50.0;
+    let sortOption: string = 'none';
+    let current_offer_id: number;
 
     // Function to format timestamp into DD/MM/YYYY
     const formatDate = (timestamp: number) => {
@@ -39,23 +39,72 @@
     }
 
     // Function to open tractors modal
-    function openModal(currentPrice: number, spaceAvailable: number) {
-        priceValue = currentPrice;
-        minPriceValue = currentPrice;
-        maxVolumeValue = spaceAvailable;
+    function openModal(currentPrice: any, offer_id: any, min_price_by_km: number, bid_owner_id: string) {
+      console.log(bid_owner_id)
+        current_offer_id = offer_id;
+        priceValue = min_price_by_km;
+        minPriceValue = min_price_by_km;
         isModalOpen = true;
     }
 
     // Function to close tractors modal
     function closeModal() {
+        current_offer_id = 0;
         isModalOpen = false;
     }
 
     // Function to bid
     function bid() {
-        console.log("Form submitted!");
-        closeModal();
+        console.log('Bid:', priceValue);
+        console.log('VolumeValue:', volumeValue);
+        console.log('offerId:', current_offer_id);
+
+        const payload = {
+            offer_id: current_offer_id,
+            bid: priceValue,
+            volume: volumeValue,
+            owner_id: $userId
+        }
+        axios.post(`${API_BASE_URL}/stock_exchange/tractor/bid`, payload).then((response) => {
+          fetchTractors();
+          closeModal();
+        }).catch((error) => {
+            console.error('Error bidding:', error.response);
+        });
     }
+
+    // Fetch table info
+    async function fetchTractors() {
+        await axios.get(`${API_BASE_URL}/stock_exchange/tractor_offers`)
+            .then((response) => {
+                tractors = response.data;
+            }).catch((error) => {
+                console.error('Error fetching tractors:', error.response);
+            });
+    }
+
+    // Fetch all data
+    onMount(() => {
+        fetchTractors();
+    });
+
+    // Update data depending on filters
+    $: sortedData = (() => {
+        let data = tractors;
+
+        switch (sortOption) {
+            case 'loading_asc':
+                return data.sort((a, b) => (a.current_units / a.max_units) - (b.current_units / b.max_units));
+            case 'loading_desc':
+                return data.sort((a, b) => (b.current_units / b.max_units) - (a.current_units / a.max_units));
+            case 'remaining_volume_asc':
+                return data.sort((a, b) => (a.max_units - a.current_units) - (b.max_units - b.current_units));
+            case 'remaining_volume_desc':
+                return data.sort((a, b) => (b.max_units - b.current_units) - (a.max_units - a.current_units));
+            default:
+                return data;
+        }
+    })();
 
 </script>
 
@@ -67,18 +116,46 @@
 <main class="p-10 mt-40">
 
     <!-- Title and subtitle -->
-    <section>
-        <h1 class="text-4xl font-bold mb-4">{title}</h1>
-        <h2 class="text-2xl mb-8 text-gray-600">{subtitle}</h2>
+    <div class="mb-2">
+        <h1 class="text-4xl font-bold mb-2">{title}</h1>
+        <h2 class="text-2xl text-gray-600">{subtitle}</h2>
+    </div>
+
+    <section class="flex justify-between items-center mb-4">
+
+        <div class="flex justify-between items-center self-end">
+
+            <!-- Sort by name, volume and location -->
+            <select bind:value={sortOption} class="border border-gray-300 rounded px-2 py-1">
+                <option value="none" disabled selected>Sort by</option>
+                <option value="loading_asc">Loading (Ascending)</option>
+                <option value="loading_desc">Loading (Descending)</option>
+                <option value="remaining_volume_asc">Remaining volume (Ascending)</option>
+                <option value="remaining_volume_desc">Remaining volume (Descending)</option>
+            </select>
+
+        </div>
+
+        <div class="flex justify-between items-center self-end">
+
+            <!-- Reload button -->
+            <button class="bg-gray-800 text-white font-bold px-4 py-2 rounded flex items-center hover:bg-gray-900 transition-colors self-end"
+                    on:click={fetchTractors}
+            >
+                <i class="fas fa-rotate-right mr-2"></i>
+                Reload
+            </button>
+
+        </div>
+
     </section>
 
     <table class="table-auto w-full border-collapse border border-gray-300">
         <thead>
             <tr class="bg-gray-100">
-                <th class="border p-2 text-center">ID</th>
                 <th class="border p-2 text-center">Expiration date</th>
                 <th class="border p-2 text-center">Type</th>
-                <th class="border p-2 text-center">Available space<br><span class="font-normal">(in m³)</span></th>
+                <th class="border p-2 text-center">Loading<br><span class="font-normal">(in m³)</span></th>
                 <th class="border p-2 text-center">Minimum price<br><span class="font-normal">(in €/km)</span></th>
                 <th class="border p-2 text-center">Current price<br><span class="font-normal">(in €/km)</span></th>
                 {#if $userRole === "client"}
@@ -87,33 +164,30 @@
             </tr>
         </thead>
         <tbody>
-            {#each tableData as row, index}
+            {#each sortedData as row, index}
                 <tr class={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
-
-                    <!-- Column 1 -->
-                    <td class="border p-2 text-center">{row.id}</td>
                     
-                    <!-- Column 2 -->
-                    <td class="border p-2 text-center">{formatDate(row.expirationDate)}</td>
+                    <!-- Column 1 -->
+                    <td class="border p-2 text-center">{formatDate(row.limit_date)}</td>
 
+                    <!-- Column 2 -->
+                    <td class="border p-2 text-center">{row.resource_type}</td>
+                    
                     <!-- Column 3 -->
-                    <td class="border p-2 text-center">{row.type}</td>
+                    <td class="border p-2 text-center">{row.current_units}/{row.max_units}</td>
                     
                     <!-- Column 4 -->
-                    <td class="border p-2 text-center">{row.spaceAvailable}</td>
+                    <td class="border p-2 text-center">{row.min_price_by_km.toFixed(2)}</td>
                     
                     <!-- Column 5 -->
-                    <td class="border p-2 text-center">{row.minPrice.toFixed(2)}</td>
+                    <td class="border p-2 text-center">{row.current_price.toFixed(2)}</td>
                     
                     <!-- Column 6 -->
-                    <td class="border p-2 text-center">{row.currentPrice.toFixed(2)}</td>
-                    
-                    <!-- Column 7 -->
                     {#if $userRole === "client"}
                         <td class="border p-2 text-center">
                             <div class="flex flex-wrap justify-center space-x-2 space-y-2">
                                 <button class="bg-blue-200 text-blue-800 px-4 py-2 flex items-center font-bold hover:bg-blue-300 transition-colors rounded-md"
-                                    on:click={() => openModal(row.currentPrice, row.spaceAvailable)}
+                                    on:click={() => openModal(row.current_price, row.offer_id, row.min_price_by_km, row.id)}
                                 >
                                     <i class="fas fa-coins mr-2"></i>
                                     Bid
