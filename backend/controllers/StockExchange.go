@@ -370,7 +370,7 @@ func (sec *StockExchangeController) UpdateLotsBids() error {
 		FROM offers
 		JOIN lots l ON offers.id = l.offer_id
 		WHERE offers.limit_date < (SELECT simulation_date FROM simulations LIMIT 1)
-		AND offers.lot_id IS NOT NULL
+		AND offers.lot_id IS NOT NULL AND offers.tractor_id IS NULL
 		AND l.state = 'on_market'
 	`
 
@@ -405,19 +405,21 @@ func (sec *StockExchangeController) UpdateTractorsBids() error {
 		FROM offers
 		JOIN tractors t ON offers.id = t.offer_id
 		WHERE offers.limit_date < (SELECT simulation_date FROM simulations LIMIT 1)
-		AND offers.tractor_id IS NOT NULL
+		AND offers.tractor_id IS NOT NULL AND offers.lot_id IS NULL
 		AND t.state = 'on_market'
 	`
 	if err := sec.Db.Raw(query).Scan(&offers).Error; err != nil {
 		return err
 	}
-
 	for _, offer := range offers {
 		var bids []models.Bid
 		if err := sec.Db.Where("offer_id = ?", offer.Id).Order("bid desc").Find(&bids).Error; err != nil {
 			return err
 		}
 		for _, bid := range bids {
+			if bid.State != "in_progress" {
+				continue
+			}
 			var tractor models.Tractor
 			tractor, err := tractor.FindById(sec.Db, *offer.TractorId)
 			if err != nil {
@@ -431,14 +433,15 @@ func (sec *StockExchangeController) UpdateTractorsBids() error {
 				continue
 			}
 			bid.State = "accepted"
-
+			if err := sec.Db.Save(&bid).Error; err != nil {
+				return err
+			}
 			tractor.CurrentVolume += bid.Volume
 			if err := sec.Db.Save(&tractor).Error; err != nil {
 				return err
 			}
 		}
 	}
-
 	return nil
 }
 
