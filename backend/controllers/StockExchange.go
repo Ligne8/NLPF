@@ -355,7 +355,7 @@ func (sec *StockExchangeController) UpdateLotsBids() error {
 	query := `
 		SELECT offers.*
 		FROM offers
-		JOIN lots l ON offers.id = l.offer_id
+		JOIN lots l ON offers.lot_id = l.id
 		WHERE offers.limit_date < (SELECT simulation_date FROM simulations LIMIT 1)
 		AND offers.lot_id IS NOT NULL AND offers.tractor_id IS NULL
 		AND l.state = 'on_market'
@@ -390,7 +390,7 @@ func (sec *StockExchangeController) UpdateTractorsBids() error {
 	query := `
 		SELECT offers.*
 		FROM offers
-		JOIN tractors t ON offers.id = t.offer_id
+		JOIN tractors t ON offers.lot_id = t.id
 		WHERE offers.limit_date < (SELECT simulation_date FROM simulations LIMIT 1)
 		AND offers.tractor_id IS NOT NULL AND offers.lot_id IS NULL
 		AND t.state = 'on_market'
