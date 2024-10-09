@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"log"
 	"net/http"
 	"time"
 	"tms-backend/models"
@@ -275,4 +276,58 @@ func (StockExchangeController *StockExchangeController) CreateBidTractor(c *gin.
 	}
 
 	c.JSON(http.StatusCreated, bid)
+}
+// ReturnFromMarket : Return a tractor or a lot from the market
+// @Summary After getting all the offers on morket with the limit date passed, the state of the tractor/lot is changed to return_from_market
+// @Tags Stock Exchange
+// @Produce json
+// @Success 200 {string} string "Tractors and lots returned from market"
+// @Failure 500 "Unable to fetch simulation date"
+// @Failure 500 "Unable to fetch offers"
+// @Router /stock_exchange/return_from_market [put]
+func (sec *StockExchangeController) ChangeStateToReturnFromMarket(c *gin.Context) {
+	// get offers with the state "on_market" and the LimitDate higher than the current date
+	var simulation models.Simulation
+	if err := sec.Db.First(&simulation).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to fetch simulation date"})
+		return
+	}
+	log.Println("similationDate:", simulation.SimulationDate)
+	var offers []models.Offer
+	if err := sec.Db.Joins("LEFT JOIN tractors ON offers.tractor_id = tractors.id").
+		Joins("LEFT JOIN lots ON offers.lot_id = lots.id").
+		Where("(tractors.state = ? OR lots.state = ?) AND offers.limit_date <= ?", models.StateOnMarket, models.StateOnMarket, simulation.SimulationDate).
+		Find(&offers).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to fetch offers"})
+		return
+	}
+
+	// for each offer change the state of the tractor/lot to "return_from_market"
+	for _, offer := range offers {
+		if offer.TractorId != nil {
+			var tractor models.Tractor
+			if err := sec.Db.First(&tractor, "id = ?", offer.TractorId).Error; err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to fetch tractor"})
+				return
+			}
+			tractor.State = models.StateReturnFromMarket
+			if err := tractor.Update(sec.Db); err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to update tractor state"})
+				return
+			}
+		} else if offer.LotId != nil {
+			var lot models.Lot
+			if err := sec.Db.First(&lot, "id = ?", offer.LotId).Error; err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to fetch lot"})
+				return
+			}
+			lot.State = models.StateReturnFromMarket
+			if err := lot.Update(sec.Db); err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to update lot state"})
+				return
+			}
+		}
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Tractors and lots returned from market"})
 }
