@@ -79,10 +79,6 @@
                 return data.sort((a, b) => a.volume - b.volume);
             case 'volume_desc':
                 return data.sort((a, b) => b.volume - a.volume);
-            case 'location_asc':
-                return data.sort((a, b) => a.current_checkpoint.name.localeCompare(b.current_checkpoint.name));
-            case 'location_desc':
-                return data.sort((a, b) => b.current_checkpoint.name.localeCompare(a.current_checkpoint.name));
             default:
                 return data;
         }
@@ -123,8 +119,6 @@
                 <option value="none" disabled selected>Sort by</option>
                 <option value="volume_asc">Volume (Ascending)</option>
                 <option value="volume_desc">Volume (Descending)</option>
-                <option value="location_asc">Location (A-Z)</option>
-                <option value="location_desc">Location (Z-A)</option>
             </select>
 
         </div>

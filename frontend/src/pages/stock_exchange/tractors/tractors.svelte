@@ -93,10 +93,6 @@
         let data = selectedStatus === 'all' ? tractors : tractors.filter(tractor => tractor.state === selectedStatus);
 
         switch (sortOption) {
-            case 'name_asc':
-                return data.sort((a, b) => a.name.localeCompare(b.name));
-            case 'name_desc':
-                return data.sort((a, b) => b.name.localeCompare(a.name));
             case 'loading_asc':
                 return data.sort((a, b) => (a.current_units / a.max_units) - (b.current_units / b.max_units));
             case 'loading_desc':
@@ -105,12 +101,8 @@
                 return data.sort((a, b) => (a.max_units - a.current_units) - (b.max_units - b.current_units));
             case 'remaining_volume_desc':
                 return data.sort((a, b) => (b.max_units - b.current_units) - (a.max_units - a.current_units));
-            case 'location_asc':
-                return data.sort((a, b) => a.current_checkpoint.name.localeCompare(b.current_checkpoint.name));
-            case 'location_desc':
-                return data.sort((a, b) => b.current_checkpoint.name.localeCompare(a.current_checkpoint.name));
             default:
-                return data.sort((a, b) => a.name.localeCompare(b.name));
+                return data;
         }
     })();
 
@@ -148,14 +140,10 @@
             <!-- Sort by name, volume and location -->
             <select bind:value={sortOption} class="border border-gray-300 rounded px-2 py-1">
                 <option value="none" disabled selected>Sort by</option>
-                <option value="name_asc">Name (A-Z)</option>
-                <option value="name_desc">Name (Z-A)</option>
                 <option value="loading_asc">Loading (Ascending)</option>
                 <option value="loading_desc">Loading (Descending)</option>
                 <option value="remaining_volume_asc">Remaining volume (Ascending)</option>
                 <option value="remaining_volume_desc">Remaining volume (Descending)</option>
-                <option value="location_asc">Location (A-Z)</option>
-                <option value="location_desc">Location (Z-A)</option>
             </select>
 
         </div>
