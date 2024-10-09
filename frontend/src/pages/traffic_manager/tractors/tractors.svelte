@@ -64,6 +64,7 @@
         try {
             const response = await axios.get(`${API_BASE_URL}/simulations/date`);
             const date = new Date(response.data.simulation_date);
+            date.setDate(date.getDate() + 1);
             minDate = date.toISOString().split('T')[0];
         } catch (err) {
             console.error('Error fetching limit date:', err);

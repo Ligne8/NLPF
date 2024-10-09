@@ -103,10 +103,11 @@
             limit_date: new Date(limitDate).toISOString(),
         };
         await axios.post(`${API_BASE_URL}/lots/assign/${lotId}/trader`, offerData)
-           .then((response) => {
-               fetchTableInfo();
-               limitDate = ''; 
-               closeStockExchangeModal();
+           .then(() => {
+                fetchTableInfo().then(() => {
+                    limitDate = ''; 
+                    closeStockExchangeModal();
+                });
            }).catch((error) => {
                console.error('Error assigning lot to trader:', error.response);
            });
@@ -117,6 +118,7 @@
         try {
             const response = await axios.get(`${API_BASE_URL}/simulations/date`);
             const date = new Date(response.data.simulation_date);
+            date.setDate(date.getDate() + 1);
             minDate = date.toISOString().split('T')[0];
         } catch (err) {
             console.error('Error fetching limit date:', err);
@@ -230,9 +232,9 @@
 
                     <!-- Column 1 -->
                     <td class="border p-2 text-center">
-                            <span class={`px-2 py-1 rounded ${getStatusInfo(row.state).color}`}>
-                                {getStatusInfo(row.state).text}
-                            </span>
+                        <span class={`px-2 py-1 rounded ${getStatusInfo(row.state).color}`}>
+                            {getStatusInfo(row.state).text}
+                        </span>
                     </td>
 
                     <!-- Column 2 -->
@@ -272,7 +274,7 @@
 
                     <!-- Column 6 -->
                     <td class="border p-2 text-center">
-                        {#if row.state === 'pending'}
+                        {#if row.state === 'pending' && !row.tractor}
                             <div class="flex flex-wrap justify-center space-x-2 space-y-2">
                                 <button class="bg-blue-200 text-blue-800 px-4 py-2 flex items-center font-bold hover:bg-blue-300 transition-colors rounded-md"
                                 on:click={openStockExchangeModal(row.id)} >
