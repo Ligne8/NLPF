@@ -311,7 +311,7 @@ func (sec *StockExchangeController) ChangeStateToReturnFromMarket(c *gin.Context
 				return
 			}
 			tractor.State = models.StateReturnFromMarket
-			if err := tractor.Update(sec.Db); err != nil {
+			if err := tractor.Save(sec.Db); err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to update tractor state"})
 				return
 			}
@@ -322,7 +322,7 @@ func (sec *StockExchangeController) ChangeStateToReturnFromMarket(c *gin.Context
 				return
 			}
 			lot.State = models.StateReturnFromMarket
-			if err := lot.Update(sec.Db); err != nil {
+			if err := lot.Save(sec.Db); err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to update lot state"})
 				return
 			}
@@ -330,4 +330,69 @@ func (sec *StockExchangeController) ChangeStateToReturnFromMarket(c *gin.Context
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Tractors and lots returned from market"})
+}
+
+// ReturnFromMarket : Return a tractor or a lot from the market
+// @Summary After getting all the offers on morket with the limit date passed, the state of the tractor/lot is changed to return_from_market
+// @Tags Stock Exchange
+// @Produce json
+// @Success 200 {string} string "Tractors and lots returned from market"
+// @Failure 500 "Unable to fetch simulation date"
+// @Failure 500 "Unable to fetch offers"
+// @Router /stock_exchange/return_from_market [put]
+func (sec *StockExchangeController) ChangeStateToReturnFromMarket2(c *gin.Context) {
+	
+	if err := sec.updateLotsOffers(); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	if err := sec.updateTractorsOffers(); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+}
+
+
+func (sec *StockExchangeController) updateLotsOffers() error{
+	query := `
+		WITH random_trafic_manager AS (
+			SELECT id
+			FROM users
+			WHERE role = 'traffic_manager'
+			ORDER BY RANDOM()
+			LIMIT 1
+		)
+		UPDATE lots
+		SET
+			traffic_manager_id = COALESCE(traffic_manager_id, (SELECT random_trafic_manager.id FROM random_trafic_manager)),
+			state = 'return_from_market'
+		FROM offers
+		WHERE offers.lot_id = lots.id AND limit_date <= (SELECT simulation_date FROM simulations LIMIT 1) AND lots.state = 'on_market'
+	`
+	if err := sec.Db.Exec(query).Error; err != nil {
+		return err
+	}
+	return nil
+}
+func (sec *StockExchangeController) updateTractorsOffers() error{
+	query := `
+		WITH random_trafic_manager AS (
+			SELECT id
+			FROM users
+			WHERE role = 'traffic_manager'
+			ORDER BY RANDOM()
+			LIMIT 1
+		)
+		UPDATE tractors
+		SET
+			traffic_manager_id = COALESCE(traffic_manager_id, (SELECT random_trafic_manager.id FROM random_trafic_manager)),
+			state = 'return_from_market'
+		FROM offers
+		WHERE offers.tractor_id = tractor.id AND limit_date <= (SELECT simulation_date FROM simulations LIMIT 1) AND tractors.state = 'on_market'
+	`
+	if err := sec.Db.Exec(query).Error; err != nil {
+		return err
+	}
+	return nil
 }
