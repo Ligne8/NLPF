@@ -80,11 +80,22 @@
                             <i class="fa fa-box"></i>
                         </div>`,
                 });
+                console.log(elt)
                 marker = L.marker([elt.current_checkpoint.latitude, elt.current_checkpoint.longitude], {icon})
                     .addTo(map)
-                    .bindPopup(`<p style="font-weight: bold; color: gray; text-align: center">${elt.name}<br>
+                    .bindPopup(`<p style="font-weight: bold; color: gray; text-align: center">Lot : ${elt.resource_type}<br>
                                     <span style="font-weight: normal;">
                                         ${elt.current_checkpoint.name} (${elt.current_checkpoint.country})
+                                    </span>
+                                </p>
+                                <p style="font-weight: bold; color: gray; text-align: left; margin: 0;">Departure :
+                                    <span style="font-weight: normal;">
+                                        ${elt.start_checkpoint.name} (${elt.start_checkpoint.country})
+                                    </span>
+                                </p>
+                                <p style="font-weight: bold; color: gray; text-align: left; margin: 0;">Arrival :
+                                    <span style="font-weight: normal;">
+                                        ${elt.end_checkpoint.name} (${elt.end_checkpoint.country})
                                     </span>
                                 </p>`);
             }
@@ -126,6 +137,16 @@
                         .bindPopup(`<p style="font-weight: bold; color: gray; text-align: center">${elt.name}<br>
                                         <span style="font-weight: normal;">
                                             ${elt.current_checkpoint.name} (${elt.current_checkpoint.country})
+                                        </span>
+                                    </p>
+                                    <p style="font-weight: bold; color: gray; text-align: left; margin: 0;">Departure :
+                                        <span style="font-weight: normal;">
+                                            ${elt.start_checkpoint.name} (${elt.start_checkpoint.country})
+                                        </span>
+                                    </p>
+                                    <p style="font-weight: bold; color: gray; text-align: left; margin: 0;">Arrival :
+                                        <span style="font-weight: normal;">
+                                            ${elt.end_checkpoint.name} (${elt.end_checkpoint.country})
                                         </span>
                                     </p>`);
                 }
