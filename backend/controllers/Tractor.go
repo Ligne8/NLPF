@@ -640,33 +640,52 @@ func (TractorController *TractorController) GetAllTractorTraderId(c *gin.Context
 // @Router       /tractors/bids/{client_id} [get]
 func (TractorController *TractorController) GetTractorBidByOwnerId(c *gin.Context) {
 	var result []struct {
-		ExpirationDate time.Time `json:"caca"`
+		ExpirationDate time.Time `json:"limit_date"`
 		CurrentPrice   float64   `json:"current_price"`
 		MinPrice       float64   `json:"min_price_by_km"`
 		State          string    `json:"state"`
 	}
 
 	clientId := c.Param("owner_id")
-	clientIdUUID, errIdUUID := uuid.Parse(clientId)
+	ownerID, errIdUUID := uuid.Parse(clientId)
 
 	if errIdUUID != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid owner_id"})
 		return
 	}
 
-	if err := TractorController.Db.Raw(`
-		SELECT o.limit_date caca,
-		       MAX(bids.bid) current_price,
-		       tractors.min_price_by_km min_price,
-		       bids.state
-		FROM bids
-		         JOIN offers o ON o.id = bids.offer_id
-		         JOIN tractors ON o.tractor_id = tractors.id
-		WHERE bids.owner_id = ?
-		GROUP BY o.limit_date, tractors.min_price_by_km, bids.state
-	`, clientIdUUID).Scan(&result).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to retrieve bids", "details": err.Error()})
+	query := `
+    SELECT offers.limit_date AS limit_date,
+           MAX(bids.bid) AS current_price,
+           tractors.min_price_by_km AS min_price,
+           bids.state
+    FROM bids
+    JOIN offers ON offers.id = bids.offer_id
+    JOIN tractors ON offers.tractor_id = tractors.id
+    WHERE bids.owner_id = $1
+    GROUP BY offers.limit_date, tractors.min_price_by_km, bids.state;
+`
+
+	rows, err := TractorController.Db.Raw(query, ownerID).Rows()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to retrieve bids"})
 		return
+	}
+	defer rows.Close()
+
+	// Lecture des résultats ligne par ligne
+	for rows.Next() {
+		var record struct {
+			ExpirationDate time.Time `json:"limit_date"`
+			CurrentPrice   float64   `json:"current_price"`
+			MinPrice       float64   `json:"min_price_by_km"`
+			State          string    `json:"state"`
+		}
+		if err := rows.Scan(&record.ExpirationDate, &record.CurrentPrice, &record.MinPrice, &record.State); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to scan bid results"})
+			return
+		}
+		result = append(result, record)
 	}
 
 	c.JSON(http.StatusOK, result)
