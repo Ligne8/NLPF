@@ -18,7 +18,6 @@
     let volumeValue: number = 1.0;
     let minVolumeValue: number = 1.0;
     let maxVolumeValue: number = 50.0;
-    let selectedStatus: string = 'all';
     let sortOption: string = 'none';
     let current_offer_id: number;
 
@@ -91,7 +90,7 @@
 
     // Update data depending on filters
     $: sortedData = (() => {
-        let data = selectedStatus === 'all' ? tractors : tractors.filter(tractor => tractor.state === selectedStatus);
+        let data = tractors;
 
         switch (sortOption) {
             case 'loading_asc':
@@ -126,18 +125,6 @@
 
         <div class="flex justify-between items-center self-end">
 
-            <!-- Filter by status -->
-            <select bind:value={selectedStatus} class="mr-2 border border-gray-300 rounded px-2 py-1">
-                <option value="all" disabled selected>Filter by status</option>
-                <option value="all">All</option>
-                <option value="available">Available</option>
-                <option value="pending">Pending</option>
-                <option value="in_transit">In transit</option>
-                <option value="on_market">On market</option>
-                <option value="at_trader">At trader</option>
-                <option value="archive">Archived</option>
-            </select>
-
             <!-- Sort by name, volume and location -->
             <select bind:value={sortOption} class="border border-gray-300 rounded px-2 py-1">
                 <option value="none" disabled selected>Sort by</option>
@@ -146,6 +133,18 @@
                 <option value="remaining_volume_asc">Remaining volume (Ascending)</option>
                 <option value="remaining_volume_desc">Remaining volume (Descending)</option>
             </select>
+
+        </div>
+
+        <div class="flex justify-between items-center self-end">
+
+            <!-- Reload button -->
+            <button class="bg-gray-800 text-white font-bold px-4 py-2 rounded flex items-center hover:bg-gray-900 transition-colors self-end"
+                    on:click={fetchTractors}
+            >
+                <i class="fas fa-rotate-right mr-2"></i>
+                Reload
+            </button>
 
         </div>
 

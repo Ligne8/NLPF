@@ -17,7 +17,6 @@
     let minVolumeValue: number = 1.0;
     let current_offer_id: string = '';
     let lots: Lot[] = [];
-    let selectedStatus: string = 'all';
     let sortOption: string = 'none';
 
     // Function to format timestamp into DD/MM/YYYY
@@ -73,7 +72,7 @@
 
     // Update data depending on filters
     $: sortedData = (() => {
-        let data = selectedStatus === 'all' ? lots : lots.filter(lot => lot.state === selectedStatus);
+        let data = lots;
 
         switch (sortOption) {
             case 'volume_asc':
@@ -104,23 +103,24 @@
 
         <div class="flex justify-between items-center self-end">
 
-            <!-- Filter by status -->
-            <select bind:value={selectedStatus} class="mr-2 border border-gray-300 rounded px-2 py-1">
-                <option value="all" disabled selected>Filter by status</option>
-                <option value="all">All</option>
-                <option value="available">Available</option>
-                <option value="pending">Pending</option>
-                <option value="in_transit">In transit</option>
-                <option value="on_market">On market</option>
-                <option value="archived">Archived</option>
-            </select>
-
             <!-- Sort by volume and location -->
             <select bind:value={sortOption} class="border border-gray-300 rounded px-2 py-1">
                 <option value="none" disabled selected>Sort by</option>
                 <option value="volume_asc">Volume (Ascending)</option>
                 <option value="volume_desc">Volume (Descending)</option>
             </select>
+
+        </div>
+
+        <div class="flex justify-between items-center self-end">
+
+            <!-- Reload button -->
+            <button class="bg-gray-800 text-white font-bold px-4 py-2 rounded flex items-center hover:bg-gray-900 transition-colors self-end"
+                    on:click={fetchLots}
+            >
+                <i class="fas fa-rotate-right mr-2"></i>
+                Reload
+            </button>
 
         </div>
 
