@@ -224,6 +224,7 @@
 
     // Function to close modal
     function closeModal() {
+        fetchAllData();
         isModalOpen = false;
     }
 

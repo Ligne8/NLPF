@@ -37,6 +37,7 @@
 
     // Function to close tractors modal
     function closeModal() {
+        fetchLots();
         isModalOpen = false;
     }
 
