@@ -673,7 +673,6 @@ func (TractorController *TractorController) GetTractorBidByOwnerId(c *gin.Contex
 	}
 	defer rows.Close()
 
-	// Lecture des résultats ligne par ligne
 	for rows.Next() {
 		var record struct {
 			ExpirationDate time.Time `json:"limit_date"`
